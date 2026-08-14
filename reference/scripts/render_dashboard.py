@@ -25,14 +25,36 @@ TODAY = datetime.date.fromisoformat(args.date) if args.date else datetime.date.t
 
 
 def _cfg():
-    """Tiny hand-rolled reader for the two or three flat keys we need — avoids a
-    YAML dependency for a config file that's never more than name/language/ids."""
+    """Tiny hand-rolled reader for the handful of keys we need — avoids a YAML
+    dependency for a config file that is never more than names, ids and a goal.
+
+    Two things it has to survive, both found by running it against a real config:
+
+    1. **Trailing comments.** `name: "Alex"   # e.g. "Alex Miller"` used to fail
+       outright, because the old pattern anchored to end-of-line and choked on the
+       quotes inside the comment. The dashboard then rendered with no name and no
+       explanation. Comments are stripped first now, quote-aware so a `#` inside a
+       value survives.
+    2. **One level of nesting.** Keys indented under a parent (`user:` → `name:`)
+       are read as if they were flat. That is deliberate: this file is shared with
+       a workspace whose config nests, and a key name is unique across both. First
+       occurrence wins, so a top-level key beats a nested one of the same name.
+    """
     out = {}
-    if CONFIG.is_file():
-        for ln in CONFIG.read_text(encoding='utf-8').splitlines():
-            m = re.match(r'^([a-z_]+):\s*"?([^"\n]*?)"?\s*$', ln.strip())
-            if m and m.group(1) not in out:
-                out[m.group(1)] = m.group(2)
+    if not CONFIG.is_file():
+        return out
+    for ln in CONFIG.read_text(encoding='utf-8').splitlines():
+        # Strip a trailing comment, but not a '#' inside a quoted value.
+        stripped, quoted = [], False
+        for ch in ln:
+            if ch == '"':
+                quoted = not quoted
+            if ch == '#' and not quoted:
+                break
+            stripped.append(ch)
+        m = re.match(r'^([a-z_]+):\s*"?(.*?)"?\s*$', ''.join(stripped).strip())
+        if m and m.group(2) and m.group(1) not in out:
+            out[m.group(1)] = m.group(2)
     return out
 
 
@@ -53,7 +75,7 @@ TXT = {
         todos='Offene To-dos', no_tasks='Noch keine offenen Tasks — trag sie in context/STATUS.md ein.',
         quad={'q1': 'dringend + wichtig', 'q2': 'nicht dringend + wichtig',
               'q3': 'dringend + nicht wichtig', 'q4': 'nicht dringend + nicht wichtig'},
-        tab_today='Heute', tab_upwork='Upwork', title='Upwork-Cockpit',
+        tab_today='Heute', tab_upwork='Upwork', title='Freelancer OS',
     ),
     'en': dict(
         wd=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
@@ -65,7 +87,7 @@ TXT = {
         todos='Open to-dos', no_tasks='No open tasks yet — add them to context/STATUS.md.',
         quad={'q1': 'urgent + important', 'q2': 'not urgent + important',
               'q3': 'urgent + not important', 'q4': 'not urgent + not important'},
-        tab_today='Today', tab_upwork='Upwork', title='Upwork Cockpit',
+        tab_today='Today', tab_upwork='Upwork', title='Freelancer OS',
     ),
 }[LANG]
 WD, MON, CATS, QUAD = TXT['wd'], TXT['mon'], TXT['cats'], TXT['quad']
