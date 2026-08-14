@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
-"""Am Anfang jeder Sitzung: ist dieser Workspace fertig eingerichtet?
+"""At the start of every session: is this workspace actually finished?
 
-Warum als Hook und nicht als Regel: eine Regel muss jemand befolgen. Gemessen
-in einem echten Workspace lief das Morgen-Ritual, das denselben Selbsttest enthaelt,
-in 90 Tagen sechs Mal. Was beim Start passieren soll, muss beim Start passieren.
+Why a hook and not a rule: a rule needs someone to follow it. Measured in a real
+workspace, the morning routine that contains the same self-test ran six times in
+ninety days. What should happen at the start has to happen at the start.
 
-Der Hook meldet sich NUR, wenn etwas fehlt, und dann in einer Zeile je Punkt,
-in Alltagssprache mit dem naechsten Schritt. Ist alles da, schweigt er --
-sonst wird er nach drei Tagen ueberlesen.
+This hook speaks up ONLY when something is missing, and then one line per item,
+in plain language with the next step. When everything is there it stays silent —
+otherwise it gets skimmed past after three days.
 
-Geprueft wird nur, was still ausfaellt und teuer ist:
+It checks only what fails silently and costs something:
 
-    Einrichtung nie gelaufen      der Ordner ist eine unbenutzte Kopie
-    Einrichtung abgebrochen       Name steht drin, aber Schritte fehlen
-    keine Sicherung               stirbt die Platte, ist alles weg
-    kein Postfach, kein Kalender  das Briefing bleibt eine Aufgabenliste
-    Schluessel fehlt              ein Werkzeug ist da und kann nichts
+    setup never ran            the folder is an unused copy
+    setup ran, Upwork did not  the acquisition half is inert
+    no backup                  the disk dies and everything is gone
+    no mail, no calendar       the briefing stays a task list
+    a key is missing           a tool is installed and can do nothing
 
-Alles davon faellt lautlos aus. Ein fehlendes Feature meldet sich; ein nie
-eingerichtetes nicht.
+All of those fail without a sound. A missing feature announces itself; one that
+was never set up does not.
 """
 import json
 import os
@@ -36,7 +36,7 @@ def config_text():
         return ''
 
 
-def hat_remote():
+def has_remote():
     try:
         r = subprocess.run(['git', '-C', str(W), 'remote'],
                            capture_output=True, text=True, timeout=5)
@@ -45,50 +45,62 @@ def hat_remote():
         return False
 
 
-def pruefe():
-    """Liste von (was fehlt, was es kostet, naechster Schritt).
+def check():
+    """A list of (what is missing, what it costs, the next step).
 
-    Die Frage "ist die Einrichtung ueberhaupt gelaufen" beantwortet bereits
-    check-setup.sh am selben Ereignis, seit 21.07.2026 erprobt und mit dem
-    zuverlaessigeren Marker: der setup-Ordner archiviert sich am Ende selbst
-    weg. Solange er da ist, schweigt dieser Hook -- sonst melden sich zwei
-    Stimmen zum selben Thema, und der Nutzer hoert bei der zweiten weg.
+    Whether setup ran at all is already answered by check-setup.sh on the same
+    event, with the more reliable marker: the setup skill archives itself away
+    at the end, so as long as its folder is there, it has not run. While that
+    holds, this hook stays quiet — two voices on one topic and the user stops
+    hearing the second.
     """
     if (W / '.claude/skills/setup').is_dir():
         return []
 
-    offen = []
     cfg = config_text()
-    if not cfg or '[YOUR NAME]' in cfg or '[DEIN NAME]' in cfg:
-        return []                     # check-setup.sh hat das Wort
+    if not cfg or '[YOUR NAME]' in cfg:
+        return []                     # check-setup.sh has the floor
 
-    if not hat_remote():
-        offen.append(('Kein Sicherungs-Repo',
-                      'stirbt die Platte, ist deine Arbeit weg',
-                      'sag „richte mein Backup ein"'))
+    open_items = []
 
-    # Ein Postfach-Slot gilt als belegt, sobald irgendein Weg dorthin steht --
-    # Connector ODER CLI. Deshalb wird der Text gesucht, nicht eine Struktur.
+    # The handover that used to be missing. `setup` archives itself and nothing
+    # pointed at the Upwork half afterwards, so the acquisition side sat there
+    # fully built and never started. Skipped entirely when the user said they do
+    # not work on Upwork: optional means optional.
+    if 'upwork_enabled: false' not in cfg and not (W / 'context/expertise.md').is_file():
+        open_items.append((
+            'Upwork is not set up yet',
+            'the screener, the proposals and the pitch pages all read '
+            'context/expertise.md and none of them can run without it',
+            'say "set up freelancer os"'))
+
+    if not has_remote():
+        open_items.append(('No backup repo',
+                           'if the disk dies, your work is gone',
+                           'say "set up my backup"'))
+
+    # A mail slot counts as filled as soon as any route exists — connector OR
+    # CLI. That is why this looks for the text, not for a structure.
     if 'slot: mail' not in cfg and 'gws' not in cfg:
-        offen.append(('Kein Weg zu deinem Postfach',
-                      'das Briefing bleibt eine Aufgabenliste statt deines Tages',
-                      'sag „verbinde mein Postfach"'))
-    if 'slot: calendar' not in cfg and 'slot: kalender' not in cfg:
-        offen.append(('Kein Kalender verbunden',
-                      'deine Termine tauchen im Briefing nicht auf',
-                      'sag „verbinde meinen Kalender"'))
+        open_items.append(('No route to your mailbox',
+                           'the briefing stays a task list instead of your day',
+                           'say "connect my mailbox"'))
+    if 'slot: calendar' not in cfg:
+        open_items.append(('No calendar connected',
+                           'your appointments never show up in the briefing',
+                           'say "connect my calendar"'))
 
-    # Ein Schluessel, den die Ausstattung behauptet, der aber nicht existiert:
-    # das Werkzeug ist da und kann nichts, und niemand merkt es.
+    # A key the tooling claims but that does not exist: the tool is there and
+    # can do nothing, and nobody notices.
     keys = pathlib.Path.home() / '.config/credentials.env'
     txt = keys.read_text(encoding='utf-8', errors='ignore') if keys.is_file() else ''
-    for name, zweck in (('FIRECRAWL_API_KEY', 'Webseiten lesen'),
-                        ('OPENROUTER_API_KEY', 'Bilder und Spezialmodelle')):
+    for name, purpose in (('FIRECRAWL_API_KEY', 'reading web pages'),
+                          ('OPENROUTER_API_KEY', 'images and specialist models')):
         if name in cfg and name not in txt:
-            offen.append((f'Der Schlüssel für {zweck} fehlt',
-                          'das Werkzeug ist eingerichtet und kann nichts',
-                          f'sag „trag meinen {name.split("_")[0].title()}-Schlüssel ein"'))
-    return offen
+            open_items.append((f'The key for {purpose} is missing',
+                               'the tool is set up and can do nothing',
+                               f'say "add my {name.split("_")[0].title()} key"'))
+    return open_items
 
 
 def main():
@@ -98,20 +110,20 @@ def main():
         pass
 
     try:
-        offen = pruefe()
+        open_items = check()
     except Exception:
-        return 0                      # ein Hinweis blockiert nie eine Sitzung
+        return 0                      # a hint never blocks a session
 
-    if not offen:
-        return 0                      # fertig eingerichtet: schweigen
+    if not open_items:
+        return 0                      # fully set up: stay quiet
 
-    zeilen = '\n'.join(f'- **{was}** — {kostet}. {schritt}' for was, kostet, schritt in offen)
+    lines = '\n'.join(f'- **{what}** — {cost}. {step}' for what, cost, step in open_items)
     text = (
-        f"Beim Start geprueft: an diesem Workspace fehlen noch {len(offen)} Sachen.\n"
-        f"{zeilen}\n"
-        "Sag das dem Nutzer EINMAL, in seinen Worten, hoechstens zwei Saetze, nach "
-        "deiner eigentlichen Antwort und nie davor. Kein zweites Mal in dieser "
-        "Sitzung, und kein Draengen: er entscheidet, ob und wann."
+        f'Checked at startup: {len(open_items)} thing(s) are still missing in this '
+        f'workspace.\n{lines}\n'
+        'Tell the user ONCE, in your own words, at most two sentences, after your actual '
+        'answer and never before it. Not a second time in this session, and no pushing: '
+        'they decide whether and when.'
     )
     print(json.dumps({'hookSpecificOutput': {
         'hookEventName': 'SessionStart',

@@ -1,7 +1,11 @@
 # Onboarding: from a fresh clone to a working day
 
-This is the intended path through the system, written down so it can be judged before it is
-built. Steps marked **[gap]** do not exist yet — naming them is the point of this document.
+The path through the system, end to end. It was written before the last third of it existed,
+with every missing piece marked as a gap so the shape could be judged before it was built.
+**All of them are built now**, which is why this reads as a description rather than a plan.
+
+Where something still cannot be done, it says so in place — the Upwork message thread that
+cannot be exported, the profile fields the API refuses to write. Those are limits, not gaps.
 
 The system has one job: **turn Upwork from a place you check into a pipeline that runs.**
 Everything below serves that, and the pipeline only counts as finished when a won job has
@@ -16,8 +20,8 @@ needs to know about you is already on Upwork, in an account we are connected to 
 interview that asks for it anyway is slower, and it gets worse answers — people describe their
 own niche in generalities, while their last twelve contracts describe it exactly.
 
-Four steps, in this order, because each one needs what the previous produced. Today two of
-them fight over the first turn; fixing that sequence is the first build task.
+Four steps, in this order, because each one needs what the previous produced. The order is
+enforced by the session-start hooks rather than by you remembering it.
 
 ### What gets read, and what it produces
 
@@ -61,7 +65,9 @@ Not an interrogation. The system reads first, then puts what it found in front o
 Two questions instead of twelve, and both are ones only the person can answer. Everything else
 is confirmed or corrected, which takes seconds and produces better files than a blank form.
 
-**[gap]** None of this reading happens today. The setup skill asks for all of it.
+This is what `setup-freelancer-os` does in its Step 2, before a single question. When the
+connector never answers, it falls back to asking — and says so, rather than running the
+interview silently as though it were the plan.
 
 ### 1. The workspace is yours
 
@@ -75,8 +81,16 @@ writes it to `context/config.yaml`. **If the connector is missing, this is where
 because nothing downstream works without it and a half-connected setup is worse than an
 honest failure.
 
-**[gap]** Steps 1 and 2 both currently declare themselves the first-run skill and both fire
-automatically. That has to become one chain with a handover, not two skills racing.
+**The two do not race, and the handover between them is what makes it a chain.** While step 1
+is still pending, `check-setup.sh` has the floor and the second hook stays silent — two voices
+on one topic and the user stops hearing the second. Once `setup` has archived itself,
+`setup-check.py` takes over and names step 2 by the thing it is missing: no
+`context/expertise.md` means the screener, the proposals and the pitch pages have nothing to
+read.
+
+**Unless you said you do not work on Upwork.** With `upwork_enabled: false` in your config,
+this handover never fires and never nags. Optional means optional, and that includes the
+acquisition half of the system.
 
 ### 3. Your profile can carry an application
 

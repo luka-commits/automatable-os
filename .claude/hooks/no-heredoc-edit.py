@@ -41,33 +41,33 @@ def main() -> int:
     try:
         data = json.load(sys.stdin)
     except Exception:
-        return 0  # kein verwertbarer Input: nicht im Weg stehen
+        return 0  # nothing usable on stdin: do not get in the way
     if data.get('tool_name') != 'Bash':
         return 0
     cmd = (data.get('tool_input') or {}).get('command', '')
     if is_inplace_python_edit(cmd):
         sys.stderr.write(
-            "Blockiert: Datei-Editieren per python3-Heredoc (read + write in einem Aufruf).\n"
-            "Ein re.sub ohne Treffer ist ein stiller No-op — nutze stattdessen das Edit-Tool,\n"
-            "das in genau dem Fall fehlschlaegt. Echte Massen-Ersetzung: Skript in\n"
-            "reference/scripts/ mit `assert n == erwartet`.\n")
-        return 2  # 2 = blockieren, stderr geht an Claude
+            "Blocked: editing a file through a python3 heredoc (read + write in one call).\n"
+            "A re.sub that matches nothing is a silent no-op. Use the Edit tool instead,\n"
+            "which fails loudly in exactly that case. For a genuine mass replacement:\n"
+            "a script in reference/scripts/ with `assert n == expected`.\n")
+        return 2  # 2 = block; stderr goes to Claude
     return 0
 
 
 def demo() -> None:
-    """Selbstpruefung:  python3 .claude/hooks/no-heredoc-edit.py --demo"""
+    """Self-check:  python3 .claude/hooks/no-heredoc-edit.py --demo"""
     block = "cd ~/dev && python3 - <<PY\np=Path('x'); t=p.read_text(); p.write_text(t.replace('a','b'))\nPY"
     ok_assert = "python3 - <<PY\nt=p.read_text(); t=re.sub('a','b',t); assert n==3; p.write_text(t)\nPY"
     ok_read = "python3 -c \"print(open('x').read())\""
     ok_script = "python3 reference/scripts/render_dashboard.py --fast"
-    ok_newfile = "python3 - <<PY\nopen('neu.txt','w').write('hallo')\nPY"
-    assert is_inplace_python_edit(block), "read+write muss blocken"
-    assert not is_inplace_python_edit(ok_assert), "assert ist die Ausnahme"
-    assert not is_inplace_python_edit(ok_read), "nur lesen ist ok"
-    assert not is_inplace_python_edit(ok_script), "Skript-Aufruf ist ok"
-    assert not is_inplace_python_edit(ok_newfile), "nur neue Datei schreiben ist ok"
-    print("demo ok: 5 Faelle korrekt")
+    ok_newfile = "python3 - <<PY\nopen('new.txt','w').write('hello')\nPY"
+    assert is_inplace_python_edit(block), "read+write has to block"
+    assert not is_inplace_python_edit(ok_assert), "assert is the exception"
+    assert not is_inplace_python_edit(ok_read), "reading only is fine"
+    assert not is_inplace_python_edit(ok_script), "calling a script is fine"
+    assert not is_inplace_python_edit(ok_newfile), "writing a new file only is fine"
+    print("demo ok: 5 cases correct")
 
 
 if __name__ == '__main__':
