@@ -190,8 +190,21 @@ def main():
         jobs = load_jobs()
         job = find_job(jobs, args.from_job)
         name = args.name or job.get('title') or f'Upwork job {job["id"]}'
-        client = args.client or (job.get('client') or {}).get('name') if isinstance(
-            job.get('client'), dict) else args.client or job.get('client')
+        # Written out rather than as a conditional expression: the one-liner this
+        # replaces parsed as (A or B) if C else (D or E), so a dict client always
+        # produced None and the first task lost the client's name silently.
+        #
+        # And the name is often genuinely absent: what the screener stores under
+        # `client` is Upwork's stats block (rating, hires, posted), because the
+        # search response carries no client name at all. So --client is how you
+        # supply one, and no name is a normal outcome rather than a failure.
+        client = args.client
+        if not client:
+            raw = job.get('client')
+            if isinstance(raw, str):
+                client = raw
+            elif isinstance(raw, dict):
+                client = raw.get('name') or ''
         origin = f'Upwork job `{job["id"]}`'
         purpose = (job.get('description') or '').strip().split('\n')[0][:200] \
             or 'Filled in from the job posting — rewrite this in your own words.'
