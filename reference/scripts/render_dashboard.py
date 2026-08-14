@@ -69,6 +69,8 @@ TXT = {
         wd=['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'],
         mon=['', 'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli',
              'August', 'September', 'Oktober', 'November', 'Dezember'],
+        tab_projects='Projekte', no_projects='Noch keine Projekte in context/PROJECTS.md.',
+        blocked='Blockiert',
         cats={'deep-work': 'Deep Work', 'quick-win': 'Quick Win', 'comms': 'Kommunikation',
               'prep': 'Vorbereitung', 'admin': 'Admin'},
         datum='{wd}, {d}. {mon} {y}', offen='offen', wartet='wartet auf {}',
@@ -81,6 +83,8 @@ TXT = {
         wd=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
         mon=['', 'January', 'February', 'March', 'April', 'May', 'June', 'July',
              'August', 'September', 'October', 'November', 'December'],
+        tab_projects='Projects', no_projects='No projects in context/PROJECTS.md yet.',
+        blocked='Blocked',
         cats={'deep-work': 'Deep Work', 'quick-win': 'Quick Win', 'comms': 'Communication',
               'prep': 'Preparation', 'admin': 'Admin'},
         datum='{wd}, {d} {mon} {y}', offen='open', wartet='waiting on {}',
@@ -173,6 +177,62 @@ def parse_status():
         tasks.append(dict(text=text[:180], proj=proj or 'General', status=status,
                           stat_lbl=stat_lbl, due=due, cat=cat, note=note[:400]))
     return tasks
+
+
+def parse_projects():
+    """One card per `## ` block in PROJECTS.md.
+
+    Setup asks for the user's projects and writes them here. Without this the
+    system would ask and then never show them back, which is worse than not
+    asking. Blocks whose heading marks them as history or dormant are skipped —
+    the dashboard is for what is running.
+
+    Field labels are matched in both languages, because the workspace this file
+    is shared with writes German ones.
+    """
+    p = W / 'context/PROJECTS.md'
+    if not p.is_file():
+        return []
+    out = []
+    for blk in re.split(r'\n## ', p.read_text(encoding='utf-8'))[1:]:
+        name = blk.splitlines()[0].strip()
+        if name.lower().startswith(('history', 'historie', 'dormant', 'ruhend', 'archive')):
+            continue
+        if name.startswith('['):
+            continue                      # untouched template placeholder
+
+        def f(*keys):
+            m = re.search(rf'\*\*(?:{"|".join(keys)}):\*\*\s*(.+)', blk)
+            v = m.group(1).strip() if m else ''
+            return '' if v.startswith('[') else v      # unfilled placeholder
+
+        out.append(dict(name=name, purpose=f('Purpose', 'Zweck'), status=f('Status'),
+                        phase=f('Phase') or '', blocker=f('Blocker'),
+                        timeline=f('Timeline', 'Zeitachse')))
+    return out
+
+
+def render_projects():
+    projects = parse_projects()
+    if not projects:
+        return f'<p class="sub">{esc(TXT["no_projects"])}</p>'
+    cards = []
+    for p in projects:
+        meta = ' · '.join(x for x in (p['phase'], p['timeline']) if x)
+        parts = ['<div class="pr-card"><div class="pr-head">',
+                 f'<span class="pr-name">{esc(p["name"])}</span>']
+        if meta:
+            parts.append(f'<span class="pr-meta">{esc(meta)}</span>')
+        parts.append('</div>')
+        if p['purpose']:
+            parts.append(f'<p class="pr-purpose">{esc(p["purpose"])}</p>')
+        if p['status']:
+            parts.append(f'<p class="pr-status">{esc(p["status"])}</p>')
+        if p['blocker']:
+            parts.append(f'<div class="pr-blocker">{esc(TXT["blocked"])}: {esc(p["blocker"])}</div>')
+        parts.append('</div>')
+        cards.append(''.join(parts))
+    return f'<div class="pr-grid">{"".join(cards)}</div>'
 
 
 def render_tasks():
@@ -509,7 +569,9 @@ vals = {
     'DATE_LABEL': esc(date_str),
     'DATE_ISO': TODAY.isoformat(),
     'NAME_SUFFIX': esc(f' · {USER_NAME}' if USER_NAME and USER_NAME != 'Your Name' else ''),
+    'TAB_PROJECTS': esc(TXT['tab_projects']),
     'TASKS': render_tasks(),
+    'PROJECTS': render_projects(),
     'UPWORK_ITEMS': parse_upwork(),
 }
 for k, v in vals.items():

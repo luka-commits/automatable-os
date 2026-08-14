@@ -29,6 +29,18 @@
   .tabpane[hidden] { display: none; }
   .hint { font-size: 12px; color: var(--text-3); margin: 0 0 var(--gap); line-height: 1.5; }
   .sub { color: var(--text-3); font-size: 13px; }
+  /* Project cards. One per block in PROJECTS.md, and every line is optional —
+     a project with only a name still renders as a card rather than a gap. */
+  .pr-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .pr-card { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
+    background: var(--card); }
+  .pr-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 0 0 6px; }
+  .pr-name { font-weight: 600; font-size: 15px; }
+  .pr-meta { font-size: 12px; color: var(--text-2); }
+  .pr-purpose { margin: 0 0 6px; font-size: 13.5px; line-height: 1.5; }
+  .pr-status { margin: 0; font-size: 13px; color: var(--text-2); line-height: 1.5; }
+  .pr-blocker { margin-top: 9px; padding: 7px 10px; border-radius: 7px; font-size: 12.5px;
+    background: var(--red-soft, #FBE8E5); color: var(--red-deep, #911C13); }
   .pill { font: inherit; font-size: 12px; font-weight: 500; cursor: pointer;
     color: var(--text-2); background: var(--card); border: 1px solid var(--border);
     border-radius: 999px; padding: 4px 12px; }
@@ -145,6 +157,7 @@
 <div class="wrap">
   <nav class="tabs" id="tabs">
     <button class="tab" data-tab="today">{{TAB_TODAY}}</button>
+    <button class="tab" data-tab="projects">{{TAB_PROJECTS}}</button>
     <button class="tab" data-tab="upwork">{{TAB_UPWORK}}</button>
   </nav>
 
@@ -154,6 +167,11 @@
     {{TASKS}}
   </div><!-- /pane-today -->
 
+  <div class="tabpane" id="pane-projects" hidden>
+    <p class="hint">How each project stands, from <code>context/PROJECTS.md</code>. The open to-dos live on the Today tab; this is the state, not the work.</p>
+    {{PROJECTS}}
+  </div><!-- /pane-projects -->
+
   <div class="tabpane" id="pane-upwork" hidden>
     <p class="hint">Pipeline: Outreach → In contact → Offer sent → Won. Card/row buttons only copy a chat sentence — pasting it and sending it is what actually moves the job, or run <code>python3 reference/scripts/upwork_status.py set &lt;id&gt; &lt;status&gt;</code> yourself.</p>
     {{UPWORK_ITEMS}}
@@ -161,7 +179,7 @@
 </div>
 
 <script>
-  const panes = { today: document.getElementById('pane-today'), upwork: document.getElementById('pane-upwork') };
+  const panes = { today: document.getElementById('pane-today'), projects: document.getElementById('pane-projects'), upwork: document.getElementById('pane-upwork') };
   function showTab(name) {
     if (!panes[name]) name = 'today';
     Object.entries(panes).forEach(([k, p]) => p.hidden = k !== name);
