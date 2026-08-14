@@ -1,0 +1,28 @@
+# Your real, filled-in files — never commit these. Everyone gets the .example
+# versions and creates their own via the setup skill.
+context/config.yaml
+context/expertise.md
+context/experience.md
+context/testimonials.json
+context/STATUS.md
+context/.upwork_jobs.json
+context/today.html
+
+# Generated per-job artifacts (pitch pages, proposal drafts, the diagram library
+# cache) — yours, not the template's.
+jobs/
+.claude/skills/upwork-pitch-page/library/
+
+# Credentials, never
+.env
+.env.local
+credentials.env
+*.pem
+*.key
+
+# OS / editor noise
+.DS_Store
+*.log
+node_modules/
+__pycache__/
+*.pyc

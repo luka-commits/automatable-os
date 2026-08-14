@@ -1,0 +1,234 @@
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<style>
+  :root {
+    --bg: #F7F8F7; --card: #FFFFFF; --border: #E2E6E3; --border-strong: #C7CDC8;
+    --text: #16211C; --text-2: #3F4D47; --text-3: #7A857F;
+    --brand: #177B57; --brand-deep: #0B3F2D; --brand-soft: #E8F1ED;
+    --shadow-1: 0 1px 2px rgba(13, 31, 26, 0.04); --shadow-2: 0 4px 14px rgba(13, 31, 26, 0.08);
+    --gap: 14px; --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  a { color: var(--brand); text-decoration: none; font-weight: 500; }
+  a:hover { text-decoration: underline; }
+  code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 12px;
+    background: var(--bg); border-radius: 4px; padding: 1px 5px; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 20px 22px 60px; }
+  header.top { background: var(--card); border-bottom: 1px solid var(--border); padding: 16px 22px; }
+  header.top h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
+  header.top .sub { margin-top: 3px; font-size: 12.5px; color: var(--text-3); }
+  nav.tabs { display: flex; gap: 4px; margin: 18px 0 var(--gap); border-bottom: 1px solid var(--border); }
+  .tab { font: inherit; font-size: 13.5px; font-weight: 500; color: var(--text-3); background: none;
+    border: none; border-bottom: 2px solid transparent; cursor: pointer; padding: 9px 4px; margin-right: 18px; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--brand); border-bottom-color: var(--brand); font-weight: 600; }
+  .tabpane[hidden] { display: none; }
+  .hint { font-size: 12px; color: var(--text-3); margin: 0 0 var(--gap); line-height: 1.5; }
+  .sub { color: var(--text-3); font-size: 13px; }
+  .pill { font: inherit; font-size: 12px; font-weight: 500; cursor: pointer;
+    color: var(--text-2); background: var(--card); border: 1px solid var(--border);
+    border-radius: 999px; padding: 4px 12px; }
+  .pill:hover { border-color: var(--brand); }
+
+  /* Task list */
+  .task-list { list-style: none; margin: 0; padding: 0; background: var(--card);
+    border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-1); overflow: hidden; }
+  .task-list li { display: grid; grid-template-columns: 30px minmax(0,1fr) 140px 110px 100px 70px;
+    align-items: center; gap: 10px; padding: 10px 14px; border-top: 1px solid var(--border); font-size: 13px; }
+  .task-list li:first-child { border-top: none; }
+  .c-quad { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 20px;
+    border-radius: 5px; font-size: 10px; font-weight: 700; background: var(--bg); color: var(--text-3); }
+  .c-quad.q1 { background: color-mix(in srgb, #B0143C 14%, transparent); color: #B0143C; }
+  .c-quad.q2 { background: color-mix(in srgb, var(--brand) 16%, transparent); color: var(--brand-deep); }
+  .c-proj, .c-cat, .c-status, .c-due { font-size: 11.5px; color: var(--text-3); }
+  .t-note { grid-column: 2 / -1; font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+  @media (max-width: 720px) {
+    .task-list li { grid-template-columns: 24px 1fr; }
+    .c-proj, .c-cat, .c-status, .c-due { display: none; }
+  }
+
+  /* say-btn / apply-btn — every action is "copy a sentence for chat", the
+     dashboard itself never writes anything (see CLAUDE.md in this repo). */
+  .say-btn { font: inherit; font-size: 11.5px; font-weight: 500; cursor: pointer;
+    color: var(--brand-deep); background: var(--brand-soft); border: 1px solid transparent;
+    border-radius: 6px; padding: 3px 10px; }
+  .say-btn:hover { border-color: var(--brand); }
+  .say-btn.done { background: var(--bg); color: var(--text-3); }
+  .apply-btn { font: inherit; font-size: 11.5px; font-weight: 500; cursor: pointer;
+    color: var(--text-2); background: var(--card); border: 1px solid var(--border);
+    border-radius: 6px; padding: 3px 10px; }
+  .apply-btn:hover { border-color: var(--brand); color: var(--text); }
+
+  /* rt-table — generic table shell, shared by the Upwork list view */
+  .rt-table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-1); }
+  .rt-table th { text-align: left; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-3); padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .rt-table td { padding: 11px 14px; border-top: 1px solid var(--border); vertical-align: middle; }
+  .rt-td-name { display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; color: var(--text); }
+  .rt-td-title { display: flex; align-items: center; gap: 7px; }
+  .rt-td-desc { font-size: 11.5px; font-weight: 400; color: var(--text-3); }
+  @media (max-width: 720px) {
+    .rt-table, .rt-table thead, .rt-table tbody, .rt-table th, .rt-table td, .rt-table tr { display: block; }
+    .rt-table thead { display: none; }
+    .rt-table tr { border-top: 1px solid var(--border); padding: 10px 14px; }
+    .rt-table td { border-top: none; padding: 2px 0; }
+  }
+
+  /* Upwork tab: Stage-Board, 1:1 borrowed from the Automatable tracker's
+     PipelineBoard — columns per stage, one accent that deepens, a follow-up
+     chip on the card. */
+  .uw-viewbar { display: flex; gap: 6px; margin: 0 0 10px; }
+  .uw-viewpill.active { background: var(--brand-soft); color: var(--brand-deep); font-weight: 600;
+    border-color: color-mix(in srgb, var(--brand) 35%, transparent); }
+  .uw-filterbar { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; }
+  .uw-filterpill.active { background: var(--brand-soft); color: var(--brand-deep); font-weight: 600;
+    border-color: color-mix(in srgb, var(--brand) 35%, transparent); }
+  .uw-task-btn { color: var(--brand-deep); border-color: color-mix(in srgb, #B0143C 35%, transparent); }
+  .uw-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--gap); align-items: start; }
+  .uw-col { display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: var(--shadow-1); overflow: hidden; }
+  .uw-col-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+    padding: 11px 13px; border-top: 3px solid var(--border); border-bottom: 1px solid var(--border); }
+  .uw-col-title { font-size: 13.5px; font-weight: 700; letter-spacing: -.01em; }
+  .uw-col-hint { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .uw-col-count { flex: none; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums;
+    border-radius: 999px; padding: 2px 8px; }
+  .uw-col-body { list-style: none; margin: 0; padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+  .uw-empty { list-style: none; text-align: center; padding: 14px 0; font-size: 12px; color: var(--text-3); }
+  .uw-card { list-style: none; border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; background: var(--bg); }
+  .uw-card.due { background: color-mix(in srgb, #B0143C 7%, var(--bg));
+    border-color: color-mix(in srgb, #B0143C 30%, var(--border)); }
+  .uw-row.due { background: color-mix(in srgb, #B0143C 7%, transparent); }
+  .uw-card-top { display: flex; align-items: baseline; gap: 7px; }
+  .uw-card-title { font-size: 12.5px; font-weight: 600; line-height: 1.3; }
+  .uw-card-meta { margin-top: 3px; font-size: 11px; color: var(--text-3); }
+  .uw-card-rationale { margin-top: 4px; font-size: 11.5px; color: var(--text-2); line-height: 1.4; }
+  .uw-score { display: inline-flex; align-items: center; justify-content: center; min-width: 26px;
+    font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; border-radius: 6px;
+    padding: 1px 5px; color: var(--brand-deep); background: var(--brand-soft); }
+  .uw-score.strong { color: #fff; background: var(--brand); }
+  .uw-status { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--text-3); background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+    padding: 2px 6px; white-space: nowrap; }
+  .uw-status.notified { color: var(--brand-deep); border-color: var(--brand); }
+  .uw-due-badge { display: inline-block; margin-top: 3px; font-size: 10.5px; font-weight: 700; color: #B0143C; }
+  .uw-desc { margin-top: 4px; font-size: 11.5px; }
+  .uw-desc summary { cursor: pointer; color: var(--brand-deep); font-weight: 600; }
+  .uw-desc p { margin-top: 4px; color: var(--text-2); white-space: pre-wrap; }
+  .uw-budget { font-size: 12.5px; color: var(--text-2); max-width: 130px; line-height: 1.35; }
+  .uw-client { font-size: 11.5px; color: var(--text-3); }
+  .uw-ago { font-size: 10.5px; color: var(--text-3); font-weight: 400; white-space: nowrap; }
+  .uw-status-cell { white-space: nowrap; }
+  .uw-actions { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+  .uw-actions .say-btn, .uw-actions .apply-btn { padding: 2px 7px; font-size: 10.5px; }
+  .uw-funnel { display: flex; flex-direction: column; gap: 7px; margin: 0 0 4px; }
+  .uw-funnel-row { display: grid; grid-template-columns: 120px 1fr 32px 150px; align-items: center; gap: 10px; }
+  .uw-funnel-label { font-size: 12px; color: var(--text-2); font-weight: 500; }
+  .uw-funnel-track { height: 16px; border-radius: 5px; background: var(--bg); overflow: hidden; }
+  .uw-funnel-bar { display: block; height: 100%; border-radius: 5px; background: var(--brand); }
+  .uw-funnel-count { font-size: 13px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+  .uw-funnel-pct { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .uw-funnel-note { margin: 2px 0 14px; font-size: 10.5px; color: var(--text-3); }
+  @media (max-width: 640px) { .uw-funnel-row { grid-template-columns: 90px 1fr 28px; } .uw-funnel-pct { display: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>{{TITLE}}</h1>
+  <div class="sub">{{DATE_LABEL}}{{NAME_SUFFIX}}</div>
+</header>
+<div class="wrap">
+  <nav class="tabs" id="tabs">
+    <button class="tab" data-tab="today">{{TAB_TODAY}}</button>
+    <button class="tab" data-tab="upwork">{{TAB_UPWORK}}</button>
+  </nav>
+
+  <div class="tabpane" id="pane-today" hidden>
+    <p class="hint">This view is read-only. Every action runs through your Claude Code chat — buttons here just copy a ready sentence to paste. Tasks come from <code>context/STATUS.md</code>.</p>
+    <h2 style="font-size:15px;margin:0 0 8px;">{{TODOS_LABEL}}</h2>
+    {{TASKS}}
+  </div><!-- /pane-today -->
+
+  <div class="tabpane" id="pane-upwork" hidden>
+    <p class="hint">Pipeline: Outreach → In contact → Offer sent → Won. Card/row buttons only copy a chat sentence — pasting it and sending it is what actually moves the job, or run <code>python3 reference/scripts/upwork_status.py set &lt;id&gt; &lt;status&gt;</code> yourself.</p>
+    {{UPWORK_ITEMS}}
+  </div><!-- /pane-upwork -->
+</div>
+
+<script>
+  const panes = { today: document.getElementById('pane-today'), upwork: document.getElementById('pane-upwork') };
+  function showTab(name) {
+    if (!panes[name]) name = 'today';
+    Object.entries(panes).forEach(([k, p]) => p.hidden = k !== name);
+    document.querySelectorAll('#tabs .tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    sessionStorage.setItem('uwc-tab', name);
+  }
+  document.querySelectorAll('#tabs .tab').forEach(t => t.addEventListener('click', () => showTab(t.dataset.tab)));
+  showTab(location.hash ? location.hash.slice(1) : (sessionStorage.getItem('uwc-tab') || 'today'));
+
+  // Every action button just copies a sentence to the clipboard — this page
+  // changes nothing on its own, Claude Code does the actual work when you
+  // paste the sentence into chat.
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('.say-btn');
+    if (!b) return;
+    e.preventDefault();
+    const text = b.dataset.say || '';
+    const done = () => {
+      const before = b.textContent;
+      b.textContent = 'copied'; b.classList.add('done');
+      setTimeout(() => { b.textContent = before; b.classList.remove('done'); }, 1400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, () => fallback(text, done));
+    } else fallback(text, done);
+    function fallback(t, cb) {
+      const ta = document.createElement('textarea');
+      ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); cb(); } catch (err) {}
+      ta.remove();
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('.apply-btn');
+    if (!b) return;
+    e.preventDefault();
+    const url = b.dataset.url;
+    if (url && url !== '#') window.open(url, '_blank');
+  });
+
+  // Upwork: List/Pipeline/Stats view switcher, 1:1 borrowed from the
+  // Automatable tracker (there: List/Pipeline/Calendar). List stays default.
+  (function () {
+    const views = { list: document.querySelector('.uw-view-list'), board: document.querySelector('.uw-view-board'),
+                     stats: document.querySelector('.uw-view-stats') };
+    if (!views.list) return;
+    document.querySelectorAll('.uw-viewpill').forEach(btn => btn.addEventListener('click', () => {
+      const v = btn.dataset.uwview;
+      Object.entries(views).forEach(([k, el]) => { if (el) el.hidden = k !== v; });
+      document.querySelectorAll('.uw-viewpill').forEach(b => b.classList.toggle('active', b === btn));
+    }));
+
+    // Status/due filter, clientside only — hides rows via data-uwstatus/data-uwdue
+    // instead of re-rendering. Filter values are the same status values shown in
+    // the Status column, no separate grouping vocabulary.
+    const rows = document.querySelectorAll('.uw-view-list .uw-row');
+    document.querySelectorAll('.uw-filterpill').forEach(btn => btn.addEventListener('click', () => {
+      const f = btn.dataset.uwfilter;
+      rows.forEach(r => {
+        const show = f === 'all' ? true : f === 'due' ? r.dataset.uwdue === '1' : r.dataset.uwstatus === f;
+        r.style.display = show ? '' : 'none';
+      });
+      document.querySelectorAll('.uw-filterpill').forEach(b => b.classList.toggle('active', b === btn));
+    }));
+  })();
+</script>
+</body>
+</html>

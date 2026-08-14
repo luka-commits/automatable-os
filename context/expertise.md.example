@@ -1,0 +1,73 @@
+# Your Expertise — fill this in before running the screener
+
+This is what `upwork-screener` reads to know what "a good job" means for you. Copy this file to
+`context/expertise.md` and replace every `[PLACEHOLDER]` — nothing in it does anything until you
+do. No fixed length; a few honest sentences beat a padded list.
+
+## Search tracks
+
+Upwork's search is fuzzy, not exact-match — a narrow compound query (three niche words strung
+together) shrinks your results pool and lets good jobs slip past on wording you didn't
+anticipate. Broad, single/short words cast a wider net; the screener's *scoring* step, not the
+search, is what filters out the noise. So keep these short and generic, and let scoring do the
+real work.
+
+Two flavors, and a good list has both:
+
+**Tool-based** — the platform, tool, or category a client already knows they want (a tool you
+specialize in, or the service category you'd search for yourself).
+
+- `[PLACEHOLDER]`
+- `[PLACEHOLDER]`
+- `[PLACEHOLDER]`
+
+**Needs-based** — the *outcome* a client wants, without naming the mechanism. A client posting a
+plain "grow my revenue" or "need more leads" job rarely uses your service's name, but the work
+might be exactly what you'd pitch them anyway, and they may be happier getting that than what
+they literally asked for.
+
+- `[PLACEHOLDER]`
+- `[PLACEHOLDER]`
+
+Test each word once with a real search before trusting it. Casing can matter — a lowercase word
+has returned zero results on Upwork's search where the capitalized version returned a normal
+pool — and some broad words skew toward unrelated content (matching hobby/media content about a
+topic instead of businesses that need your service). Fix or drop a track here the moment you
+notice that; don't leave the screener to rediscover it every run.
+
+## Your niche / what you build
+
+`[PLACEHOLDER — free text.]` What do you actually build or deliver? Name the services, the tools
+you work in, the type of client you're good for. Be specific enough that "does this job overlap
+with two or more of these at once" is answerable — that overlap is what the screener rewards
+most when scoring niche fit.
+
+## What counts as a strong match
+
+`[PLACEHOLDER — free text.]` The concrete signals a posting shows when it's genuinely for you.
+Naming specific tools, problem types, and client types all help — the screener uses this section
+directly when scoring niche fit. (One pattern worth naming explicitly if it applies to you: if
+part of what you sell is automating something, a posting that describes a manual process done by
+hand — "I currently update this every week myself" — is itself a signal, even without the word
+"automation" anywhere in it.)
+
+## False-positive traps
+
+Things that use the right keywords but aren't actually what you want. Every entry should be
+something you've actually turned down or regretted taking — not a hypothetical. Two placeholders
+below show the shape; replace both with your own.
+
+- `[PLACEHOLDER trap #1]` — e.g. "*Off-page SEO / link building* — sounds relevant because the
+  posting says 'SEO' everywhere, but it's backlink/guest-post outreach, not the SEO work you
+  actually do."
+- `[PLACEHOLDER trap #2]` — e.g. "*Support/ops role dressed as a project* — a posting demanding a
+  fixed SLA or a daily case volume is an operations job wearing your niche's label, not a scoped
+  build."
+
+## Calibration anchors
+
+*(Leave empty for now.)* Once you've run the screener a few times and corrected a score or two —
+"that one shouldn't have scored that high," "you're underrating budget" — add a real example here
+with its title, why it scored what it did, and what the score should have been instead. The
+screener treats these as directional anchors, not a lookup table, and this section is meant to
+fill in naturally rather than be written up front.

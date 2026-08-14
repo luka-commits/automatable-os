@@ -1,0 +1,23 @@
+# Copy this file to context/config.yaml and fill it in — the setup skill does
+# this for you interactively, but you can also edit it by hand.
+#
+# Flat key: value pairs only (no nesting) — the dashboard renderer parses this
+# with a small hand-rolled reader, not a YAML library, to keep the repo
+# dependency-free.
+
+name: "Your Name"
+
+# "de" or "en" — controls the whole dashboard (labels, dates) AND the chat
+# sentences the "copy" buttons produce, since those get pasted into your own
+# Claude Code chat and should match the language you work in.
+language: "en"
+
+# Your Upwork account/org identifier, needed for the screener's find_jobs
+# calls. The setup skill fetches this for you automatically via the Upwork
+# MCP connection — you shouldn't need to find it yourself.
+upwork_org_uid: ""
+
+# Optional. Your own Slack user ID (for DM notifications on strong matches).
+# Leave empty to skip Slack entirely — the screener still logs every
+# candidate to the dashboard either way, Slack is just a push notification.
+slack_channel_id: ""

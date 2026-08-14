@@ -1,0 +1,27 @@
+# Status
+
+The single source of truth for open tasks — the Today tab renders exactly what's below, nothing
+is derived from anywhere else. Copy this file to `context/STATUS.md` (the setup skill also creates
+an empty one for you).
+
+## Tasks (open)
+
+### Upwork
+
+- [ ] **Fill in context/expertise.md** #admin
+  Nothing else runs well until this exists — search tracks and scoring both read it.
+- [ ] **Run the screener for the first time** #deep-work
+  Say "check upwork" once expertise.md is filled in.
+
+## Frisch erledigt
+
+<!-- Recently finished tasks land here, newest on top, capped at ~6. Not required for the
+     dashboard to work — the Today tab only reads "Tasks (open)" above. -->
+
+---
+
+**Task line format:** `- [ ] **Headline** (due DD.MM.) #category` — category is one of
+`deep-work` / `quick-win` / `comms` / `prep` / `admin`, and controls the urgent/important quadrant
+badge (`admin`/`prep`/`deep-work` count as important; a due date within 7 days counts as urgent).
+An optional indented line right below becomes the task's context note. A `### Heading` groups
+tasks under a project name.

@@ -1,0 +1,72 @@
+# Your Experience — used by upwork-pitch-page and upwork-proposal
+
+This is your own track record, in one place, so both skills draw on the same real facts instead
+of each inventing its own version. Copy this file to `context/experience.md` and replace every
+`[PLACEHOLDER]` — nothing in it does anything until you do. No fixed length; a few honest lines
+beat a padded section, and a section left empty renders an honest "not added yet" note wherever
+it's used rather than being silently skipped or filled with a guess.
+
+Two kinds of section here. Some are free text that `upwork-proposal` reads loosely, pulling
+whatever's relevant into a proposal. Others (marked below) have a small fixed shape, because
+`upwork-pitch-page` passes their lines straight through as `generate.py` flags — keep to the shape
+so nothing silently drops.
+
+## What you do
+
+`[PLACEHOLDER — free text.]` Your core skills, the tools/platforms you work in, the type of
+client and project you're good for. `upwork-proposal` draws on this to connect your background to
+a specific job without inventing anything.
+
+## Track record
+
+**Fixed shape:** one line per number, `value | label`. These become `upwork-pitch-page`'s
+`--stat` flags — the CV's headline numbers. Real, verifiable numbers only; an empty list here
+means the pitch page's background section shows an honest "not added yet" line instead of
+numbers that aren't true.
+
+- `[PLACEHOLDER]` — e.g. `$10K+ | Earned on Upwork`
+- `[PLACEHOLDER]` — e.g. `15 | Projects delivered`
+- `[PLACEHOLDER]` — e.g. `82% | Job Success Score`
+
+## What clients say
+
+**Fixed shape:** one short trait per line — real, client-sourced praise (Upwork's own "Insights
+from completed jobs" tags if you have them, or phrases you've genuinely heard repeated), not
+self-description. Becomes `--trait` flags.
+
+- `[PLACEHOLDER]` — e.g. `Collaborative`
+- `[PLACEHOLDER]` — e.g. `Clear Communicator`
+
+## Notable clients / past projects
+
+`[PLACEHOLDER — free text.]` Company or project names you can name publicly, plus an optional
+closing note about scale ("...plus 15+ smaller builds across GoHighLevel and n8n, from solo
+coaches to teams of 50"). Becomes `--client` (one per name) and `--client-note` (the closing
+clause).
+
+## Background
+
+**Fixed shape:** one line per item, `role | institution`. Employment and education both go here,
+most relevant first. Becomes `--background` flags.
+
+- `[PLACEHOLDER]` — e.g. `MBA, Marketing & AI | Your University`
+- `[PLACEHOLDER]` — e.g. `Sales & Marketing | Your Previous Company`
+
+## Languages
+
+`[PLACEHOLDER]` — e.g. `English (native), German (fluent), French (basic)`. One line, becomes
+`--languages`.
+
+## Portfolio links
+
+`[PLACEHOLDER — free text.]` Your Upwork profile URL (required by `upwork-pitch-page`'s
+`--profile-url`), plus anything optional: a YouTube channel or portfolio site (`--youtube-url`),
+your own site or a second product (`--site-url`), a public workspace with more diagrams you've
+mapped for other clients (`--proof-link-url`). Leave the optional ones out entirely if you don't
+have them — the pitch page omits or honestly placeholders whatever's missing rather than pointing
+at a broken or made-up link.
+
+## Tone & unique selling points
+
+`[PLACEHOLDER — free text.]` What makes you different, how you like to sound when pitching
+yourself. `upwork-proposal` uses this to keep the proposal's voice consistently yours across jobs.
