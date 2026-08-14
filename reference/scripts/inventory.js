@@ -200,9 +200,9 @@ function audit() {
   const findings = [];
 
   // dead reference: the routing table names a skill or CLI that is not here
-  // Plugin-Namen gehoeren dazu: die Routing-Tabelle nennt sie wie Skills (`| Signal | `ponytail` |`),
-  // aber ein Plugin bringt seine Skills unter eigenem Namensraum mit. Ohne diese Zeile meldet
-  // der Audit jedes geroutete Plugin als toten Verweis. Gefunden am 23.07.
+  // Plugin names belong in here: the routing table lists them like skills
+  // (`| Signal | `ponytail` |`), but a plugin brings its skills under its own namespace.
+  // Without this line the audit reports every routed plugin as a dead reference.
   const have = new Set([...skills().map((x) => x.name), ...KNOWN_CLIS.filter(installed),
                         ...plugins().filter((p) => p.status).map((p) => p.name)]);
   const named = new Set();
@@ -319,21 +319,21 @@ const machinePlugins = plugins();
 const pluginList = machinePlugins.length
   ? machinePlugins.map((p) => ({ name: p.name, status: p.status, purpose: T.pluginFrom(p.market, p.scope) }))
   : inv.plugins.map((x) => ({ name: x.name, status: x.status === true, purpose: x.purpose }));
-// nur die eingeschalteten zaehlen — ein abgeschaltetes Plugin erfuellt keinen Setup-Schritt
+// only the enabled ones count — a disabled plugin satisfies no setup step
 const pluginNames = new Set(machinePlugins.filter((p) => p.status).map((p) => norm0(p.name)));
-// Cloud-Routinen (claude.ai) sieht die Maschine nicht, die stehen in der config.
-// Lokale Jobs (launchd, crontab, Aufgabenplanung) sieht nur die Maschine. Erst beides
-// zusammen ist der ehrliche Stand — vorher meldete die Kachel 0, waehrend drei liefen.
+// Cloud routines (claude.ai) are invisible to the machine; those live in the config.
+// Local jobs (launchd, crontab, Task Scheduler) are visible only to the machine. Only both
+// together are the honest state — the tile used to report 0 while three were running.
 const routineList = [
   ...inv.routines,
   ...machineRoutines().filter((m) => !inv.routines.some((r) => norm0(r.name) === norm0(m.name))),
 ];
 const keyList = inv.accounts.map((a) => ({ ...a, on: hasKey(a.key_env) || a.status === true }));
 
-// Ein CLI ohne Bedienungsanleitung wird geraten statt benutzt: Claude kennt den Befehl,
-// aber nicht seine Unterbefehle, und faellt auf --help oder aufs Erfinden zurueck. Die
-// Zeile sagt deshalb, wie viele Skills zu diesem Werkzeug gehoeren — firecrawl hat einen,
-// gws sieben, und wo null steht, fehlt die Anleitung.
+// A CLI without a handbook gets guessed at rather than used: Claude knows the command but
+// not its subcommands, and falls back on --help or on inventing them. So the line says how
+// many skills belong to this tool — firecrawl has one, gws seven, and where it says zero,
+// the handbook is missing.
 const skillsPerCli = new Map();   // gefuellt weiter unten, sobald norm() existiert
 // firecrawl is a CLI, an API key and a family of skills. Technically three things, but for
 // the reader it is ONE service — so each entry points at its siblings instead of pretending
@@ -382,18 +382,18 @@ const keyOn = keyList.filter((a) => a.on).length;
 //
 // A slot is filled by ANY route: a connected MCP server or an installed CLI that does the
 // same job. The capability is what counts, never which pipe carries it.
-// `machine: true` bleibt draussen. Ein MCP-Server, den jemand privat auf seinem Rechner
-// registriert hat, ist NICHT die Verbindung, die das Setup herstellt — sonst haekelt ein
-// privater Gmail-Zugang das Postfach des Betriebs gruen ab, waehrend der Selbsttest zwei
-// Zeilen tiefer korrekt "noch nicht verbunden" meldet.
+// `machine: true` stays out. An MCP server somebody registered privately on their own
+// machine is NOT the connection the setup establishes — otherwise a personal Gmail account
+// ticks the business mailbox green while the self-test two lines below correctly reports
+// "not connected yet".
 const slotFilled = (re, clis) =>
   connectors.some((c) => c.status === true && !c.machine && (re.test(c.name) || re.test(c.purpose || '')))
   || clis.some((x) => cliNames.has(norm(x)));
 
-// "CRM: erreichbar" beantwortet die falsche Frage. Wer hinschaut, will wissen WELCHE
-// Verbindung den Platz fuellt — HubSpot oder GoHighLevel ist ein Unterschied, und ohne
-// den Namen kann niemand pruefen, ob da das Richtige haengt. Gibt die konkreten Namen
-// zurueck, die diesen Schritt erfuellen.
+// "CRM: reachable" answers the wrong question. Anyone looking wants to know WHICH
+// connection fills the slot — HubSpot or GoHighLevel is a difference, and without the name
+// nobody can check whether the right thing is attached. Returns the concrete names that
+// satisfy this step.
 const slotWho = (re, clis) => {
   const names = connectors
     .filter((c) => c.status === true && !c.machine && (re.test(c.name) || re.test(c.purpose || '')))
@@ -402,9 +402,8 @@ const slotWho = (re, clis) => {
   return [...new Set(names)].join(', ');
 };
 
-// Kommt die Abdeckung NUR ueber ein installiertes CLI, ist das ein schwaecherer Beleg:
-// ein Binary auf der Platte heisst nicht, dass es angemeldet ist. Der Schritt gilt als
-// erledigt, sagt aber dazu, worauf er sich stuetzt.
+// When the coverage comes ONLY from an installed CLI, that is weaker evidence: a binary on
+// disk does not mean it is signed in. The step counts as done, but says what it rests on.
 const cliOnly = (re, clis) =>
   clis.some((x) => cliNames.has(norm(x)))
   && !connectors.some((c) => c.status === true && !c.machine && (re.test(c.name) || re.test(c.purpose || '')));
@@ -417,15 +416,14 @@ const configClean = () => {
   } catch { return false; }
 };
 
-// Der kuratierte Satz. Er wird in Schritt 7.1 mitinstalliert, wie die CLIs — das ist der
-// Kern des Angebots: taeglich erscheinen neue Plugins, und die Auswahl zu treffen ist die
-// Arbeit, die dem Nutzer abgenommen wird. Wer sie hinterher selbst installieren muesste,
-// haette genau diese Arbeit wieder.
-// EINE Ausnahme in der Behandlung, nicht in der Auswahl: claude-mem bringt einen Daemon
-// (ein dauerhaft im Hintergrund laufendes Programm) und eine eigene Datenbank mit und
-// protokolliert gelesene Projektinhalte. Es wird mitinstalliert, aber der Setup-Schritt
-// sagt in einem Satz was es tut, damit ein Nein moeglich ist, solange es noch etwas
-// aendert. Details: reference/plugins.md.
+// The curated set, installed alongside the CLIs in step 7.1. That is the core of the
+// offer: new plugins appear daily, and making the selection is the work being taken off the
+// user. Anyone who had to install them afterwards would have exactly that work back.
+// ONE exception in handling, not in selection: claude-mem brings a daemon (a program that
+// keeps running in the background) and a database of its own, and logs the project content
+// it reads. It is installed with the rest, but the setup step says in one sentence what it
+// does, so that a no is still possible while a no still changes something.
+// Details: reference/plugins.md.
 const SETUP_PLUGINS = ['skill-creator', 'ponytail', 'claude-code-setup', 'code-review',
                        'claude-md-management', 'impeccable', 'superpowers', 'claude-mem'];
 const missingPlugins = SETUP_PLUGINS.filter((n) => !pluginNames.has(norm0(n)));
@@ -529,15 +527,14 @@ const out = [
           i === 0 && backedUp ? T.backedUp(backedUp) : '', r.url)).join('')
       : emptyRow(T.hRepos)),
 
-  // Die Zahl ist der EINGESCHALTETE Stand, nicht der installierte. Ein abgeschaltetes
-  // Plugin ist weiter gelistet und tut nichts; "14 installiert" waere deshalb eine Zahl,
-  // die beruhigt statt zu informieren. Gefunden am 23.07.: 14 gemeldet, 9 liefen.
+  // The number is the ENABLED state, not the installed one. A disabled plugin stays listed
+  // and does nothing; "14 installed" would therefore be a number that reassures instead of
+  // informing. Measured once: 14 reported, 9 running.
   kpi('plugins', 'i-puzzle', plugOn, T.plugins, T.active(plugOn, pluginList.length),
     state(plugOn, pluginList.length),
     pluginList.length
-      // Der Aus-Zustand schlaegt jeden anderen Hinweis. Vorher gewann das
-      // Skill-Abzeichen, wenn ein Plugin Skills mitbringt — ausgerechnet bei den
-      // groessten Plugins blieb "abgeschaltet" damit unsichtbar. 23.07.
+      // The off state beats every other badge. The skill badge used to win whenever a
+      // plugin brought skills with it — which hid "disabled" on precisely the largest ones.
       ? pluginList.map((x) => itemRow(x.name, x.purpose,
           x.status !== true ? T.switchedOff
             : (skillsPerPlugin.has(norm(x.name)) ? T.xrefSkills(skillsPerPlugin.get(norm(x.name))) : ''),

@@ -1,19 +1,19 @@
 #!/usr/bin/env node
-// Übernahme-Planer: schlägt vor, wie ein BESTEHENDER Ordner in die Workspace-Struktur
-// kommt — und fasst dabei nichts an. Das ist die erste von zwei Hälften; das Ausführen
-// ist ein eigener Schritt mit eigenem Rückweg.
+// Adoption planner: proposes how an EXISTING folder moves into the workspace structure,
+// and touches nothing while doing it. This is the first of two halves; carrying it out is
+// a separate step with its own way back.
 //
-//   node reference/scripts/adopt-plan.js --root <pfad> [--json]
+//   node reference/scripts/adopt-plan.js --root <path> [--json]
 //
-// Die Leitplanken, aus dem Pre-Mortem abgeleitet (was schiefgeht, geht SO schief):
-//  1. Nichts wird geraten. Was nicht sicher zuzuordnen ist, kommt auf die Fragen-Liste.
-//  2. Eine bestehende CLAUDE.md wird NIE überschrieben, sie wird zusammengeführt.
-//  3. Verschieben bricht Verweise. Jeder Vorschlag prüft, ob Scripts, Symlinks oder
-//     Dokumente auf den Pfad zeigen — genau daran ist am 22.07. der Morning-Digest gestorben.
-//  4. Ein Ordner, der schon am richtigen Platz ist, taucht als "fine" auf, nicht als Arbeit.
+// The guardrails, derived from a pre-mortem (what goes wrong goes wrong THIS way):
+//  1. Nothing is guessed. Anything that cannot be placed confidently goes on the questions list.
+//  2. An existing CLAUDE.md is NEVER overwritten, it is merged.
+//  3. Moving breaks references. Every proposal checks whether scripts, symlinks or
+//     documents point at the path — that is exactly how a morning digest once died.
+//  4. A folder already in the right place shows up as "fine", not as work.
 //
-// ponytail: reine Analyse, kein Modell, keine Schreibvorgänge. Das Urteil über die
-// Fragen-Liste macht der /adopt-Skill.
+// Pure analysis, no model, no writes. The judgement on the questions list is the
+// /adopt skill's job.
 
 const fs = require('fs');
 const path = require('path');
@@ -23,8 +23,8 @@ const args = process.argv.slice(2);
 const argOf = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : null; };
 const ROOT = path.resolve(argOf('--root') || process.cwd());
 
-// Die Zielstruktur. Bewusst als Beschreibung, nicht als Prüfliste: ein Ordner muss nicht
-// so heißen, er muss diese Rolle erfüllen.
+// The target structure. Deliberately a description rather than a checklist: a folder does
+// not have to carry this name, it has to fill this role.
 const TARGET = {
   context: 'State: what currently holds — projects, tasks, history',
   projects: 'One folder per project, holding inputs/ work/ outputs/ and code/ where needed',
@@ -56,7 +56,7 @@ function topLevel() {
   });
 }
 
-// Zählt, wie viel Inhalt in einem Ordner steckt — ein leerer Ordner ist keine Arbeit.
+// Counts how much content a folder holds — an empty folder is not work.
 function weigh(dir, depth = 3) {
   let files = 0, docs = 0, media = 0;
   const walk = (d, lvl) => {
@@ -75,13 +75,13 @@ function weigh(dir, depth = 3) {
   return { files, docs, media };
 }
 
-// Leitplanke 3: Wer zeigt auf diesen Pfad? Verschieben ohne das zu wissen ist fahrlässig.
-// EIN Durchlauf über die relevanten Textdateien, nicht einer je Eintrag — sonst dauert der
-// Plan auf einem gewachsenen Ordner Minuten und wird nie benutzt.
-// In Node gehen statt ueber `find`: das POSIX-`find` mit `\( -name ... \)` und `head`
-// existiert auf Windows nicht. Vorher fiel der Aufruf dort still in den catch, `files`
-// blieb leer, und der Plan behauptete fuer JEDEN Ordner "niemand verweist darauf" —
-// also ausgerechnet die Pruefung, die den Umbau absichern soll, sagte immer Entwarnung.
+// Guardrail 3: who points at this path? Moving without knowing that is reckless.
+// ONE pass over the relevant text files, not one per entry — otherwise the plan takes
+// minutes on a folder that has grown, and then nobody runs it.
+// Done in Node rather than through `find`: POSIX `find` with `\( -name ... \)` and `head`
+// does not exist on Windows. It used to fall silently into the catch there, `files` stayed
+// empty, and the plan claimed "nothing references this" for EVERY folder — so the very
+// check meant to make the rebuild safe always said all clear.
 const REF_EXT = new Set(['.sh', '.plist', '.js', '.ts', '.py', '.json', '.yaml', '.yml', '.md']);
 const REF_SKIP = new Set(['node_modules', '.git', '.venv', 'dist', 'build']);
 const REF_INDEX = (() => {
@@ -115,10 +115,10 @@ function referrers(name) {
     if (t.includes(name + '/') || t.includes('/' + name)) inside.push(f.replace(/^\.\//, ''));
     if (inside.length >= 6) break;
   }
-  // Verweise von ausserhalb wiegen am schwersten: die brechen still.
-  // `checked: false` heisst "hier konnte niemand nachsehen" und ist ausdruecklich NICHT
-  // dasselbe wie "es gibt keine". Auf Windows liegen geplante Jobs im Task Scheduler,
-  // den dieses Skript nicht liest — dort muss der Plan das sagen statt Entwarnung zu geben.
+  // References from outside weigh most: those break silently.
+  // `checked: false` means "nobody could look here" and is explicitly NOT the same as
+  // "there are none". On Windows, scheduled jobs live in Task Scheduler, which this script
+  // does not read — there the plan has to say so rather than give an all clear.
   const outside = [];
   let checked = false;
   const la = path.join(require('os').homedir(), 'Library', 'LaunchAgents');
@@ -135,18 +135,18 @@ function referrers(name) {
   return { inside, outside, outsideChecked: checked };
 }
 
-// ---------------------------------------------------------------- Innerhalb der Projekte
-// Ein Ordner, dessen Wurzel schon stimmt, ist NICHT automatisch uebernommen: die
-// Abweichung sitzt dann eine Ebene tiefer. Am 22.07. im ersten echten Lauf aufgefallen —
-// der Plan meldete "11 fine schon, 0 Vorschlaege", waehrend elf von sechzehn Projekten
-// `docs/` statt `work/` fuehrten. Blind fuer genau den Fall, fuer den man ihn braucht.
-// Bewusst nur SICHTBAR machen, nicht vorschlagen: wie ein gewachsener Projektordner
-// heisst, weiss der Nutzer, nicht dieses Script.
-// Misst ein einzelnes Projekt. Keine Bewertung, nur Zahlen — das Urteil macht der Skill.
-// Eine Konfliktkopie ist NICHT "Name enthaelt 2". Sonst faellt "Seedance 2.0" darunter,
-// ein Produktname, und am 22.07. ist genau das passiert: er wurde als Duplikat einsortiert.
-// Der Beweis ist die Nachbardatei: "x 2.md" ist nur dann eine Kopie, wenn "x.md" daneben
-// liegt. Alles andere ist ein Name, der zufaellig eine Zahl enthaelt.
+// ------------------------------------------------------------------ Inside the projects
+// A folder whose root is already correct is NOT automatically adopted: the deviation then
+// sits one level down. Found on the first real run — the plan reported "11 already fine,
+// 0 suggestions" while eleven of sixteen projects used `docs/` instead of `work/`. Blind
+// to exactly the case it exists for.
+// Deliberately only made VISIBLE, never proposed: what a grown project folder is called is
+// something the user knows and this script does not.
+// Measures a single project. No assessment, only numbers — the judgement is the skill's.
+// A conflict copy is NOT "the name contains 2". Otherwise "Seedance 2.0" qualifies, which
+// is a product name, and that is exactly what once happened: it got filed as a duplicate.
+// The proof is the neighbouring file: "x 2.md" is a copy only when "x.md" sits next to it.
+// Anything else is a name that happens to contain a number.
 const VERSIONSSPUR = /( final| v\d| kopie| copy|\(\d\))\.[a-z0-9]+$/i;
 const SYNC_KOPIE = / 2\.[a-z0-9]+$/i;
 function istKonfliktkopie(dir, name) {
@@ -198,9 +198,9 @@ function insideProjects() {
       if (!isDir(path.join(dir, 'work'))) out.ohneWork++;
       if (!isDir(path.join(dir, 'inputs'))) out.ohneInputs++;
 
-      // Drei Fakten je Projekt, damit der Skill fragen kann statt zu raten:
-      // wann zuletzt etwas passiert ist, was lose herumliegt, und ob es Versionsspuren
-      // gibt ("angebot final v2"). Bewertet wird hier nichts — nur gemessen.
+      // Three facts per project, so the skill can ask instead of guess: when something
+      // last happened, what is lying around loose, and whether there are version markers
+      // ("quote final v2"). Nothing is assessed here, only measured.
       const st = scanProject(dir);
       if (st.ruhtTage !== null && st.ruhtTage > 90) out.ruhend.push({ label, tage: st.ruhtTage });
       if (st.lose > 0) out.lose.push({ label, n: st.lose });
@@ -209,9 +209,9 @@ function insideProjects() {
       try { subs = fs.readdirSync(dir, { withFileTypes: true }); } catch { continue; }
       for (const sd of subs) {
         if (!sd.isDirectory() || sd.name.startsWith('.') || KNOWN_SUB.has(sd.name)) continue;
-        // Ein Unterordner mit eigenem .git ist ein fremdes Repo — Kundencode, ein Produkt,
-        // ein geklonter Fremdstand. Der wird NIE als Strukturabweichung gemeldet und nie
-        // angefasst: er hat eine eigene Historie und oft einen anderen Eigentuemer.
+        // A subfolder with its own .git is someone else's repo — client code, a product,
+        // a cloned third-party checkout. It is NEVER reported as a structural deviation and
+        // never touched: it has its own history and often a different owner.
         if (hasGit(path.join(dir, sd.name))) { out.eigeneRepos.push(label + '/' + sd.name); continue; }
         if (!out.fremdeOrdner.has(sd.name)) out.fremdeOrdner.set(sd.name, []);
         out.fremdeOrdner.get(sd.name).push(label);
@@ -221,20 +221,20 @@ function insideProjects() {
   return out;
 }
 
-// ---------------------------------------------------------- inputs / work / outputs
-// Trennt in einem bestehenden work/ (oder docs/), was ERHALTEN wurde von dem, was der
-// Nutzer selbst gemacht hat. Am 22.07. an echten Daten entwickelt, drei Anlaeufe:
+// ------------------------------------------------------------ inputs / work / outputs
+// Inside an existing work/ (or docs/), separates what was RECEIVED from what the user made
+// themselves. Developed against real data, in three attempts:
 //
-//   1. Zeitstempel ("nie bearbeitet = erhalten") — TOT. Ein einziger Ordner-Umzug setzt
-//      Erstell- und Aenderungszeit gleich, danach sieht alles unbearbeitet aus.
-//   2. git-Historie ("einmal hinzugefuegt = erhalten") — TOT. Struktur-Commits fassen
-//      alle Dateien gleichzeitig an, die Zahl ist danach fuer jede Datei dieselbe.
-//   3. Format + Name, geurteilt auf der ERSTEN Ebene unter work/ — traegt.
+//   1. Timestamps ("never edited = received") — DEAD. A single folder move sets creation
+//      and modification time equal, after which everything looks untouched.
+//   2. git history ("added once = received") — DEAD. Structural commits touch every file
+//      at the same time, so the number is identical for every file afterwards.
+//   3. Format + name, judged at the FIRST level under work/ — this one holds.
 //
-// Die Ebene ist der eigentliche Trick. Pro Datei entstehen Hunderte Fragen; pro Blatt-
-// Ordner immer noch dutzende und lauter Unsinn (jede fremde CSS-Datei einer geklonten
-// Website galt als "written by hand"). Ein Mensch denkt in der ersten Ebene: "der
-// website-Ordner ist eine Kopie, ernaehrung ist ein Vorhaben". Genau da wird geurteilt.
+// The level is the actual trick. Per file you get hundreds of questions; per leaf folder
+// still dozens and plenty of nonsense (every foreign CSS file of a cloned website counted
+// as "written by hand"). A person thinks at the first level: "the website folder is a copy,
+// nutrition is a project". That is where the judgement belongs.
 const ERH_EXT = new Set(['.pdf','.docx','.doc','.xlsx','.xls','.pptx','.ppt','.vtt','.m4a','.mp3','.wav','.heic','.zip','.eml','.msg']);
 const ERH_NAME = /^(original|scan|img[_-]?\d|dsc\d|foto|photo|whatsapp|screenshot|bildschirmfoto)/i;
 const EIG_EXT = new Set(['.md','.html','.css','.js','.py','.yaml','.yml','.json','.txt','.sh','.ts']);
@@ -293,26 +293,25 @@ function provenance(workDir) {
 function classify(e) {
   if (JUNK.test(e.name)) return { verdict: 'ignorieren', why: 'generated, not written' };
 
-  // Ein Symlink ins Leere ist kein raetselhafter Eintrag, sondern ein bekannter Defekt.
-  // Vorher landete er unter "Zweck nicht erkennbar" — dieselbe Datei, die workspace-audit.js
-  // korrekt als Fehler meldet. Zwei Skripte desselben Pakets duerfen nicht verschieden urteilen.
+  // A symlink into nothing is not a puzzling entry, it is a known defect. It used to land
+  // under "purpose not recognisable" — the same file that workspace-audit.js correctly
+  // reports as broken. Two scripts from one package must not judge it differently.
   if (e.link && !fs.existsSync(e.full)) {
     return { verdict: 'question', target: null,
       why: 'Dead link: the target does not exist (any more). Decide before the move whether it can go or has to be repaired.' };
   }
 
-  // Buchhaltung bleibt liegen, immer. Dieses System haelt Arbeitsstand, es ist keine
-  // Ablage fuer Rechnungen — dort haengen Aufbewahrungsfristen und der Zugriff des
-  // Steuerberaters dran. Kein Ziel vorzuschlagen ist hier die richtige Antwort, nicht
-  // eine fehlende. Siehe WHAT-THIS-SYSTEM-DOES.md.
+  // Accounting stays put, always. This system holds work in progress, it is not a store
+  // for invoices — those carry retention periods and an accountant's access. Proposing no
+  // destination is the right answer here, not a missing one. See WHAT-THIS-SYSTEM-DOES.md.
   if (e.dir && /^(rechnung|buchhalt|invoic|bookkeep|accounting|finanz|belege|steuer|datev|lexoffice)/i.test(e.name)) {
     return { verdict: 'fine', target: e.name,
       why: 'Accounting. Stays where it is: this system holds work in progress, not invoices.' };
   }
 
-  // Maschinerie bleibt liegen. Alles mit Punkt am Anfang und die bekannten Konfig-Dateien
-  // sind Werkzeug, nicht Inhalt — sie zu verschieben bricht das, was den Ordner bedient.
-  // Die Regel ist absichtlich breit: lieber etwas liegen lassen als etwas kaputtziehen.
+  // Machinery stays put. Everything starting with a dot, and the known config files, are
+  // tooling rather than content — moving them breaks whatever operates the folder.
+  // The rule is deliberately broad: better to leave something than to pull something apart.
   const CONFIG = /^(package(-lock)?\.json|pnpm-lock\.yaml|yarn\.lock|skills-lock\.json|Makefile|\.?env(\..+)?|tsconfig\.json|requirements\.txt|pyproject\.toml)$/i;
   if (e.name.startsWith('.') || CONFIG.test(e.name)) {
     return { verdict: 'fine', target: e.name,
@@ -321,10 +320,9 @@ function classify(e) {
 
   // Schon am Platz?
   if (e.dir && TARGET[e.name]) return { verdict: 'fine', target: e.name, why: TARGET[e.name] };
-  // Ein Symlink auf eine Datei, die es hier schon gibt, ist ein Zweitname, kein zweiter
-  // Inhalt. AGENT.md -> CLAUDE.md ist der Normalfall (andere Werkzeuge lesen den anderen
-  // Namen). Ihn zum Zusammenfuehren vorzuschlagen hiesse, eine Datei in sich selbst zu
-  // mergen — am 22.07. im ersten echten Lauf aufgefallen.
+  // A symlink to a file that already exists here is a second name, not second content.
+  // AGENT.md -> CLAUDE.md is the normal case (other tools read the other name). Proposing
+  // it for merging would mean merging a file into itself — found on the first real run.
   if (e.link && /^(CLAUDE|AGENTS?|README)\.md$/i.test(e.name)) {
     let target = null;
     try { target = path.relative(ROOT, fs.realpathSync(e.full)); } catch {}
@@ -347,7 +345,7 @@ function classify(e) {
       why: 'Looks like code (package.json or pyproject.toml) but has no git. Check it is backed up before moving it.' };
   }
 
-  // Dokumente und Material
+  // Documents and material
   if (!e.dir) {
     if (STATE_DOC.test(e.name) && /\.md$/i.test(e.name)) {
       return { verdict: 'suggestion', target: `context/${e.name}`,
@@ -364,7 +362,7 @@ function classify(e) {
     return { verdict: 'question', target: null, why: 'File in the root, purpose not recognisable.' };
   }
 
-  // Verbleibende Ordner: nach Inhalt entscheiden, nicht nach Namen
+  // Remaining folders: decide by content, not by name
   const w = weigh(e.full);
   if (w.files === 0) return { verdict: 'question', target: null, why: 'Folder is empty. Remove it, or is it reserved for something?' };
   if (w.docs >= w.files * 0.6) {
@@ -448,7 +446,7 @@ if (args.includes('--json')) {
     for (const p of groups.question) L(`  ${p.name}  —  ${p.why}`);
     L('');
   }
-  // Herkunfts-Trennung: nur auf ausdrueckliche Anfrage, sie kostet einen Durchlauf je Projekt.
+  // Provenance split: only on explicit request, it costs one pass per project.
   const hp = argOf('--provenance');
   if (hp) {
     const wd = path.resolve(ROOT, hp);

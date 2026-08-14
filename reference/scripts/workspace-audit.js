@@ -1,18 +1,18 @@
 #!/usr/bin/env node
-// Workspace-Audit: beurteilt einen Ordner als Arbeitssystem, nicht als Dateihaufen.
+// Workspace audit: judges a folder as a working system, not as a pile of files.
 //
-//   node reference/scripts/workspace-audit.js [--root <pfad>] [--json] [--render] [--selftest]
+//   node reference/scripts/workspace-audit.js [--root <path>] [--json] [--render] [--selftest]
 //
-// Misst zehn Dimensionen in drei Gruppen. Die Kriterien prüfen EIGENSCHAFTEN, nie
-// Konventionen: nie "gibt es einen context-Ordner", sondern "gibt es genau einen
-// erkennbaren Ort für Zustand, und ist der frisch". Nur so läuft es auf fremden Ordnern.
+// Measures ten dimensions in three groups. The criteria test PROPERTIES, never
+// conventions: never "is there a context folder", but "is there exactly one recognisable
+// place for state, and is it fresh". That is the only way it runs on someone else's folder.
 //
 // Finding discipline, inherited from Anthropic's claude-code-security-review:
-// jeder Befund traegt severity UND confidence, unter 0.7 wird gar nicht gemeldet, und
-// lieber ein theoretisches Problem übersehen als den Bericht mit Rauschen fluten.
+// every finding carries severity AND confidence, anything under 0.7 is not reported at all,
+// and it is better to miss a theoretical problem than to flood the report with noise.
 //
-// ponytail: alles Mechanische, kein Modell. Das Urteil (Widersprüche, Angemessenheit,
-// Empfehlungen) macht der /audit-Skill auf Basis dieser JSON.
+// Everything mechanical, no model. The judgement (contradictions, appropriateness,
+// recommendations) is made by the /audit skill on the basis of this JSON.
 
 const fs = require('fs');
 const path = require('path');
@@ -26,11 +26,11 @@ const L = require('./lib-workspace.js')(ROOT);
 const { esc, norm, skills, plugins, projectRepos, originUrl, installed, mcpServers,
         readInventory, hasKey, KNOWN_CLIS, WORK_CLIS } = L;
 
-// Diese Daten beschreiben die MASCHINE, nicht den geprueften Ordner. Laeuft das Audit
-// mit --root auf einen fremden Ordner, gehoeren sie nicht in den Bericht: am 22.07. stand
-// im Audit eines Sandkastens "104 Skills, 7 MCP, 46 Jobs" samt einem Job-Namen mit
-// Kundenbezug — also der Rechner des Pruefers in einem Bericht ueber jemand anderen.
-// Auf dem eigenen Workspace bleibt alles wie gehabt.
+// This data describes the MACHINE, not the folder being audited. When the audit runs with
+// --root against someone else's folder it does not belong in the report: an audit of a
+// sandbox once carried "104 skills, 7 MCP, 46 jobs" plus a job name identifying a client —
+// the auditor's own machine, in a report about somebody else.
+// On your own workspace nothing changes.
 const FOREIGN_ROOT = ROOT !== path.resolve(process.cwd());
 
 const DAYS = 90;
@@ -41,9 +41,9 @@ const ARCHIVE = /(^|\/)(_?archiv[e]?|_archive|old|alt|deprecated|skills-(depreca
 
 // ---------------------------------------------------------------- Dateien einlesen
 
-// Ein verschachteltes Repo ist ein FREMDER Workspace mit eigener Historie und eigener
-// Doku. Wer es mitzählt, misst nicht diesen Ordner. Dasselbe gilt für eingekaufte
-// Skills und Plugins: die bringen ihre Doku selbst mit.
+// A nested repo is SOMEONE ELSE'S workspace, with its own history and its own docs.
+// Counting it means not measuring this folder. The same goes for skills and plugins that
+// came from elsewhere: they bring their own documentation.
 const NESTED_REPOS = [];
 function isNestedRepo(dir) {
   if (path.resolve(dir) === ROOT) return false;
@@ -76,14 +76,14 @@ function walk(dir, depth = 6, acc = []) {
 }
 
 const FILES = walk(ROOT);
-// Dokumente, die über den Skill-Mechanismus gefunden werden, brauchen keinen Link aus
-// der CLAUDE.md — sie sind nicht verwaist, sie werden anders entdeckt.
+// Documents found through the skill mechanism need no link from CLAUDE.md — they are not
+// orphaned, they are discovered a different way.
 const SELF_DISCOVERED = /(^|\/)\.claude(\/|$)/;
 const DOCS = FILES.filter((f) => !f.dir && f.ext === '.md' && !f.symlink);
 const OWN_DOCS = DOCS.filter((f) => !SELF_DISCOVERED.test('/' + f.rel));
-// Dokumentation gegen Material: was tief im Projektbaum liegt, ist Arbeitsmaterial
-// (Eingänge, Arbeitsstaende, Ergebnisse) und muss von nirgends verlinkt sein. Nur was
-// oben liegt oder sich README/CLAUDE nennt, ist Wegweiser und gehört erreichbar.
+// Documentation versus material: anything deep in the project tree is working material
+// (inputs, work in progress, results) and needs no link from anywhere. Only what sits near
+// the top, or calls itself README/CLAUDE, is a signpost and has to be reachable.
 const isDoc = (rel) => {
   const base = path.basename(rel);
   if (/\d{4}-\d{2}-\d{2}/.test(base)) return false;              // datierte Artefakte
@@ -94,9 +94,9 @@ const isDoc = (rel) => {
 const GUIDE_DOCS = OWN_DOCS.filter((f) => isDoc(f.rel));
 const read = (rel) => { try { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); } catch { return ''; } };
 
-// Einstiegspunkte: was eine frische Session ohnehin laedt.
-// Nach echtem Ziel entdoppeln: zeigt AGENT.md als Symlink auf CLAUDE.md, ist es EINE
-// Datei und darf nicht zweimal als Session-Kosten zaehlen.
+// Entry points: what a fresh session loads anyway.
+// Deduplicated by real target: if AGENT.md is a symlink to CLAUDE.md it is ONE file and
+// must not count twice towards the session cost.
 const ENTRIES = (() => {
   const seenReal = new Set(); const out = [];
   for (const f of ['CLAUDE.md', 'AGENTS.md', 'AGENT.md', 'README.md']) {
@@ -113,10 +113,10 @@ const GLOBAL_MD = (() => { try { return fs.readFileSync(path.join(os.homedir(), 
 const ENTRY_TEXT = ENTRIES.map(read).join('\n');
 const ALL_INSTRUCTIONS = ENTRY_TEXT + '\n' + GLOBAL_MD;
 
-// ---------------------------------------------------------------- Nutzung aus den Session-Logs
+// ------------------------------------------------------------------ Usage from the session logs
 
-// Der einzige Weg, "echte Fähigkeit" von "toter Kontext" zu unterscheiden. Wir zählen
-// INVERTIERT (pro bekanntem Namen suchen) — sonst gewinnt Shell-Rauschen wie `do` oder `}`.
+// The only way to tell "a real capability" from "dead context". Counted INVERTED (search
+// per known name) — otherwise shell noise like `do` or `}` wins.
 function readUsage() {
   const slug = ROOT.replace(/\//g, '-');
   const dir = path.join(os.homedir(), '.claude', 'projects', slug);
@@ -150,7 +150,7 @@ function readUsage() {
       }
     }
   }
-  // Binaries invertiert zählen: nur bekannte Namen, kein Shell-Rauschen
+  // Count binaries inverted: known names only, no shell noise
   const known = new Set([...KNOWN_CLIS, ...readInventory().clis.map((c) => c.name)]);
   for (const cmd of out.commands) {
     const seen = new Set();
@@ -165,8 +165,8 @@ const USAGE = readUsage();
 
 // ---------------------------------------------------------------- Profil
 
-// Bewusst nachsichtig geparst: `- schlüssel: wert` oder `schlüssel: wert`, Listen mit
-// Einrückung. Fehlt die Datei, gilt jeder Slot als "nuetzlich" und der Bericht sagt das.
+// Deliberately forgiving parsing: `- key: value` or `key: value`, lists with indentation.
+// If the file is missing, every slot counts as "useful" and the report says so.
 function readProfile() {
   const raw = read('context/profile.md');
   if (!raw.trim()) return { present: false, tools: [], painpoints: [], team: null, kind: null, channels: [] };
@@ -203,7 +203,7 @@ const PROFILE = readProfile();
 // ---------------------------------------------------------------- Befunde
 
 const F = [];
-// severity: high | medium | low   ·   confidence: 0..1, unter 0.7 wird verworfen
+// severity: high | medium | low   ·   confidence: 0..1, anything under 0.7 is discarded
 const finding = (dim, severity, confidence, what, why, fix, evidence) =>
   ({ dim, severity, confidence, what, why, fix, evidence: evidence || null });
 
@@ -222,12 +222,12 @@ const worst = (findings, base) => {
 
 (function coverage() {
   const inv = readInventory();
-  // Auf einem fremden Ordner zaehlen nur dessen eigene Skills. Die globalen liegen unter
-  // ~/.claude/skills und gehoeren dem Pruefer, nicht dem Geprueften — sonst meldet ein
-  // Kundenbericht "104 Skills", von denen der Kunde keinen einzigen hat.
+  // On someone else's folder only its own skills count. The global ones live under
+  // ~/.claude/skills and belong to the auditor, not the audited — otherwise a client report
+  // claims "104 skills", of which the client has not one.
   const skillList = FOREIGN_ROOT ? skills().filter((s) => s.scope === 'workspace') : skills();
   const cliNames = new Set(KNOWN_CLIS.filter(installed).map(norm));
-  // Dasselbe fuer die MCP-Server: `claude mcp list` beschreibt die Maschine, nicht den Ordner.
+  // Same for the MCP servers: `claude mcp list` describes the machine, not the folder.
   const servers = FOREIGN_ROOT ? [] : mcpServers();
   const mentions = (n) => new RegExp(`\\b${String(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(ALL_INSTRUCTIONS);
   const findings = [];
@@ -300,9 +300,9 @@ const worst = (findings, base) => {
 
 // =========================================================== 2. Automationsgrad
 
-// Geplante Jobs auf Betriebssystem-Ebene. Der Befund vom 22.07. war genau hier: die
-// Config sagte "0 Routinen", waehrend ein launchd-Job taeglich lief und still starb.
-// "Nicht eingetragen" und "existiert nicht" sind zwei verschiedene Dinge.
+// Scheduled jobs at the operating-system level. One finding sat exactly here: the config
+// said "0 routines" while a launchd job ran daily and died silently.
+// "Not listed" and "does not exist" are two different things.
 function scheduledJobs() {
   const jobs = [];
   if (FOREIGN_ROOT) return jobs;
@@ -328,7 +328,7 @@ function scheduledJobs() {
   const inv = readInventory();
   const findings = [];
 
-  // Ein Job, der laeuft und scheitert, ist schlimmer als keiner: niemand merkt es.
+  // A job that runs and fails is worse than none: nobody notices.
   const jobs = scheduledJobs();
   const failing = jobs.filter((j) => j.exit !== null && j.exit !== 0);
   if (failing.length) {
@@ -338,7 +338,7 @@ function scheduledJobs() {
       'Run the job by hand once, read the error, fix the path or the script.',
       { jobs: failing.slice(0, 6) }));
   }
-  // Wiederholte Handgriffe sind belegte Automations-Kandidaten
+  // Repeated steps are evidenced candidates for automation
   const sig = new Map();
   for (const cmd of USAGE.commands) {
     const s = cmd.replace(/["'][^"']*["']/g, '_').replace(/\s+/g, ' ').trim().slice(0, 70);
@@ -359,9 +359,9 @@ function scheduledJobs() {
       'Everything happens only when someone remembers it. The recurring things are the first to be dropped.',
       'Start with what happens daily anyway.'));
   }
-  // Auf einem fremden Ordner wurden geplante Jobs bewusst NICHT gelesen (sie beschreiben
-  // die Maschine). Das gehoert gesagt statt als "0 Jobs" behauptet — nicht geprueft und
-  // nicht vorhanden sind zwei verschiedene Dinge, so steht es oben im Kommentar.
+  // On someone else's folder, scheduled jobs were deliberately NOT read (they describe the
+  // machine). That belongs said rather than claimed as "0 jobs" — not checked and not
+  // present are two different things, as the comment above already says.
   dim('automation', 'Connections', 'Automation',
     USAGE.available ? worst(findings) : 'unknown',
     `${inv.routines.length} routines, ${FOREIGN_ROOT ? 'scheduled jobs not checked (external folder)' : jobs.length + ' scheduled jobs'}, ${repeats.length} repetition patterns`,
@@ -384,7 +384,7 @@ function scheduledJobs() {
     }
   } catch { /* keine Datei, kein Befund */ }
 
-  // Secrets in getrackten Dateien: nur echte Schlüsselmuster, keine Platzhalter
+  // Secrets in tracked files: real key patterns only, no placeholders
   let tracked = [];
   try {
     tracked = execSync('git ls-files', { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1e8 })
@@ -399,9 +399,9 @@ function scheduledJobs() {
     if (st.size > 400000) continue;
     const txt = read(rel);
     const m = txt.match(SECRET);
-    // Harte Ausschlussliste (Muster aus claude-code-security-review): Platzhalter in
-    // Beispielen sind keine Secrets. Ein Fehlalarm hier kostet mehr Vertrauen, als der
-    // Fund wert wäre.
+    // A hard exclusion list (patterns from claude-code-security-review): placeholders in
+    // examples are not secrets. A false alarm here costs more trust than the finding would
+    // be worth.
     const PLACEHOLDER = /(your|my|dein|example|sample|placeholder|dummy|test|xxx|abc123|here|token-|\.\.\.|<)/i;
     if (m && !PLACEHOLDER.test(m[0])) hits.push(rel);
     if (hits.length >= 5) break;
@@ -414,13 +414,13 @@ function scheduledJobs() {
       { files: hits }));
   }
 
-  // Was darf der Agent ohne Rückfrage? NUR die allow-Liste zaehlt, und was in deny steht,
-  // ist geschuetzt, nicht gefaehrlich. Vorher durchsuchte die Regex den ganzen settings-Text
-  // inklusive deny-Block — `Bash(rm:*)` in deny (das dich SCHUETZT) loeste den Alarm aus, den
-  // es verhindert. Ein Befund ohne Beleg, ausgeloest von der Schutzregel. 23.07.
-  // Nur echte destruktive Binaries. Breite Wildcards wie Bash(python3:*) sind hier
-  // bewusst NICHT dabei — sie sind fuer den Workspace noetig, und jede zu melden waere
-  // das Rauschen, gegen das der ganze Audit gebaut ist.
+  // What may the agent do without asking? ONLY the allow list counts, and anything in deny
+  // is protecting you, not endangering you. The regex used to search the whole settings text
+  // including the deny block — `Bash(rm:*)` in deny (which PROTECTS you) raised the alarm it
+  // prevents. A finding with no evidence, triggered by the safeguard itself.
+  // Real destructive binaries only. Broad wildcards like Bash(python3:*) are deliberately
+  // NOT in here — they are needed for the workspace, and reporting each one would be the
+  // noise this whole audit is built against.
   const DANGER = /^Bash\((rm|sudo|dd|git push (--force|-f)|curl.*\|\s*(ba)?sh)/;
   let allow = [], deny = [];
   for (const f of ['.claude/settings.json', '.claude/settings.local.json']) {
@@ -474,12 +474,12 @@ function scheduledJobs() {
       const cand = [target, path.posix.join(path.posix.dirname(cur), target)]
         .map((t) => t.replace(/^\.\//, ''));
       let hit = cand.find((c) => rels.has(c));
-      // In der Doku steht oft nur der Dateiname (`PROJECTS.md`), nicht der Pfad. Existiert
-      // genau eine Datei mit dem Namen, ist das gemeint und kein toter Verweis.
+      // Documentation often names only the file (`PROJECTS.md`), not the path. If exactly
+      // one file carries that name, that is what was meant and not a dead link.
       if (!hit) hit = byBase.get(path.posix.basename(target));
       if (!hit) {
-        // Ein Befehl ist kein Verweis. `open context/today.html` und
-        // `cmd //c start "" context/today.html` stehen in der Doku als AUSFUEHRBARE Zeile,
+        // A command is not a link. `open context/today.html` and
+        // `cmd //c start "" context/today.html` appear in the docs as EXECUTABLE lines,
         // not as a link. Reading those as paths reports three dead links that are not
         // dead, and a checker that complains wrongly gets ignored: the false alarm is
         // more expensive than the finding.
@@ -501,9 +501,9 @@ function scheduledJobs() {
       if (!seen.has(hit)) { seen.add(hit); if (hit.endsWith('.md')) queue.push(hit); }
     }
   }
-  // Selbstfindende Dokumente: README, weil es im Ordner liegt — und CLAUDE.md/AGENTS.md,
-  // weil sie der Einstieg eines Unter-Workspace sind und geladen werden, sobald jemand
-  // dort arbeitet. Beide brauchen keinen Link von oben.
+  // Self-discovering documents: README, because it sits in the folder — and CLAUDE.md /
+  // AGENTS.md, because they are the entry point of a sub-workspace and get loaded as soon as
+  // somebody works there. Neither needs a link from above.
   const SELF_ENTRY = /^(README|CLAUDE|AGENTS?)\.md$/i;
   const candidates = GUIDE_DOCS.filter((d) => !ARCHIVE.test('/' + d.rel)
     && !SELF_ENTRY.test(path.basename(d.rel)));
@@ -545,11 +545,11 @@ function scheduledJobs() {
       'Check the targets, update the links.',
       { examples: dead.slice(0, 8) }));
   }
-  // Ein toter Symlink ist nicht gleich ein toter Symlink — die Schwere haengt am ORT.
-  // In .claude/skills/ ist es ein still totes Kommando (hoch). Anderswo ist es ein
-  // kaputter Verweis auf Material, eine fehlende Datei: aergerlich, aber nicht dringend.
-  // Vorher wurde alles als high/0.95 mit Skill-Begruendung gemeldet, auch fuenf fehlende
-  // Uni-PDFs — genau der Fehlbefund, gegen den dieses Script sonst gebaut ist. 23.07.
+  // A dead symlink is not always a dead symlink — the severity depends on WHERE it sits.
+  // In .claude/skills/ it is a silently dead command (high). Elsewhere it is a broken
+  // reference to material, a missing file: annoying, not urgent.
+  // Everything used to be reported as high/0.95 with the skill reasoning attached, including
+  // five missing PDFs — exactly the false finding this script is otherwise built against.
   const allBroken = FILES.filter((f) => f.symlink && f.broken && !ARCHIVE.test('/' + f.rel));
   const SKILL_LINK = /(^|\/)\.claude\/skills\//;
   const deadSkills = allBroken.filter((f) => SKILL_LINK.test('/' + f.rel));
@@ -568,9 +568,9 @@ function scheduledJobs() {
       'Check when convenient: bring the file back, or remove the dead link.',
       { examples: deadOther.slice(0, 6).map((b) => b.rel) }));
   }
-  // Ohne Dokumente gibt es kein Reachabilitysproblem. Vorher meldete ein Ordner ohne
-  // jede Doku "0 von 0 Dokumenten erreichbar" als Handlungsbedarf — ein Alarm ueber eine
-  // leere Menge, also genau der Fehlbefund, den dieses Script sonst verbietet.
+  // With no documents there is no reachability problem. A folder with no docs at all used
+  // to report "0 of 0 documents reachable" as needing action — an alarm about an empty set,
+  // exactly the false finding this script otherwise forbids.
   dim('reach', 'Knowledge', 'Reachability',
     candidates.length === 0 ? 'unknown' : worst(findings),
     candidates.length === 0
@@ -586,7 +586,7 @@ function scheduledJobs() {
   const STATE = /(STATUS|JOURNAL|PROJECTS|ROADMAP|CHANGELOG|NEXT|TODO)/i;
   const STAMP = /(Last updated|Letzte Aktualisierung|Stand)\s*:?\s*\**\s*(\d{4}-\d{2}-\d{2}|\d{2}\.\d{2}\.\d{4})/i;
   const workMtime = Math.max(0, ...FILES.filter((f) => !f.dir && !ARCHIVE.test('/' + f.rel)).map((f) => f.mtime || 0));
-  // Ein archiviertes Dokument ist absichtlich alt. Es zu bemängeln heisst, Ablage zu bestrafen.
+  // An archived document is old on purpose. Flagging it means punishing people for filing.
   const stateDocs = OWN_DOCS.filter((d) => !ARCHIVE.test('/' + d.rel)
     && (STATE.test(path.basename(d.rel)) || STAMP.test(read(d.rel).slice(0, 1500))));
   const stale = [];
@@ -618,16 +618,16 @@ function scheduledJobs() {
       'Move rarely used rules into a reference file and have them read only when needed.',
       { tokens }));
   }
-  // Mehrere Einstiegsdateien sind LEGITIM: verschiedene Agenten lesen verschiedene Namen
-  // (Claude Code liest CLAUDE.md, andere lesen AGENTS.md oder AGENT.md). Ihre Doppelung
-  // ist deshalb kein Dead weight-Befund. Das echte Risiko ist, dass sie auseinanderlaufen —
-  // dann arbeitet ein Agent still mit einer aelteren Fassung.
+  // Several entry files are LEGITIMATE: different agents read different names (Claude Code
+  // reads CLAUDE.md, others read AGENTS.md or AGENT.md). Their duplication is therefore not
+  // a dead-weight finding. The real risk is that they drift apart — and then one agent works
+  // quietly from an older version.
   const entryTexts = ENTRIES.map((f) => ({ f, t: read(f).replace(/\s+/g, ' ').trim() }));
   for (let i = 0; i < entryTexts.length; i++) {
     for (let j = i + 1; j < entryTexts.length; j++) {
       const a = entryTexts[i], b = entryTexts[j];
       if (!a.t.length || !b.t.length) continue;
-      // "Zwillinge" heisst: ueber 80 % gemeinsame Absaetze. Dann sind sie als Kopie gemeint.
+      // "Twins" means over 80% shared paragraphs. At that point they were meant as a copy.
       const pa = new Set(read(a.f).split(/\n\s*\n/).map((x) => x.replace(/\s+/g, ' ').trim()).filter((x) => x.length > 80));
       const pb = new Set(read(b.f).split(/\n\s*\n/).map((x) => x.replace(/\s+/g, ' ').trim()).filter((x) => x.length > 80));
       if (!pa.size || !pb.size) continue;
@@ -657,8 +657,8 @@ function scheduledJobs() {
       blocks.get(key).add(f);
     }
   }
-  // Absaetze, die nur zwischen den Einstiegsdateien doppelt sind, sind oben schon behandelt.
-  // Und Backups zaehlen nie: eine Backupskopie SOLL identisch sein.
+  // Paragraphs duplicated only between the entry files are handled above.
+  // And backups never count: a backup copy is SUPPOSED to be identical.
   const dupes = [...blocks.entries()].filter(([, files]) => {
     const real = [...files].filter((f) => !/backup|\.bak$/i.test(f));
     return new Set(real.filter((f) => !TWINS.has(f))).size >= 1 && real.length > 1;
@@ -725,7 +725,7 @@ function scheduledJobs() {
 
 (function lifecycle() {
   const findings = [];
-  // bewusst eng: "slide-1.html" und "2026-07-20.md" sind KEINE Versionsspuren
+  // deliberately narrow: "slide-1.html" and "2026-07-20.md" are NOT version markers
   const VERSIONED = /((^|[ _\-])(final|fertig|endgueltig|neu|new|alt|old|kopie|copy|backup|test)|[ _\-]v\d+|\(\d+\)|\s\d+)\.[a-z0-9]{2,4}$/i;
   const versioned = FILES.filter((f) => !f.dir && !ARCHIVE.test('/' + f.rel) && VERSIONED.test(path.basename(f.rel)));
   if (versioned.length > 5) {
@@ -769,7 +769,7 @@ function scheduledJobs() {
     lastPush = execSync('git log -1 --format=%ct', { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
   } catch { /* kein Repo */ }
 
-  // Ein Unterordner eines groesseren Repos ist gesichert, nur eben nicht selbst.
+  // A subfolder of a larger repo is backed up, just not on its own account.
   let parentRepo = null;
   if (hasGit && !origin) {
     try {
@@ -814,10 +814,10 @@ function scheduledJobs() {
 
 // =========================================================== 11. Code quality
 
-// Hier wird bewusst NICHT der Code gelesen. Eine echte Code-Review ist teuer und gehoert
-// pro Repo angestossen, nicht als Nebenprodukt eines Ordner-Audits ueber 25 Repos.
-// Gemessen wird, was mechanisch und billig zu haben ist und trotzdem etwas aussagt:
-// laesst sich das Repo aufgreifen (README), ist Arbeit ungesichert, ruht es.
+// The code is deliberately NOT read here. A real code review is expensive and belongs
+// started per repo, not as a by-product of a folder audit spanning 25 of them.
+// What gets measured is what is mechanical, cheap, and still says something: can the repo
+// be picked up (README), is work unsaved, is it dormant.
 (function code() {
   if (!NESTED_REPOS.length) {
     dim('code', 'Craft', 'Code quality', 'unknown', 'no repos in the folder', [],
@@ -907,18 +907,18 @@ if (args.includes('--render')) {
   }
 }
 
-// Das Fragment für den Dashboard-Tab: dieselben KPI-Kacheln wie die Setup-Uebersicht.
+// The fragment for the dashboard tab: the same KPI tiles as the setup overview.
 function renderFragment() {
   let data = result;
   try { data = JSON.parse(fs.readFileSync(path.join(ROOT, 'context', 'audit.json'), 'utf8')); } catch {}
   if (!data || !data.dimensions) {
     return '<div class="ivempty">No audit has run yet. Say <code>/audit</code> in chat and the result appears here.</div>';
   }
-  // Elf gleich grosse Kacheln behandeln "alles in Ordnung" und "hier musst du ran"
-  // als gleich wichtig, und eine geoeffnete Kachel sprengt die Rasterordnung. Beides
-  // war derselbe Denkfehler: das hier sind Textbefunde, keine Zahlen zum Ueberfliegen.
-  // Jetzt eine Liste nach Dringlichkeit — und was in Ordnung ist, bekommt EINE ruhige
-  // Zeile statt fuenf Karten, weil es niemand einzeln lesen will. 23.07.
+  // Eleven equally sized tiles treat "everything is fine" and "you have to deal with this"
+  // as equally important, and an opened tile breaks the grid. Both were the same mistake:
+  // these are text findings, not numbers to skim.
+  // Now a list ordered by urgency — and whatever is fine gets ONE quiet line instead of five
+  // cards, because nobody wants to read those individually.
   const esc2 = esc;
   const samples = (f) => {
     const s = f.evidence && f.evidence.samples;
@@ -940,12 +940,12 @@ function renderFragment() {
     + `<span class="audcount">${d.findings.length}</span></summary>`
     + `<div class="audbody">${findingRows(d)}</div></details>`;
   const cls = { ok: 'ok', watch: 'part', act: 'part', unknown: 'none' };
-  // Die grosse Zahl war die ANZAHL DER BEFUNDE und las sich wie eine Note: "1 Security"
-  // sah schlechter aus als ein Haken, hiess aber nur "ein Befund". Jetzt fuehrt die Stufe,
-  // die Befundzahl steht als Abzeichen daneben. 23.07.
+  // The large number used to be the FINDING COUNT and read like a grade: "1 Security"
+  // looked worse than a checkmark while meaning only "one finding". Now the level leads and
+  // the finding count sits beside it as a badge.
   const lvl = { ok: 'in Ordnung', watch: 'beobachten', act: 'handeln', unknown: 'not measurable' };
-  // Handlungsbedarf zuerst, "not measurable" zuletzt. Eine alphabetische oder zufaellige
-  // Reihenfolge zwingt jeden dazu, elf Kacheln zu lesen, um die eine zu finden, die zaehlt.
+  // Needs-action first, "not measurable" last. An alphabetical or arbitrary order forces
+  // everyone to read eleven tiles to find the one that matters.
   const rank = { act: 0, watch: 1, ok: 2, unknown: 3 };
   const tiles = [...data.dimensions].sort((a, b) => (rank[a.level] ?? 9) - (rank[b.level] ?? 9)).map((d) => {
     const body = d.findings.length
@@ -960,10 +960,9 @@ function renderFragment() {
       + `<div class="kpi-body">${body}</div></details>`;
   }).join('');
 
-  // Der Gesamtstand als EINE Zahl, und zwar eine zaehlbare: wie viele der bewerteten
-  // Dimensionen stehen auf "in Ordnung". Keine erfundene Note, keine Gewichtung, die
-  // niemand nachrechnen kann — "not measurable" faellt aus dem Nenner, sonst wuerde ein
-  // fehlender Beleg wie ein Mangel aussehen.
+  // The overall state as ONE number, and a countable one: how many of the judged dimensions
+  // sit at "fine". No invented grade, no weighting nobody can recompute — "not measurable"
+  // drops out of the denominator, otherwise missing evidence would look like a defect.
   const judged = data.dimensions.filter((d) => d.level !== 'unknown');
   const good = judged.filter((d) => d.level === 'ok').length;
   const act = judged.filter((d) => d.level === 'act').length;
