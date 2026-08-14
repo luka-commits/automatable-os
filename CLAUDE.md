@@ -18,8 +18,9 @@ layers, and each one works without the ones above it:
 3. **Delivery** — a won job becomes a project with its own tasks and materials, and from
    there it is ordinary work the day loop already carries.
 
-`ONBOARDING.md` describes the intended path end to end, including the parts that do not
-exist yet. `README.md` has the setup walkthrough.
+`ONBOARDING.md` describes the path end to end. `SYSTEM.html` is the same thing to look at
+rather than read: every step, what happens inside it, and why it is shaped that way. Open it
+with a double click. `README.md` has the setup walkthrough.
 
 ## Optional means optional
 
@@ -101,7 +102,8 @@ its own state is a second source of truth waiting to drift from the first.
 ```
 CLAUDE.md                          this file
 README.md                          what this is, setup walkthrough, what to install
-ONBOARDING.md                      the intended path end to end, gaps included
+ONBOARDING.md                      the intended path end to end
+SYSTEM.html                        the whole system on one page, for looking at rather than reading
 CHANGELOG.md                       what changed, and what needs your hand
 context/
   config.yaml                      name, language, upwork ids, your daily goal

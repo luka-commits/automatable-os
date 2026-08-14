@@ -29,9 +29,11 @@ Calm, matter-of-fact, little color. Color always means something here: green is 
 | `--card` | `#FFFFFF` | Cards and panels |
 | `--text` | `#0D1F1A` | Headings, important values |
 | `--text-2` | `#3F4D47` | Body text |
-| `--text-3` | `#7A857F` | Labels, secondary information |
+| `--text-3` | `#68736D` | Labels, secondary information |
 | `--border` | `#E2E6E3` | Normal dividing lines |
 | `--border-strong` | `#C8CFCB` | When an edge has to be more distinct |
+
+**`--text-3` has a floor, and it is not a matter of taste.** It was `#7A857F` and got darkened, because measured against `--bg` that gave 3.59:1 and against `--card` 3.83:1 — below the 4.5:1 that normal-sized text needs to stay readable. Labels are small text, so they need the full ratio, not the 3:1 that large text gets away with. If you lighten it again because it looks more elegant, you are trading legibility for elegance on exactly the text people squint at. Current values: **4.63:1** on the background, **4.93:1** on cards.
 
 **Warning levels**
 

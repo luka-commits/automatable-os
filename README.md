@@ -1,12 +1,20 @@
 # Freelancer OS
 
-A self-contained Upwork job-hunting system for Claude Code: it searches Upwork for you, scores
-every result against **your own** niche, tracks the whole pipeline from "found" to "won" in a
-small two-tab dashboard, and — optionally — turns a qualified job into a pitch page and a written
-proposal.
+An operating system for freelance work, built for Claude Code. It opens and closes your day,
+searches Upwork and scores every result against **your own** niche, turns a qualified job into a
+pitch page and a written proposal, and when you win one, turns that into a project with its own
+folder and its own first task. Finding the work and doing the work, in one place.
+
+**Nothing in it is mandatory, including Upwork.** Say you don't use it during setup and the whole
+acquisition layer stands down: no connector, no nagging, no half-empty tab. The day loop, the
+projects and the dashboard work on their own, and referrals and direct clients take the same route
+into a project that a won job does.
 
 It's a template, not a hosted product. You clone it, run one setup skill, and it's yours: your own
 niche, your own data, your own repo.
+
+**Want the picture before the detail?** Open [`SYSTEM.html`](SYSTEM.html) with a double click.
+Every step, what happens inside it, and why it is shaped that way, on one page.
 
 ## What you get
 
