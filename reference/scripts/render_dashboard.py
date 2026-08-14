@@ -318,7 +318,11 @@ def render_tasks():
     chips = [('all', TXT['f_all'])]
     if any(t['due'] and t['due'] <= TODAY.isoformat() for t in tasks):
         chips.append(('due', TXT['f_due']))
-    chips += [(q, QUAD_SHORT[q]) for q in present]
+    # Only when there is something to choose between. One quadrant chip filters to
+    # exactly what 'All' already shows, which is the dead control this list was
+    # built from `present` to avoid in the first place.
+    if len(present) > 1:
+        chips += [(q, QUAD_SHORT[q]) for q in present]
     if len(projects) > 1:
         chips += [(f'p:{p}', p) for p in projects]
     bar = '<div class="uw-filterbar t-filterbar">' + ''.join(
