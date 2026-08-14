@@ -339,11 +339,11 @@ function classify(e) {
 
   // Code
   if (e.repo) {
-    return { verdict: 'suggestion', target: `projects/<gruppe>/${slug(e.name)}/code/`,
+    return { verdict: 'suggestion', target: `projects/${slug(e.name)}/code/`,
       why: 'A repo of its own with its own history. It moves as a whole, and the history is left untouched.' };
   }
   if (e.dir && (fs.existsSync(path.join(e.full, 'package.json')) || fs.existsSync(path.join(e.full, 'pyproject.toml')))) {
-    return { verdict: 'suggestion', target: `projects/<gruppe>/${slug(e.name)}/code/`,
+    return { verdict: 'suggestion', target: `projects/${slug(e.name)}/code/`,
       why: 'Looks like code (package.json or pyproject.toml) but has no git. Check it is backed up before moving it.' };
   }
 
@@ -368,7 +368,7 @@ function classify(e) {
   const w = weigh(e.full);
   if (w.files === 0) return { verdict: 'question', target: null, why: 'Folder is empty. Remove it, or is it reserved for something?' };
   if (w.docs >= w.files * 0.6) {
-    return { verdict: 'suggestion', target: `projects/<gruppe>/${slug(e.name)}/`,
+    return { verdict: 'suggestion', target: `projects/${slug(e.name)}/`,
       why: `Mostly documents (${w.docs} of ${w.files}). Looks like a project.` };
   }
   return { verdict: 'question', target: null,

@@ -91,6 +91,12 @@ def cmd_set(args):
                 j['notes'] = (j.get('notes', '') + ' ' + args.note).strip()
             save(jobs)
             print(f'{j["id"]} -> {args.status}' + (f' (follow-up {j["next_follow_up"]})' if j.get('next_follow_up') else ''))
+            # hired is not the end of the pipeline, it is the handover to delivery.
+            # Without this line the job sits here with a final status while the work,
+            # the client and the deadlines live nowhere.
+            if args.status == 'hired' and not j.get('project'):
+                print(f'\n  This job has no project yet. Say "I won this job", or:\n'
+                      f'    python3 reference/scripts/new_project.py --from-job {j["id"]} --dry-run')
             return
     print(f'ABORT: job_id "{args.job_id}" not found in {JOBS}.', file=sys.stderr)
     sys.exit(1)

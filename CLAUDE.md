@@ -117,12 +117,16 @@ context/
   today.html                       generated — never edit by hand
   *.example                        the shipped, empty version of every file above that is yours
 .claude/
-  skills/                          29 skills, see the table at the bottom of this file
+  skills/                          33 skills, see the table at the bottom of this file
   hooks/                           session-start checks: setup done? update available?
   settings.json                    which hooks run when
 reference/
   *.md                             the handbooks, listed in the table below
-  scripts/                         the seven scripts, listed in the table below
+  scripts/                         the eight scripts, listed in the table below
+projects/
+  README.md                        the layout, the lifecycle, how a won job becomes one
+  _template/                       copied when a project is created
+  <slug>/                          one folder per project. Yours, gitignored
 jobs/                              generated per-job artifacts (pitch pages, proposal drafts)
 ```
 
@@ -158,6 +162,7 @@ skill links here instead of restating it.
 | [`reference/scripts/adopt-plan.js`](reference/scripts/adopt-plan.js) | Plans a rebuild for `adopt`. Reads only, moves nothing |
 | [`reference/scripts/inventory.js`](reference/scripts/inventory.js) | What this machine actually has: CLIs, plugins, connections |
 | [`reference/scripts/lib-workspace.js`](reference/scripts/lib-workspace.js) | Shared readers for the two above |
+| [`reference/scripts/new_project.py`](reference/scripts/new_project.py) | A won job becomes a project: folder, `PROJECTS.md` block, first task, artifacts |
 | [`reference/scripts/check_repo.py`](reference/scripts/check_repo.py) | Seven checks that gate a release. Run it before publishing |
 
 **The `.example` rule, and why it is the load-bearing one:** every file above that becomes
@@ -213,16 +218,18 @@ flow that exists but isn't clickable is, to the client, the same as a drawn one.
 
 ## Skills
 
-29 skills in `.claude/skills/`. The ones you will actually type:
+33 skills in `.claude/skills/`. The ones you will actually type:
 
 | Skill | What it does | Needs |
 |---|---|---|
 | `setup-freelancer-os` | First run: connection, reads your account, asks the rest | Upwork connector |
 | `morning` / `eod` | Opens and closes the day | nothing; richer with mail + calendar |
 | `ingest` | Files a document, transcript or note into the right project | nothing |
+| `upwork-profile` | Audits your profile, or walks you through creating one | Upwork connector |
 | `upwork-screener` | Finds and scores jobs against `context/expertise.md` | Upwork connector |
 | `upwork-proposal` | The cover letter you actually send | Upwork connector |
 | `upwork-pitch-page` | A one-page pitch site for a single job | nothing to draft; Vercel to host |
+| `upwork-won` | A won job becomes a project: folder, first task, material moved in | nothing |
 | `upwork-inbox` / `upwork-reply` | Client messages, invitations, offers — drafts, never sends | Upwork connector |
 | `checkup` / `audit` | Is the machinery intact / is this a good system | nothing |
 

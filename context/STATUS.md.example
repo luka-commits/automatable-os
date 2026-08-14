@@ -13,7 +13,10 @@ an empty one for you).
 - [ ] **Run the screener for the first time** #deep-work
   Say "check upwork" once expertise.md is filled in.
 
-## Frisch erledigt
+<!-- A won job gets its own group here, added by `upwork-won`. One heading per project
+     is what keeps this list readable once three of them run at the same time. -->
+
+## Recently Done
 
 <!-- Recently finished tasks land here, newest on top, capped at ~6. Not required for the
      dashboard to work — the Today tab only reads "Tasks (open)" above. -->

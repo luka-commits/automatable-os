@@ -16,6 +16,14 @@ context/today.html
 jobs/
 .claude/skills/upwork-pitch-page/library/
 
+# Your projects. Everything under projects/ is client work and never ships; what
+# does ship is the README that explains the layout and the template a new project
+# is copied from.
+projects/*
+!projects/README.md
+!projects/_template/
+!projects/_template/**
+
 # Written by a skill on first use, and full of your data the moment it exists.
 # BRIEFING.md carries mail summaries, .mail_cache.json carries the mail itself,
 # EMAIL_STYLE.md is derived from your own sent messages. These have no .example

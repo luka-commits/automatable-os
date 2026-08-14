@@ -88,7 +88,11 @@ This comes before the first search on purpose. The profile decides whether you a
 results at all and is the first thing a client opens after your cover letter — applying
 around a weak profile makes every proposal more expensive than it needs to be.
 
-**[gap]** Not in this repo yet.
+The audit is honest about what it can and cannot change: `update_profile` writes availability,
+employment, languages and education, and **nothing else**. Title, overview, skills, rate,
+portfolio and video — the set that actually decides whether invitations arrive — have to be
+pasted in by hand. So the skill hands over finished text rather than promising a change the
+API cannot make.
 
 ### 4. The system knows what you do
 
@@ -129,26 +133,38 @@ message.
 
 ## Part 3 — A won job becomes work
 
-This is where a job pipeline becomes an operating system, and it is the part that does not
-exist yet.
+This is where a job pipeline becomes an operating system.
 
-Today the pipeline ends at `hired`. The job sits in `.upwork_jobs.json` with a final status
-and nothing happens — while the actual work, the client, the deadlines and the deliverables
-live nowhere.
+The moment a job reaches `hired`, the pipeline is finished and delivery starts. Say **"I won
+the Acme job"** and `upwork-won` does the handover:
 
-**[gap] What should happen when a job is marked `hired`:**
+1. **A project folder** is created from the job record — client, scope from the posting, where
+   it came from. Named client-first (`bright-smile-group-google-ads-audit`), because the same
+   client comes back and you want their projects sorting together.
+2. **Its first task** lands in `context/STATUS.md` under the project's own heading. Exactly
+   one, and it is the scope conversation: everything else follows from the scope, once that
+   exists.
+3. **The proposal and the pitch page move in** as project material. In three weeks they are
+   the record of what you promised, and only useful if they sit somewhere you will look.
+4. **The job record keeps `project: <slug>`**, so the funnel still counts the conversion and
+   the project can still say where it came from.
 
-1. A project folder is created from the job record — the client's name, the scope from the
-   posting, the agreed terms
-2. Its first tasks are written into `STATUS.md` under that project, drawn from what the
-   posting actually asked for
-3. The proposal, the pitch page and the message history move in as project material, because
-   in three weeks they are the record of what you promised
-4. The job record keeps a pointer to the project, so the funnel can still count it and the
-   project can still find where it came from
+The one thing no script can do is the Upwork message thread. It cannot be exported, and it is
+the most valuable document in the project: the posting says what they asked for, the thread
+says what you agreed to. So the skill offers to read it and write the decisions into
+`inputs/agreed.md` — what was promised, by when, for how much. A summary, not a transcript.
 
 After that it is a normal project: `ingest` files client material into it, tasks show up in
 `morning`, `eod` closes them out. The Upwork side is done; delivery is the workspace's job.
+
+**A project that never came from Upwork** takes the same route without the job record:
+
+```bash
+python3 reference/scripts/new_project.py "Acme SEO audit" --client "Acme GmbH"
+```
+
+Referrals and direct clients are not second-class here. Upwork is one way in, not the only
+one.
 
 **Why this matters more than it looks:** without it, everything before it is a lead
 generator. With it, the same system that found the client also carries the work — one place

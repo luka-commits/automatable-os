@@ -7,7 +7,7 @@
 // Konventionen: nie "gibt es einen context-Ordner", sondern "gibt es genau einen
 // erkennbaren Ort für Zustand, und ist der frisch". Nur so läuft es auf fremden Ordnern.
 //
-// Befund-Disziplin, geerbt aus projects/_external/claude-code-security-review:
+// Finding discipline, inherited from Anthropic's claude-code-security-review:
 // jeder Befund traegt severity UND confidence, unter 0.7 wird gar nicht gemeldet, und
 // lieber ein theoretisches Problem übersehen als den Bericht mit Rauschen fluten.
 //
@@ -454,7 +454,7 @@ function scheduledJobs() {
     for (const m of text.matchAll(/`([^`\n]+\.[a-z]{2,4})`/gi)) out.add(m[1]);
     return [...out].map((t) => t.split('#')[0].replace(/^\.\//, ''))
       .filter((t) => !/^https?:/.test(t))
-      // Platzhalter in Mustern sind keine Verweise: `projects/<gruppe>/`, `skills/*/SKILL.md`
+      // Placeholders in patterns are not links: `projects/<slug>/`, `skills/*/SKILL.md`
       .filter((t) => !/[<>{}*]|\.\.\./.test(t));
   };
   const byBase = new Map();
@@ -464,7 +464,7 @@ function scheduledJobs() {
   }
   const seen = new Set(ENTRIES);
   const queue = [...ENTRIES];
-  const dead = [];
+  let dead = [];
   while (queue.length) {
     const cur = queue.shift();
     const text = read(cur);
@@ -516,6 +516,21 @@ function scheduledJobs() {
       'Link them where they belong, or move them to the archive.',
       { examples: orphans.slice(0, 8).map((o) => o.rel) }));
   }
+  // A gitignored target is generated or local, not a broken link: today.html,
+  // audit.json and the mail cache are written on first use and are missing on
+  // purpose in a fresh clone. Asked once, in a single batched call, because the
+  // list is short and per-link git calls would dominate the runtime.
+  if (dead.length) {
+    try {
+      const answer = execSync('git check-ignore --stdin', {
+        cwd: ROOT, input: dead.map((d) => d.to).join('\n'),
+        stdio: ['pipe', 'pipe', 'ignore'], maxBuffer: 1e7,
+      }).toString();
+      const generated = new Set(answer.split('\n').filter(Boolean));
+      dead = dead.filter((d) => !generated.has(d.to));
+    } catch { /* no git, or nothing ignored: then every one of them counts */ }
+  }
+
   const deadInEntry = dead.filter((d) => ENTRIES.includes(d.from));
   if (deadInEntry.length) {
     findings.push(finding('reach', 'high', 0.9,
