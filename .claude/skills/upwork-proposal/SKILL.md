@@ -1,142 +1,186 @@
 ---
 name: upwork-proposal
-description: Write Upwork job application proposals/cover letters. Use when the user shares an Upwork job posting, mentions applying to Upwork jobs, provides a Loom video transcript, or needs help writing a proposal for freelance work.
+description: Writes the cover letter and screening answers for one specific Upwork job, on a proven formula: proof up front, 5-7 quantified deliverables, a video line, risk reversal, clear CTA. Works with or without a Loom recording. Use on "write a proposal for this job", "apply to this Upwork job", "draft my cover letter", or once upwork-screener surfaces a match worth applying to. Finding and scoring jobs is upwork-screener, the visual pitch page is upwork-pitch-page, answering an existing client thread is upwork-reply. Drafts only, never sends.
 ---
 
-# Upwork Proposal Writer
+# Upwork Proposal
 
-## When to Use
-- User shares an Upwork job posting
-- User provides a Loom video transcript
-- User asks for help with a job application or proposal
+Built on Jono Catliff's proposal formula, the one behind his "5-star, Top Plus badge" write-up.
+Its own logic: a client skims, so proof goes first, promises carry numbers, risk sits with the
+freelancer rather than the buyer, and the letter ends with one obvious next action.
 
-## Workflow
+## Guardrails, every run
 
-1. **You record a Loom video FIRST** showing how you'd solve the project
-2. **You provide:** Job posting + video transcript
-3. **Claude writes:** Proposal that references and summarizes what's shown in the video
+**Draft only. A proposal goes out when you say so, never before.** Full reasoning in
+[`reference/upwork-regeln.md`](../../../reference/upwork-regeln.md); the short version is that
+unattended sending costs the account, and the account is the income.
 
-This is a genuinely proven workflow, keep it as-is: recording yourself solving the actual problem
-gives the proposal real technical specifics to draw on, and that's exactly what keeps it from
-reading as generic. A proposal written without the video tends to fall back on vague claims — the
-video is what earns the specificity.
+**What the Upwork MCP can and cannot do lives in
+[`reference/upwork-mcp.md`](../../../reference/upwork-mcp.md).** Read it there rather than
+guessing here. Relevant to this skill: submitting a proposal runs two-stage (draft, then
+confirm), which is what makes "draft now, send on approval" natural rather than bolted on.
 
-## Required Inputs
+**Say the call count at the end.** One sentence. Then "well under the limit" is measured.
 
-1. **Job Posting** - The Upwork job description
-2. **Loom Video Link** - URL to the personalized demo video
-3. **Loom Video Transcript** - Transcript of the video showing:
-   - How you'd approach/solve the specific project
-   - Demo of similar past work or live walkthrough
-   - Relevant skills and tools
+## Step 1: Gather
 
----
+Three inputs, and only the first two are required:
 
-## Your Background
+1. **The full job listing.** Not a summary. The requirement mirrors in Part A section 5 quote it,
+   and the screening answers in Part B need the exact question wording.
+2. **Your proof**, from `context/experience.md`. That file is the single source for anything
+   about your track record. Nothing about it gets invented here.
+3. **The client's name**, if the listing shows one.
 
-Read the user's own background from `context/experience.md` before writing — that's where their
-core skills, experience highlights, tools/platforms, portfolio links, tone, and unique selling
-points are recorded. Pull the relevant pieces from there into the proposal rather than inventing
-or assuming anything about the user's background.
+**A Loom transcript is welcome but never required.** See Step 3.
 
----
+## Step 2: Pick the proof that is actually yours
 
-## Instructions
+The formula says to stack the strongest proof in the opening. Catliff ranks proof S to C, and the
+full ranking with the three top-earner profiles it was checked against sits in
+[`upwork-profile/references/winning-formula.md`](../upwork-profile/references/winning-formula.md).
 
-### Step 1: Analyze the Job Posting
-Extract:
-- What the client actually needs (not just what they say)
-- Pain points or problems they're trying to solve
-- Required skills vs nice-to-haves
-- Budget/timeline expectations
-- Red flags or clarifying questions needed
+**Place yourself in it honestly before writing a word, because applying the ranking naively
+invents credentials you do not have.** Fill the right-hand column from `context/experience.md`
+and your Upwork profile, then lead with your strongest real tier and never borrow from a
+higher one.
 
-### Step 2: Process the Video Transcript
-Identify from the transcript:
-- What you demonstrated in the video
-- Your proposed solution/approach
-- Specific examples or past work you showed
-- Key talking points to weave into the written proposal
-- Any questions you asked or offered to answer
+| Tier | Catliff's markers | You |
+|---|---|---|
+| S | video testimonials, Top Rated, 100% JSS, $100K+ earned | |
+| A | 100+ reviews, 100+ projects, major press | |
+| B | hours saved, client revenue, named brand work | |
+| C | certifications, years in the field, following | |
 
-### Step 3: Write the Proposal
+Most people who need this skill sit in B, and B is not a consolation prize: "cut their
+follow-up time from two days to twenty minutes" beats a badge, because it is the outcome the
+client is actually buying. An empty S row is not a gap to paper over, it is information about
+which proof to lead with.
 
-**Structure:**
+**So the opening leads with your strongest real tier and claims no badge you have not earned.**
+If you have genuine reviews in `context/testimonials.json`, a short quote from one is fair proof
+when it fits the job. Writing "Top Rated" or "100% Job Success" into a proposal when you are not
+is a lie the client can check in one click, on the same page as the proposal.
 
-1. **Hook (1-2 sentences)**
-   - Show you understand their specific problem
-   - Reference something specific from their posting
-   - NO generic "I read your job posting and..."
+## Step 3: The video line, which stays in either way
 
-2. **Video Reference (2-3 sentences)**
-   - Introduce the Loom video with context
-   - Briefly summarize what's shown: "Here's how I would do it :)"
-   - Format: 📽️: [insert the actual Loom link provided]
+**The letter always carries a video line. The letter never waits for the video.**
 
-3. **Relevance (2-3 sentences)**
-   - Connect experience directly to their needs
-   - Mention similar projects or results with specific metrics
-   - Reference what was demonstrated in the video
+This is the correction that matters most in this skill. The earlier version required a recorded
+Loom before it would write anything, and on 14.08.2026 that blocked a real application: good job,
+no recording, no proposal. Catliff's formula keeps the line as a visible placeholder precisely so
+the freelancer sees what is still missing.
 
-4. **Portfolio Proof**
-   - Include portfolio link with context
-   - Format: ❗ [Portfolio link]
+- **No transcript:** write the whole proposal, keep `[INSERT LOOM LINK HERE]` in place, and tell
+  the user plainly that this has to be replaced before sending.
+- **Transcript supplied:** weave what the recording demonstrated into the requirement mirrors, and drop the
+  real link in.
 
-5. **Call to Action (1-2 sentences)**
-   - Friendly, action-oriented close
-   - "Looking forward to hearing from you!"
-   - Sign off with the user's own name, as recorded in `context/config.yaml` (key: `name`)
+## Step 4: Write Part A, the cover letter
 
-**Tone Guidelines:**
-- Professional but friendly
-- Confident, not arrogant
-- Action-focused: "Here's how I would do it"
-- Use emojis sparingly (📽️, ❗)
-- Specific metrics when possible (real numbers beat vague claims)
+300 to 400 words. Screening answers are separate and do not count toward it.
 
-**Length:** 150-250 words ideal (Upwork clients skim)
+**For the shape of a finished one, read `references/worked-example.md`** (a real GHL job, run
+through the checker). Faster than reconstructing the structure from the seven parts below, and it
+shows how the quantified lines actually read when they are not filler.
 
-### Step 4: Output Format
+**1. Greeting, job title, immediate proof.** Two or three sentences. Name the role from the
+listing in the first sentence, so the client knows instantly this was written for their post,
+then two or three proof points straight away.
 
-Provide:
-1. The proposal ready to copy/paste (with the actual Loom link inserted)
-2. Note any key points from the transcript that were emphasized
+**2. "Here's what I'll deliver for your project:"** A numbered list, five to seven items, **every
+one carrying a number.**
 
----
+Here is the trap in that rule, and the resolution:
 
-## What NOT to Do
+> **A past-performance number and a delivery promise are different things.** Anything about what
+> the user has already achieved comes from `context/experience.md` and gets invented never. Anything about
+> what this build will do for this client is a forward promise, where a defensible target is
+> legitimate: "answers a new enquiry in under 5 minutes", "0 manual sorting", "inside the 20-30
+> hours you scoped". Keep the two kinds distinguishable in your own head while writing, because
+> a promise dressed as a track record is the one failure the first call exposes.
 
-- Don't start with "Dear Hiring Manager" or "I am writing to apply..."
-- Don't list every skill - only relevant ones
-- Don't be vague ("I have experience in automation")
-- Don't copy the job posting back at them
-- Don't make it about you - make it about solving their problem
-- Don't use filler phrases ("I believe", "I think I would be a great fit")
-- Don't forget to reference the video!
+Numbers pulled from the client's own posting (their hours, their budget, their tool count) are
+the strongest of all, because they prove the listing was read.
 
----
+**3. The video line.** Step 3.
 
-## Example Proposal Style
+**4. Risk reversal.** One line, taking the risk off the buyer. Pick by what fits the job size:
 
-This is one illustrative example of the shape a strong proposal takes, not a fixed voice to copy.
-Replace it with your own accepted proposals as you collect them — the real value comes from
-examples in your own tone, referencing your own real numbers and links.
+- "I work in milestones, not lump sums, so you approve each phase before we move to the next."
+- "First sprint is risk-free: we agree a clear milestone and you only pay once it is hit."
+- "Free 30-min strategy call before anything is signed. I scope your build live and you decide."
+- "If the first deliverable is not what you wanted, you don't pay. Full refund, no questions."
 
-**Job:** "Need a CRM expert to set up appointment booking and follow-up automation"
+For a new-ish profile the milestone framing is usually the honest one, since it costs nothing to
+promise and is how Upwork fixed-price contracts work anyway.
 
-**Example shape:**
+**5. "Here's why I'm the right fit:"** For each major requirement in the listing, a `##` header
+paraphrasing that requirement, then two or three lines of proof underneath. Never more than
+three. This is the section that makes the proposal feel answered rather than broadcast, so mirror
+their words, not your categories.
+
+**6. CTA.** One line, one specific action:
+
+- "Let's hop on a 15-min call to scope this out. When works for you?"
+- "Send me a quick message and I'll record a Loom showing exactly how I'd build this for you."
+- "Reply with your timeline and I'll send a fixed-price proposal within 24 hours."
+
+**7. Close.** "Thanks for your consideration. Looking forward to hearing from you." then "Best,"
+and your first name from `context/config.yaml`.
+
+## Step 5: Part B, the screening answers
+
+Only when the listing actually asks questions. Then, after the close, a visual break and a header:
 
 ```
-Hey, I'm a full time [your specialty] expert and can definitely help you set up your appointment booking system.
-
-Here's how I would do it :)
-📽️: [Loom link]
-
-In terms of relevant experience, I have worked with [X+] clients now building out a variety of complex systems for appointment setting, sales, marketing, and reputation management, for businesses with up to [N] employees. I believe that actions speak louder than words so I would recommend you quickly check out the video I recorded as well as my portfolio projects and feedback I have received from past clients :).
-
-Websites, funnels etc:
-❗[Your portfolio link]
-
-Looking forward to hearing from you!
-[Your name]
+---
+**Screening question responses:**
 ```
+
+Each question in the listing's exact wording in bold, then a one-line answer beneath it, two
+sentences at the very most. **These stay out of the cover letter.** Mixing them into the
+requirement mirrors is the most common way this formula gets mangled, and it costs the letter its
+shape.
+
+## Step 6: Check it, then hand it over
+
+```bash
+python3 .claude/skills/upwork-proposal/scripts/check_proposal.py <draft> --job-title "<title>"
+```
+
+It counts what is countable: word cap, banned phrasing, em dashes, the video line, how many list
+items genuinely carry a number, and whether the opening names the job. It reports risk reversal
+and CTA as "check by eye" on purpose, because no regex can tell a real risk reversal from a
+sentence containing the word "refund", and a checker that cries wolf gets ignored within days.
+
+**It catches real defects, including in drafts that look finished.** The worked example in
+`references/worked-example.md` failed its own quantification rule on the first pass: seven
+delivery lines, only four with a number in them. Run it before showing the user anything.
+
+**Phrasing that marks a proposal as generic**, and which the checker fails on: "I would love to",
+"I'm excited", "what stood out", "passionate", "results-driven", "I want in", "rockstar",
+"ninja". Also out: filler paragraphs, and the grand closing frame ("automation is the future of
+business, get on it now"). Say the specific thing instead, and there is no room left for filler.
+
+**Prose that goes to a client is your voice, not the system's.** Read three or four of your own
+sent proposals before writing (`list_freelancer_proposals` returns their full text) and match
+how you actually open, hedge and close. No em dashes in anything outgoing: they are the most
+reliable tell that a machine wrote it, and Upwork does check.
+
+## What to hand back
+
+The proposal ready to paste, the checker's output, and one line naming what still blocks sending:
+usually the Loom recording, sometimes a number that needs confirming. Then ask whether to submit,
+and wait for the answer.
+
+## Self-improvement
+
+Two signals: the user rewrites part of a proposal, or a proposal wins the job. Either is worth
+keeping.
+
+- **A better line or structural fix** goes into this file, at the step it belongs to.
+- **A proposal the user liked, or one that won**, goes to `references/` beside the worked example,
+  with one line saying what it did well. A second real example beats any amount of instruction.
+- **A new verified number about the user's track record** goes to
+  `context/experience.md`, never into this skill. One source per fact.
