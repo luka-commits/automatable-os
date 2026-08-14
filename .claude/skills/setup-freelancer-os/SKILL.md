@@ -1,9 +1,9 @@
 ---
-name: setup-upwork-cockpit
-description: First-run setup for this repo — verifies the Upwork connection, interviews the user for their niche and background, and writes their own context/config.yaml, context/expertise.md, and context/experience.md from the .example templates. Use when the user says "set up upwork cockpit", "/setup-upwork-cockpit", clones this repo for the first time, or asks how to get started. Re-runnable: if the real files already exist, offer to review/update them instead of overwriting blind.
+name: setup-freelancer-os
+description: Connects Upwork and teaches the system your niche — verifies the connector, reads what your account already knows (profile, past contracts, the full text of your sent proposals), then asks only what reading cannot answer, and writes context/expertise.md, experience.md and the Upwork keys in config.yaml. Called by the `setup` skill when the user says they work on Upwork, or on "set up upwork", "/setup-freelancer-os". Not the first-run skill — `setup` owns the first run and hands over here. Re-runnable: if the real files already exist, offer to review/update them instead of overwriting blind.
 ---
 
-# Setup: Upwork Cockpit
+# Setup: Freelancer OS
 
 This is the only step a new user needs before anything else in this repo works. Run it as a guided
 conversation — ask, don't hand over a blank template and walk away. The screener, the pitch-page

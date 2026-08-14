@@ -1,0 +1,127 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/check-setup.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/check-updates.sh\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/setup-check.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/check-setup.sh\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/no-heredoc-edit.py\""
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Read(./**)",
+      "Glob(./**)",
+      "Grep(./**)",
+      "Edit(./context/**)",
+      "Write(./context/**)",
+      "Edit(./projects/**)",
+      "Write(./projects/**)",
+      "Write(./inbox/**)",
+      "Edit(./inbox/**)",
+      "Edit(./reference/**)",
+      "Write(./reference/**)",
+      "Edit(./_tmp/**)",
+      "Write(./_tmp/**)",
+      "Edit(./.claude/skills-deprecated/**)",
+      "Write(./.claude/skills-deprecated/**)",
+      "Bash(uv run python:*)",
+      "Bash(uv:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(node:*)",
+      "Bash(open:*)",
+      "Bash(osascript:*)",
+      "Bash(uname:*)",
+      "Bash(cmd //c start:*)",
+      "Bash(explorer.exe:*)",
+      "Bash(date:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(find:*)",
+      "Bash(unzip:*)",
+      "Bash(pandoc:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)",
+      "Bash(powershell:*)",
+      "Bash(powershell.exe:*)",
+      "Bash(touch:*)",
+      "Bash(chmod:*)",
+      "Bash(echo:*)",
+      "Bash(command -v:*)",
+      "Bash(which:*)",
+      "Bash(grep:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(firecrawl:*)",
+      "Bash(playwright:*)",
+      "Bash(supabase:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git remote:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)",
+      "Bash(git pull:*)",
+      "Bash(git clone:*)",
+      "Bash(gh auth status:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh repo clone:*)",
+      "ToolSearch",
+      "Skill",
+      "mcp__claude_ai_Microsoft_365",
+      "mcp__claude_ai_Gmail",
+      "mcp__claude_ai_Google_Calendar",
+      "mcp__claude_ai_Google_Drive",
+      "mcp__claude_ai_Slack",
+      "mcp__claude_ai_Notion",
+      "mcp__claude_ai_Supabase",
+      "mcp__magic",
+      "ListMcpResourcesTool",
+      "ReadMcpResourceTool"
+    ],
+    "deny": [
+      "Bash(git reset:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git checkout:*)",
+      "Bash(sudo:*)"
+    ]
+  }
+}

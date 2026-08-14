@@ -1,0 +1,23 @@
+{
+  "skill_name": "managed-agents",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want a hosted research agent on Anthropic's cloud that I can kick off via API. It needs firecrawl (pip) in its sandbox and my OPENROUTER_API_KEY available for calls to openrouter.ai. Draft the exact curl commands to set this up end to end (agent, environment, secrets, session, first task message). Don't execute anything, just produce a ready-to-run setup script.",
+      "expected_output": "A bash script with correct beta header managed-agents-2026-04-01, agent create with agent_toolset_20260401, environment with pip packages + networking, vault with environment_variable credential scoped to openrouter.ai via allowed_hosts, session create passing vault_ids, and a user.message event. No invented endpoints or fields.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "wie kriege ich es hin dass mein managed agent mitten im lauf eine frage an den endkunden stellt und wartet bis der im web ui antwortet? zeig mir das konkret mit den events",
+      "expected_output": "Explains the custom tool gate pattern: define ask_user custom tool on the agent, agent emits agent.custom_tool_use, session idles with stop_reason requires_action, app renders question, answer returns via user.custom_tool_result with custom_tool_use_id, session resumes. Includes correct event names and a polling/streaming example.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Take my existing Claude Code skill at .claude/skills/lead-magnet/ and prepare it so a managed agent can invoke it in the cloud. Walk me through what needs to change and give me the upload commands, but do a dry run, don't actually upload.",
+      "expected_output": "Covers Agent Skill layout, frontmatter constraints (name without 'claude'/'anthropic', 64 chars, description 1024), translation table for Claude-Code-isms (AskUserQuestion to custom tool, Agent tool to multiagent roster, local CLIs to packages+vault), zip + POST /v1/skills with skills-2025-10-02 beta header, attach via skills array with version latest, and a cheap verify-session suggestion.",
+      "files": []
+    }
+  ]
+}
