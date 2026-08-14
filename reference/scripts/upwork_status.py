@@ -106,6 +106,60 @@ def cmd_list(args):
         print(f'{j.get("score", "?"):>3}  {j.get("status", "?"):<14} {j.get("id")}  {j.get("title", "")[:70]}{fu}')
 
 
+def cmd_summary(args):
+    """The cheap read path: the whole pipeline in ~20 lines instead of the raw JSON.
+
+    Reading the job file directly costs tens of thousands of tokens and eats a
+    session before any work starts. This is what `morning` and any "how does the
+    pipeline stand" question should call.
+    """
+    jobs = load()
+    if not jobs:
+        print('No jobs logged yet.')
+        return
+    today = datetime.date.today()
+    counts = {}
+    for j in jobs:
+        st = j.get('status', 'new')
+        counts[st] = counts.get(st, 0) + 1
+
+    print(f'{len(jobs)} jobs logged.\n')
+    print('Funnel:')
+    for s in STATUSES:
+        if counts.get(s):
+            print(f'  {counts[s]:3d}  {s}')
+
+    open_jobs = [j for j in jobs if j.get('status') in ('new', 'notified')]
+    applied = sum(counts.get(s, 0) for s in ('proposal_sent', 'interviewing', 'offer_sent', 'hired'))
+    print(f'\n  {len(open_jobs)} untouched, {applied} applied or further.')
+    if open_jobs and not applied:
+        print('  NOTE: nothing past "notified" — the funnel stops before the application.')
+
+    today_applied = sum(
+        1 for j in jobs
+        for h in j.get('history', [])
+        if h.get('status') == 'proposal_sent' and str(h.get('at', ''))[:10] == today.isoformat()
+    )
+    print(f'  {today_applied} proposal(s) sent today.')
+
+    due = [j for j in jobs if j.get('next_follow_up') and j['next_follow_up'] <= today.isoformat()
+           and j.get('status') not in ('hired', 'rejected', 'archived', 'ignored')]
+    if due:
+        print(f'\nFollow-ups due ({len(due)}):')
+        for j in sorted(due, key=lambda x: x['next_follow_up'])[:10]:
+            print(f'  {j["next_follow_up"]}  {j.get("id")}  {j.get("title", "")[:60]}')
+
+    top = sorted(open_jobs, key=lambda j: j.get('score', 0), reverse=True)[:args.top]
+    if top:
+        print(f'\nBest untouched ({len(top)} of {len(open_jobs)}):')
+        for j in top:
+            print(f'  {j.get("score", "?"):>3}  {j.get("status", "?"):<9} {j.get("id")}  {j.get("title", "")[:60]}')
+
+    stamps = [j['found_at'][:10] for j in jobs if j.get('found_at')]
+    if stamps:
+        print(f'\nFound between {min(stamps)} and {max(stamps)}.')
+
+
 def cmd_migrate(args):
     """Seeds history for jobs that don't have one yet. Idempotent.
 
@@ -188,6 +242,10 @@ p_set.set_defaults(func=cmd_set)
 p_list = sub.add_parser('list')
 p_list.add_argument('--status')
 p_list.set_defaults(func=cmd_list)
+
+p_sum = sub.add_parser('summary', help='The whole pipeline in ~20 lines — never read the raw JSON.')
+p_sum.add_argument('--top', type=int, default=8)
+p_sum.set_defaults(func=cmd_summary)
 
 p_mig = sub.add_parser('migrate', help='Seed history for existing records (idempotent).')
 p_mig.add_argument('--dry-run', action='store_true')

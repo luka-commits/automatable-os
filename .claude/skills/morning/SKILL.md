@@ -413,6 +413,36 @@ No cap, no sort-by-importance — this isn't a top-N selection. Grouping by proj
 
 Before finalizing the list, run CLAUDE.md's "consistency check before every write of the task list" (Rule 4): no bullet restates a fact already covered by another bullet, nothing marked open/waiting that "Recently Done" already shows as done, and every task's project matches where it actually lives in `{projects_md_path}`.
 
+## Step 4b: The Upwork pass
+
+**Skip this step entirely if `context/config.yaml` says `upwork_enabled: false`, or if
+`upwork_org_uid` is empty.** Silently — no "Upwork is off" line, no offer to switch it on.
+Setup asked once and got an answer; a briefing that keeps raising a channel the user declined
+is exactly the nagging that answer was meant to end.
+
+Otherwise, two calls. Both cheap, both read-only, and **this is the only scheduled moment the
+screener runs** — Upwork treats a tight polling loop as scraping, so on-demand plus once here is
+the whole allowance ([`reference/upwork-regeln.md`](../../../reference/upwork-regeln.md)).
+
+1. **`upwork-screener`** — new jobs, scored, logged. It reports its own call count; pass that
+   through in a clause rather than restating it.
+2. **`upwork-inbox`** — the account side: unread client messages, invitations, offers, due
+   milestones, connects. Silence here is a result, not a gap. Say nothing rather than pad.
+
+Then read the day's own number:
+
+```bash
+python3 reference/scripts/upwork_status.py summary
+```
+
+**Two lines in the briefing, no more.** How many proposals went out today against the goal, and
+the single best untouched job with its score. If a client wrote, that outranks both and goes
+first, with the drafted reply offered. Everything else belongs in the dashboard's Upwork tab,
+which the reader can open; a briefing is not the place to relist a pipeline.
+
+**Nothing is sent here.** A proposal or a reply leaves the account only when the user says so, in
+their own words, after seeing the draft.
+
 ## Step 5: Output the Briefing
 
 Written in `config.yaml → language` — the template below is the English example.
