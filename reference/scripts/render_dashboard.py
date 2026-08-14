@@ -10,7 +10,7 @@ hand-edited.
 Usage:
     python3 reference/scripts/render_dashboard.py [--date YYYY-MM-DD]
 """
-import re, html, json, pathlib, datetime, argparse
+import re, html, json, pathlib, datetime, argparse, subprocess
 
 W = pathlib.Path(__file__).resolve().parents[2]
 TPL = W / 'context/today_template.html'
@@ -79,6 +79,13 @@ TXT = {
               'q3': 'dringend + nicht wichtig', 'q4': 'nicht dringend + nicht wichtig'},
         tab_today='Heute', tab_upwork='Upwork', title='Freelancer OS',
         tab_system='System',
+        f_all='Alle', f_due='Faellig',
+        tab_tooling='Ausstattung',
+        tool_hint='Was auf dieser Maschine da ist: Skills, CLIs, Verbindungen, Plugins, Zugaenge. Gelesen wird die Maschine, nicht eine gepflegte Liste.',
+        tool_noscript='reference/scripts/inventory.js fehlt. Die Kopie ist unvollstaendig.',
+        tool_nonode='Dafuer braucht es Node.js, und das ist hier nicht installiert. Mit Node zeigt dieser Tab, welche Werkzeuge und Verbindungen wirklich stehen.',
+        tool_failed='Die Ausstattung liess sich nicht auslesen.',
+        no_briefing='Noch kein Briefing fuer heute. Sag „guten Morgen“, dann steht es hier.',
         sys_note='Was dieses System kann und warum jeder Schritt so aussieht. '
                  'Dieselbe Seite liegt als SYSTEM.html im Ordner.',
         sys_missing='SYSTEM.html fehlt im Ordner. Die Kopie ist unvollstaendig, hol dir die Datei aus dem Repo nach.',
@@ -97,12 +104,21 @@ TXT = {
               'q3': 'urgent + not important', 'q4': 'not urgent + not important'},
         tab_today='Today', tab_upwork='Upwork', title='Freelancer OS',
         tab_system='System',
+        f_all='All', f_due='Due',
+        tab_tooling='Tooling',
+        tool_hint='What this machine actually has: skills, CLIs, connections, plugins, keys. Read from the machine, not from a list somebody maintains.',
+        tool_noscript='reference/scripts/inventory.js is missing. The copy is incomplete.',
+        tool_nonode='This needs Node.js, which is not installed here. With Node, this tab shows which tools and connections are actually in place.',
+        tool_failed='The tooling could not be read.',
+        no_briefing='No briefing for today yet. Say “good morning” and it appears here.',
         sys_note='What this system does and why each step is shaped the way it is. '
                  'The same page sits in the folder as SYSTEM.html.',
         sys_missing='SYSTEM.html is missing from the folder. The copy is incomplete, fetch that file from the repo.',
     ),
 }[LANG]
 WD, MON, CATS, QUAD = TXT['wd'], TXT['mon'], TXT['cats'], TXT['quad']
+# Short chip labels. The full wording lives in QUAD and is the tooltip.
+QUAD_SHORT = {'q1': 'Q1', 'q2': 'Q2', 'q3': 'Q3', 'q4': 'Q4'}
 
 
 def esc(s):
@@ -284,14 +300,32 @@ def render_tasks():
                       f'is not counted as urgent. Use (due YYYY-MM-DD).">{esc(t["due_unparsed"])} ?</span>'
         note_div = f'<div class="t-note">{md(t["note"])}</div>' if t['note'] else ''
         rows.append(
-            f'<li data-quadrant="{quad}"><span class="c-quad {quad}" title="{esc(QUAD[quad])}">{quad.upper()}</span>'
+            f'<li data-quadrant="{quad}" data-proj="{esc(t["proj"])}"'
+            f' data-due="{"1" if t["due"] and t["due"] <= TODAY.isoformat() else ""}"><span class="c-quad {quad}" title="{esc(QUAD[quad])}">{quad.upper()}</span>'
             f'<span class="t-text">{md(t["text"])}</span>'
             f'<span class="c-proj">{esc(t["proj"])}</span>'
             f'<span class="c-cat">{esc(CATS.get(t["cat"], t["cat"]))}</span>'
             f'<span class="c-status">{esc(t["stat_lbl"])}</span>'
             f'<span class="c-due">{due_lbl}</span>{note_div}</li>'
         )
-    return f'<ul class="task-list">{"".join(rows)}</ul>'
+    # Filters, built from what is actually in the list rather than from a fixed
+    # set: a chip for a quadrant with no tasks behind it is a dead control, and
+    # four of those teach you to stop looking at the row. Same mechanism as the
+    # Upwork tab, so there is one filter behaviour in this file and not two.
+    present = [q for q in ('q1', 'q2', 'q3', 'q4') if any(
+        quadrant(t['cat'], t['due']) == q for t in tasks)]
+    projects = sorted({t['proj'] for t in tasks if t['proj'] and t['proj'] != 'General'})
+    chips = [('all', TXT['f_all'])]
+    if any(t['due'] and t['due'] <= TODAY.isoformat() for t in tasks):
+        chips.append(('due', TXT['f_due']))
+    chips += [(q, QUAD_SHORT[q]) for q in present]
+    if len(projects) > 1:
+        chips += [(f'p:{p}', p) for p in projects]
+    bar = '<div class="uw-filterbar t-filterbar">' + ''.join(
+        f'<button type="button" class="pill t-filterpill{" active" if k == "all" else ""}"'
+        f' data-tfilter="{esc(k)}" title="{esc(lbl)}">{esc(lbl)}</button>'
+        for k, lbl in chips) + '</div>'
+    return bar + f'<ul class="task-list">{"".join(rows)}</ul>'
 
 
 # ─────────────────────────────────────────── context/.upwork_jobs.json
@@ -544,6 +578,84 @@ def _uw_card(j, today_iso):
     )
 
 
+def parse_tooling():
+    """The Tooling tab: what this machine actually has, from inventory.js.
+
+    Shelling out to node is the honest option here. The detection logic lives in
+    that script (which CLIs are installed, which MCP servers answer, which
+    plugins are enabled rather than merely present), and a second Python copy of
+    it would drift from the first within a month.
+
+    Node is optional in this repo, so its absence is a sentence rather than a
+    stack trace: the tab says what is missing and what it would show.
+    """
+    script = W / 'reference/scripts/inventory.js'
+    if not script.is_file():
+        return f'<p class="ivempty">{esc(TXT["tool_noscript"])}</p>'
+    try:
+        r = subprocess.run(['node', str(script)], cwd=W, capture_output=True,
+                           text=True, timeout=25)
+    except (FileNotFoundError, subprocess.SubprocessError):
+        return f'<p class="ivempty">{esc(TXT["tool_nonode"])}</p>'
+    if r.returncode != 0 or not r.stdout.strip():
+        # Say what broke. A blank tab is indistinguishable from "you own nothing".
+        detail = (r.stderr or '').strip().splitlines()
+        tail = detail[-1][:160] if detail else ''
+        return (f'<p class="ivempty">{esc(TXT["tool_failed"])}'
+                + (f' <code>{esc(tail)}</code>' if tail else '') + '</p>')
+    return r.stdout
+
+
+def parse_briefing():
+    """context/BRIEFING.md, to the format reference/dashboard-render.md documents.
+
+    That format was written down and never implemented, so the file could exist
+    and the dashboard would not show a word of it. `## Lead` and `## Text` are
+    fixed names; every other `##` becomes a collapsible section in file order,
+    with its item count in the summary, and the first one renders open.
+
+    A section with nothing in it is left out entirely rather than rendered as an
+    empty shell. "Nothing here today" is noise that teaches you to skip the
+    whole block.
+    """
+    f = W / 'context/BRIEFING.md'
+    if not f.is_file():
+        return f'<p class="sub bf-none">{esc(TXT["no_briefing"])}</p>'
+
+    lead, text, sections = '', [], []
+    for blk in re.split(r'\n## ', f.read_text(encoding='utf-8')):
+        blk = blk.lstrip('# ').rstrip()
+        if not blk:
+            continue
+        head, _, body = blk.partition('\n')
+        head, body = head.strip(), body.strip()
+        if not body:
+            continue                      # nothing to say: leave it out
+        if head.lower() == 'lead':
+            lead = body
+        elif head.lower() == 'text':
+            text = [b for b in re.split(r'\n\s*\n', body) if b.strip()]
+        else:
+            items = [l.strip(' -*\t') for l in body.splitlines() if l.strip(' -*\t')]
+            sections.append((head, items))
+
+    if not (lead or text or sections):
+        return f'<p class="sub bf-none">{esc(TXT["no_briefing"])}</p>'
+
+    parts = ['<div class="bf">']
+    if lead:
+        parts.append(f'<p class="bf-lead">{md(lead)}</p>')
+    for para in text:
+        parts.append(f'<p class="bf-text">{md(para)}</p>')
+    for i, (head, items) in enumerate(sections):
+        lis = ''.join(f'<li>{md(x)}</li>' for x in items)
+        parts.append(
+            f'<details class="bf-sec"{" open" if i == 0 else ""}><summary>{esc(head)}'
+            f'<span class="bf-count">{len(items)}</span></summary><ul>{lis}</ul></details>')
+    parts.append('</div>')
+    return ''.join(parts)
+
+
 def parse_system():
     """The System tab: SYSTEM.html embedded, not restated.
 
@@ -652,6 +764,10 @@ vals = {
     'TAB_PROJECTS': esc(TXT['tab_projects']),
     'TASKS': render_tasks(),
     'PROJECTS': render_projects(),
+    'BRIEFING': parse_briefing(),
+    'TAB_TOOLING': esc(TXT['tab_tooling']),
+    'TOOLING_HINT': esc(TXT['tool_hint']),
+    'TOOLING': parse_tooling(),
     'UPWORK_ITEMS': parse_upwork(),
     'TAB_SYSTEM': esc(TXT['tab_system']),
     'SYSTEM': parse_system(),
