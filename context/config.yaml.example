@@ -21,3 +21,22 @@ upwork_org_uid: ""
 # Leave empty to skip Slack entirely — the screener still logs every
 # candidate to the dashboard either way, Slack is just a push notification.
 slack_channel_id: ""
+
+# How many proposals you aim to send per working day. The dashboard's tracker
+# counts against this, and it is the one number the whole pipeline exists to
+# move. Pick something you will actually hit — a goal you miss daily stops
+# being a goal after a week.
+daily_proposal_goal: 5
+
+# The platforms you actually build on, comma-separated. Two jobs: it sharpens
+# the screener's niche fit, and it lets a skill tell you *which* credential is
+# missing instead of failing vaguely. Free text, use the names clients use.
+# Example: "gohighlevel, n8n, make, zapier"
+tools: ""
+
+# API keys are NOT stored here and never in this repo. They live in
+# ~/.config/credentials.env with chmod 600, one KEY=value per line, and every
+# skill reads them from there. .gitignore already blocks credentials.env, .env
+# and *.key — but the habit is what protects you, not the file.
+# A skill that needs a key you have not set says which one and stops. It does
+# not guess, and it does not carry on with half the picture.
