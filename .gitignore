@@ -29,3 +29,5 @@ credentials.env
 node_modules/
 __pycache__/
 *.pyc
+context/audit.json
+context/.mcp_cache.json
