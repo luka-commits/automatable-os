@@ -127,7 +127,7 @@ The user answers freely ("that to-do belongs to project B", "drop the decision")
 **`context/STATUS.md`** — this is where the tasks live. New to-dos under their project, in the two-line format:
 
 ```
-- [ ] Headline — concrete, one line #category (due DD.MM.)
+- [ ] Headline — concrete, one line #category (due YYYY-MM-DD)
   Why this is up, what it hangs on, what the state is (1–3 sentences of plain language — NO label like "Executive Summary:" in front, this line lands verbatim in the dashboard expander).
 ```
 

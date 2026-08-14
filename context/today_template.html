@@ -22,6 +22,11 @@
   header.top h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
   header.top .sub { margin-top: 3px; font-size: 12.5px; color: var(--text-3); }
   nav.tabs { display: flex; gap: 4px; margin: 18px 0 var(--gap); border-bottom: 1px solid var(--border); }
+  /* The System tab embeds SYSTEM.html rather than restating it. One source, and
+     the iframe keeps that page's CSS from colliding with the dashboard's. */
+  .sysframe { width: 100%; height: calc(100vh - 190px); min-height: 460px; border: 1px solid var(--border);
+              border-radius: 10px; background: var(--card); display: block; }
+  .sysnote { font-size: 12.5px; color: var(--text-3); margin: 0 0 10px; }
   .tab { font: inherit; font-size: 13.5px; font-weight: 500; color: var(--text-3); background: none;
     border: none; border-bottom: 2px solid transparent; cursor: pointer; padding: 9px 4px; margin-right: 18px; }
   .tab:hover { color: var(--text); }
@@ -38,6 +43,7 @@
   .pr-name { font-weight: 600; font-size: 15px; }
   .pr-meta { font-size: 12px; color: var(--text-2); }
   .pr-purpose { margin: 0 0 6px; font-size: 13.5px; line-height: 1.5; }
+  .pr-foot { font-size: 11.5px; color: var(--text-3); margin: 8px 0 0; }
   .pr-status { margin: 0; font-size: 13px; color: var(--text-2); line-height: 1.5; }
   .pr-blocker { margin-top: 9px; padding: 7px 10px; border-radius: 7px; font-size: 12.5px;
     background: var(--red-soft, #FBE8E5); color: var(--red-deep, #911C13); }
@@ -57,6 +63,9 @@
   .c-quad.q1 { background: color-mix(in srgb, #B0143C 14%, transparent); color: #B0143C; }
   .c-quad.q2 { background: color-mix(in srgb, var(--brand) 16%, transparent); color: var(--brand-deep); }
   .c-proj, .c-cat, .c-status, .c-due { font-size: 11.5px; color: var(--text-3); }
+  /* A due date the renderer could not read. Amber rather than blank, because a
+     blank cell reads as "no deadline" and that is the wrong conclusion. */
+  .c-due-bad { color: var(--sev-amber); border-bottom: 1px dotted var(--amber-border); cursor: help; }
   .t-note { grid-column: 2 / -1; font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
   @media (max-width: 720px) {
     .task-list li { grid-template-columns: 24px 1fr; }
@@ -124,6 +133,8 @@
     font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; border-radius: 6px;
     padding: 1px 5px; color: var(--brand-deep); background: var(--brand-soft); }
   .uw-score.strong { color: #fff; background: var(--brand); }
+  .uw-project { font-size: 11.5px; color: var(--text-3); }
+  .uw-project code { font-size: 11px; }
   .uw-status { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
     color: var(--text-3); background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
     padding: 2px 6px; white-space: nowrap; }
@@ -159,6 +170,7 @@
     <button class="tab" data-tab="today">{{TAB_TODAY}}</button>
     <button class="tab" data-tab="projects">{{TAB_PROJECTS}}</button>
     <button class="tab" data-tab="upwork">{{TAB_UPWORK}}</button>
+    <button class="tab" data-tab="system">{{TAB_SYSTEM}}</button>
   </nav>
 
   <div class="tabpane" id="pane-today" hidden>
@@ -176,10 +188,14 @@
     <p class="hint">Pipeline: Outreach → In contact → Offer sent → Won. Card/row buttons only copy a chat sentence — pasting it and sending it is what actually moves the job, or run <code>python3 reference/scripts/upwork_status.py set &lt;id&gt; &lt;status&gt;</code> yourself.</p>
     {{UPWORK_ITEMS}}
   </div><!-- /pane-upwork -->
+
+  <div class="tabpane" id="pane-system" hidden>
+{{SYSTEM}}
+  </div><!-- /pane-system -->
 </div>
 
 <script>
-  const panes = { today: document.getElementById('pane-today'), projects: document.getElementById('pane-projects'), upwork: document.getElementById('pane-upwork') };
+  const panes = { today: document.getElementById('pane-today'), projects: document.getElementById('pane-projects'), upwork: document.getElementById('pane-upwork'), system: document.getElementById('pane-system') };
   function showTab(name) {
     if (!panes[name]) name = 'today';
     Object.entries(panes).forEach(([k, p]) => p.hidden = k !== name);

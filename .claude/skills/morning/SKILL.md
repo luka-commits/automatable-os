@@ -508,7 +508,7 @@ _🟡 questions are asked right here — just answer in the chat, Step 5b drafts
 
 ### 📋 Tasks ([N])
 - **[Project]:**
-  - [Task text] [· due DD.MM.]
+  - [Task text] [· due YYYY-MM-DD]
 - **Waiting on others:**
   - [Task text] — [who]
 (Grouped by project, no ranking — the complete list from Step 4A.)

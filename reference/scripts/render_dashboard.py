@@ -78,6 +78,10 @@ TXT = {
         quad={'q1': 'dringend + wichtig', 'q2': 'nicht dringend + wichtig',
               'q3': 'dringend + nicht wichtig', 'q4': 'nicht dringend + nicht wichtig'},
         tab_today='Heute', tab_upwork='Upwork', title='Freelancer OS',
+        tab_system='System',
+        sys_note='Was dieses System kann und warum jeder Schritt so aussieht. '
+                 'Dieselbe Seite liegt als SYSTEM.html im Ordner.',
+        sys_missing='SYSTEM.html fehlt im Ordner. Die Kopie ist unvollstaendig, hol dir die Datei aus dem Repo nach.',
     ),
     'en': dict(
         wd=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
@@ -92,6 +96,10 @@ TXT = {
         quad={'q1': 'urgent + important', 'q2': 'not urgent + important',
               'q3': 'urgent + not important', 'q4': 'not urgent + not important'},
         tab_today='Today', tab_upwork='Upwork', title='Freelancer OS',
+        tab_system='System',
+        sys_note='What this system does and why each step is shaped the way it is. '
+                 'The same page sits in the folder as SYSTEM.html.',
+        sys_missing='SYSTEM.html is missing from the folder. The copy is incomplete, fetch that file from the repo.',
     ),
 }[LANG]
 WD, MON, CATS, QUAD = TXT['wd'], TXT['mon'], TXT['cats'], TXT['quad']
@@ -159,23 +167,37 @@ def parse_status():
         waits = re.match(r'^\((?:wartet auf|waiting on) ([^)]+)\)', text)
         status = 'waiting' if waits else 'open'
         stat_lbl = TXT['wartet'].format(waits.group(1)) if waits else TXT['offen']
-        due = ''
-        m = re.search(r'\((?:bis|due) (\d{2})\.(\d{2})\.\)', raw)
+        # A due date drives the whole urgent/important sort, so a date that does
+        # not parse is worse than no date: the task quietly loses its deadline and
+        # nobody is told. ISO is the documented form because it is unambiguous in
+        # every country and carries its year; DD.MM. still parses so older files
+        # keep working, and anything else is reported rather than dropped.
+        due, due_unparsed = '', ''
+        m = re.search(r'\((?:bis|due) (\d{4})-(\d{2})-(\d{2})\)', raw)
         if m:
-            d, mo = int(m.group(1)), int(m.group(2))
-            y = TODAY.year + (1 if (mo, d) < (TODAY.month, TODAY.day) else 0)
-            due = f'{y}-{mo:02d}-{d:02d}'
+            due = f'{m.group(1)}-{m.group(2)}-{m.group(3)}'
+        else:
+            m = re.search(r'\((?:bis|due) (\d{2})\.(\d{2})\.\)', raw)
+            if m:
+                d, mo = int(m.group(1)), int(m.group(2))
+                y = TODAY.year + (1 if (mo, d) < (TODAY.month, TODAY.day) else 0)
+                due = f'{y}-{mo:02d}-{d:02d}'
+            else:
+                bad = re.search(r'\((?:bis|due) ([^)]+)\)', raw)
+                if bad:
+                    due_unparsed = bad.group(1).strip()
         cm = re.search(r'#(deep-work|quick-win|komm|comms|prep|admin)', raw)
         cat = ('comms' if cm and cm.group(1) == 'komm' else cm.group(1) if cm else 'deep-work')
         text = re.sub(r'\s*#(deep-work|quick-win|komm|comms|prep|admin)', '', text)
         text = re.sub(r'^\((?:wartet auf|waiting on) [^)]+\)\s*', '', text)
-        text = re.sub(r'\s*\((?:bis|due) \d{2}\.\d{2}\.\)', '', text).strip()
+        text = re.sub(r'\s*\((?:bis|due) [^)]+\)', '', text).strip()
         note = ''
         if i + 1 < len(lines) and lines[i + 1].startswith(('  ', '\t')) \
                 and not re.match(r'^\s*- \[', lines[i + 1]):
             note = lines[i + 1].strip()
         tasks.append(dict(text=text[:180], proj=proj or 'General', status=status,
-                          stat_lbl=stat_lbl, due=due, cat=cat, note=note[:400]))
+                          stat_lbl=stat_lbl, due=due, cat=cat, note=note[:400],
+                          due_unparsed=due_unparsed))
     return tasks
 
 
@@ -208,7 +230,9 @@ def parse_projects():
 
         out.append(dict(name=name, purpose=f('Purpose', 'Zweck'), status=f('Status'),
                         phase=f('Phase') or '', blocker=f('Blocker'),
-                        timeline=f('Timeline', 'Zeitachse')))
+                        timeline=f('Timeline', 'Zeitachse'),
+                        stakeholder=f('Stakeholder'),
+                        origin=f('Where it came from', 'Herkunft')))
     return out
 
 
@@ -224,10 +248,18 @@ def render_projects():
         if meta:
             parts.append(f'<span class="pr-meta">{esc(meta)}</span>')
         parts.append('</div>')
+        # md(), not esc(): these lines are prose the user wrote, and they contain
+        # `code` spans naming files. Escaped, the backticks showed up raw.
         if p['purpose']:
-            parts.append(f'<p class="pr-purpose">{esc(p["purpose"])}</p>')
+            parts.append(f'<p class="pr-purpose">{md(p["purpose"])}</p>')
         if p['status']:
-            parts.append(f'<p class="pr-status">{esc(p["status"])}</p>')
+            parts.append(f'<p class="pr-status">{md(p["status"])}</p>')
+        # Who it is for and where it came from. Without the origin line, a project
+        # that came out of a won job cannot say so, and the link upwork-won makes
+        # is invisible from this side.
+        foot = ' · '.join(x for x in (p['stakeholder'], p['origin']) if x)
+        if foot:
+            parts.append(f'<p class="pr-foot">{md(foot)}</p>')
         if p['blocker']:
             parts.append(f'<div class="pr-blocker">{esc(TXT["blocked"])}: {esc(p["blocker"])}</div>')
         parts.append('</div>')
@@ -243,7 +275,13 @@ def render_tasks():
     rows = []
     for t in tasks:
         quad = quadrant(t['cat'], t['due'])
-        due_lbl = f'{t["due"][8:10]}.{t["due"][5:7]}.' if t['due'] else ''
+        # Show the date the user wrote, not a reformatted one. If it did not parse,
+        # say so in the column instead of leaving it blank: a blank cell reads as
+        # "no deadline", which is exactly the wrong conclusion.
+        due_lbl = t['due'] if t['due'] else ''
+        if not due_lbl and t.get('due_unparsed'):
+            due_lbl = f'<span class="c-due-bad" title="Not understood as a date, so this task '\
+                      f'is not counted as urgent. Use (due YYYY-MM-DD).">{esc(t["due_unparsed"])} ?</span>'
         note_div = f'<div class="t-note">{md(t["note"])}</div>' if t['note'] else ''
         rows.append(
             f'<li data-quadrant="{quad}"><span class="c-quad {quad}" title="{esc(QUAD[quad])}">{quad.upper()}</span>'
@@ -288,6 +326,8 @@ UW_I18N = {
         say_won='Setze Upwork-Job {jid} auf "hired".',
         say_lost='Setze Upwork-Job {jid} auf "rejected".',
         say_task='Leg eine Task an: Follow-up für Upwork-Job „{title}" (fällig {nf}).',
+        went_to='Wurde zu', btn_convert='In ein Projekt umwandeln',
+        say_convert='Ich habe Upwork-Job {jid} gewonnen, leg das Projekt an.',
     ),
     'en': dict(
         status={'new': 'New', 'notified': 'Notified', 'proposal_sent': 'Proposal sent',
@@ -317,6 +357,8 @@ UW_I18N = {
         say_won='Set Upwork job {jid} to "hired".',
         say_lost='Set Upwork job {jid} to "rejected".',
         say_task='Add a task: follow up on Upwork job "{title}" (due {nf}).',
+        went_to='Became', btn_convert='Turn it into a project',
+        say_convert='I won Upwork job {jid}, set up the project.',
     ),
 }
 T = UW_I18N[LANG]
@@ -405,6 +447,16 @@ def _uw_stage_actions(j, is_due=False, nf=None):
             f'<button type="button" class="say-btn" data-say="{esc(won_prompt)}">{esc(T["btn_won"])}</button>'
             f'<button type="button" class="say-btn" data-say="{esc(lost_prompt)}">{esc(T["btn_lost"])}</button>'
         )
+    elif status == 'hired':
+        # A won job is the one case where there is nothing left to do here and
+        # something important to say: where the work now lives. Without this the
+        # link upwork-won creates is invisible from the pipeline side, and the
+        # handover looks like the job simply stopped.
+        slug = j.get('project')
+        actions = (f'<span class="uw-project">{esc(T["went_to"])} '
+                   f'<code>projects/{esc(slug)}/</code></span>') if slug else (
+                  f'<button type="button" class="say-btn" data-say="{esc(T["say_convert"].format(jid=jid))}">'
+                  f'{esc(T["btn_convert"])}</button>')
     else:
         actions = ''
     if is_due:
@@ -412,20 +464,38 @@ def _uw_stage_actions(j, is_due=False, nf=None):
     return actions
 
 
+def _uw_client(j):
+    """The client column, from a record that comes in two shapes.
+
+    The screener writes an object with rating/hires/posted. But this file is
+    hand-editable, and anyone noting a client by name writes a plain string —
+    which used to end in an AttributeError traceback naming no cause. For a
+    dashboard whose whole job is to render what is in the file honestly,
+    crashing on a name is the wrong answer, so a string is read as the name.
+
+    This lived twice, once per view, and a fix to one would have left the other.
+    """
+    client = j.get('client') or {}
+    if isinstance(client, str):
+        return client
+    rating = client.get('rating')
+    hires, posted = client.get('hires'), client.get('posted')
+    bits = []
+    if rating:
+        bits.append(f'{rating}★')
+    if hires is not None and posted is not None:
+        bits.append(f'{hires}/{posted} hires')
+    if not bits and client.get('name'):
+        bits.append(str(client['name']))
+    return ' · '.join(bits)
+
+
 def _uw_row(j, today_iso):
     score = j.get('score', 0)
     score_cls = ' strong' if score >= 70 else ''
     status = j.get('status', 'new')
     status_lbl = T['status'].get(status, status)
-    client = j.get('client') or {}
-    rating = client.get('rating')
-    hires, posted = client.get('hires'), client.get('posted')
-    client_bits = []
-    if rating:
-        client_bits.append(f'{rating}★')
-    if hires is not None and posted is not None:
-        client_bits.append(f'{hires}/{posted} hires')
-    client_txt = ' · '.join(client_bits)
+    client_txt = _uw_client(j)
     nf = j.get('next_follow_up')
     is_due = bool(nf and nf <= today_iso and status not in CLOSED_STATUSES)
     due_badge = f'<span class="uw-due-badge">{esc(T["due_badge"].format(nf=nf))}</span>' if is_due else ''
@@ -452,15 +522,7 @@ def _uw_card(j, today_iso):
     score_cls = ' strong' if score >= 70 else ''
     status = j.get('status', 'new')
     status_lbl = T['status'].get(status, status)
-    client = j.get('client') or {}
-    rating = client.get('rating')
-    hires, posted = client.get('hires'), client.get('posted')
-    client_bits = []
-    if rating:
-        client_bits.append(f'{rating}★')
-    if hires is not None and posted is not None:
-        client_bits.append(f'{hires}/{posted} hires')
-    client_txt = ' · '.join(client_bits)
+    client_txt = _uw_client(j)
     nf = j.get('next_follow_up')
     is_due = bool(nf and nf <= today_iso and status not in CLOSED_STATUSES)
     due_badge = f'<span class="uw-due-badge">{esc(T["due_badge"].format(nf=nf))}</span>' if is_due else ''
@@ -480,6 +542,24 @@ def _uw_card(j, today_iso):
         f'<div class="uw-actions">{_uw_stage_actions(j, is_due, nf)}</div>'
         f'</li>'
     )
+
+
+def parse_system():
+    """The System tab: SYSTEM.html embedded, not restated.
+
+    A second copy of the explanation inside this renderer is exactly the
+    duplication the rest of the repo forbids, and it would drift within a month.
+    The iframe also keeps that page's CSS out of the dashboard's, which matters
+    because both define .card and both style tables.
+
+    If the file is not there, say so plainly rather than showing an empty frame:
+    an empty box is indistinguishable from a broken one.
+    """
+    if not (W / 'SYSTEM.html').is_file():
+        return f'<p class="sysnote">{esc(TXT["sys_missing"])}</p>'
+    return (f'<p class="sysnote">{esc(TXT["sys_note"])}</p>'
+            f'<iframe class="sysframe" src="../SYSTEM.html" '
+            f'title="{esc(TXT["tab_system"])}" loading="lazy"></iframe>')
 
 
 def parse_upwork():
@@ -573,6 +653,8 @@ vals = {
     'TASKS': render_tasks(),
     'PROJECTS': render_projects(),
     'UPWORK_ITEMS': parse_upwork(),
+    'TAB_SYSTEM': esc(TXT['tab_system']),
+    'SYSTEM': parse_system(),
 }
 for k, v in vals.items():
     h = h.replace('{{' + k + '}}', v)

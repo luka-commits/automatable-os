@@ -23,8 +23,12 @@ an empty one for you).
 
 ---
 
-**Task line format:** `- [ ] **Headline** (due DD.MM.) #category` — category is one of
+**Task line format:** `- [ ] **Headline** (due YYYY-MM-DD) #category` — category is one of
 `deep-work` / `quick-win` / `comms` / `prep` / `admin`, and controls the urgent/important quadrant
 badge (`admin`/`prep`/`deep-work` count as important; a due date within 7 days counts as urgent).
+Dates are ISO so they carry their year and mean the same thing in every country. `DD.MM.`
+still parses for older files. Anything else shows up amber in the Due column rather than
+silently dropping the deadline, because a task that quietly stops being urgent is worse
+than one with a visible mistake in it.
 An optional indented line right below becomes the task's context note. A `### Heading` groups
 tasks under a project name.
