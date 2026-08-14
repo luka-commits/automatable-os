@@ -15,6 +15,7 @@ Everything here is mechanical. It checks what can be checked without judgement:
     4. No personal data survived: names, ids, keys, machine-specific paths
     5. Every skill has a name and a description in its frontmatter
     6. Every {{PLACEHOLDER}} in a template is filled by its renderer
+    7. Nothing shipped here still speaks German, unless it does so on purpose
 
 Exit 1 on any finding, so it can gate a release rather than be read politely.
 
@@ -114,14 +115,29 @@ GERMAN = re.compile(
     r'\b(nicht|keine[rnms]?|kein|eine[rnms]?|und|oder|wird|werden|weil|damit|'
     r'sondern|statt|schon|noch|Datei|Ordner|Zeile|Verweis|Wurzel|erledigt|'
     r'fehlt|liegt|gibt|nichts|etwas|dieser|diesem|diesen|deine[rnms]?|selbst|'
-    r'Deckung|Kaltstart|Frische|Ballast|Sicherung|Sicherheit|Erreichbarkeit|'
+    r'Deckung|Kaltstart|Frische|Sicherung|Sicherheit|Erreichbarkeit|'   # not Ballast: English too
     r'Automatisierung|Lebenszyklus|Wissen|Handwerk|Anbindung|Nutzung|Begruendung|'
-    r'geschrieben|geprueft|veraltet|unbekannt|Zustand|Befund|de-DE)\b')
+    r'geschrieben|geprueft|veraltet|unbekannt|Zustand|Befund|de-DE|'
+    r'passt|Einstieg|davon|liest|Lauf|Ordners|passiert|bereits|jeder|jede[nrms]?)\b',
+    re.IGNORECASE)   # "Nichts" is as German as "nichts"; the first version missed it
 
-# Some scripts ship an en/de table on purpose and pick by config — their German
+# Lines that legitimately carry German in an English repo. Keep this short and
+# specific — every entry is a hole in the check, so each one names its reason.
+LANG_EXEMPT = re.compile(
+    r'\bSöhne\b'                       # a typeface, not a sentence
+    r'|\bZustand, Jotai\b'             # the React state library, not the noun
+    r'|\*\*Deutsch\*\*'                # the language question, asked in both
+    r'|"[^"]*" / "[^"]*"')             # an EN/DE pair of phrases to match on
+
+# Some files ship both languages on purpose and pick between them — a script with
+# an en/de table, a skill with parallel English and German sections. Their German
 # is a translation, not a leftover. Detected by shape rather than by filename, so
-# a new localized script is exempt automatically and a de-only one never is.
-BILINGUAL = re.compile(r"""["']?\bde\b["']?\s*:\s*[{(dict]""")
+# a newly localized file is exempt automatically and a de-only one never is.
+BILINGUAL = re.compile(
+    r"""["']?\bde\b["']?\s*:\s*[{(dict]"""   # a lookup table keyed by language
+    r"""|^#+\s*German\s*$"""                 # a "### German" section next to English
+    r"""|^DE:\s*$""",                        # an EN:/DE: pair of examples
+    re.MULTILINE)
 
 
 def check_language():
@@ -132,25 +148,33 @@ def check_language():
     `audit` and `adopt` would have printed German at their first user.
     """
     findings = []
-    for p in sorted((W / 'reference/scripts').glob('*.[jp][sy]')):
+    targets = sorted((W / 'reference/scripts').glob('*.[jp][sy]'))
+    targets += sorted(SKILLS.glob('*/SKILL.md')) + sorted(SKILLS.glob('*/references/*.md'))
+    for p in targets:
         if p.name == 'check_repo.py':
             continue
         txt = p.read_text(encoding='utf-8')
         if BILINGUAL.search(txt):
             continue
-        hits = 0
+        name = p.name if p.parent.name == 'scripts' else f'{p.parent.name}/{p.name}'
+        hits = first = 0
         for i, line in enumerate(txt.splitlines(), 1):
-            code = line.split('//')[0].split('#')[0]
-            if not re.search(r'''['"`]''', code):
-                continue
-            for m in re.finditer(r'''(['"`])(.*?)\1''', code):
-                if GERMAN.search(m.group(2)):
+            # In a script only quoted text reaches a user; in a skill the prose
+            # itself is the instruction, so the whole line counts.
+            if p.suffix == '.md':
+                spans = [line] if not line.lstrip().startswith('#') else []
+            else:
+                code = line.split('//')[0].split('#')[0]
+                spans = [m.group(2) for m in re.finditer(r'''(['"`])(.*?)\1''', code)]
+            for span in spans:
+                if GERMAN.search(span) and not LANG_EXEMPT.search(span):
                     hits += 1
                     if hits == 1:
-                        findings.append(f'{p.name}:{i} prints German: "{m.group(2)[:60]}"')
+                        first = i
+                        findings.append(f'{name}:{i} is German: "{span.strip()[:60]}"')
                     break
         if hits > 1:
-            findings[-1] += f'  (+{hits - 1} more lines in this file)'
+            findings[-1] += f'  (+{hits - 1} more lines, from line {first})'
     return findings
 
 

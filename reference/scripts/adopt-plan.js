@@ -10,7 +10,7 @@
 //  2. Eine bestehende CLAUDE.md wird NIE überschrieben, sie wird zusammengeführt.
 //  3. Verschieben bricht Verweise. Jeder Vorschlag prüft, ob Scripts, Symlinks oder
 //     Dokumente auf den Pfad zeigen — genau daran ist am 22.07. der Morning-Digest gestorben.
-//  4. Ein Ordner, der schon am richtigen Platz ist, taucht als "passt" auf, nicht als Arbeit.
+//  4. Ein Ordner, der schon am richtigen Platz ist, taucht als "fine" auf, nicht als Arbeit.
 //
 // ponytail: reine Analyse, kein Modell, keine Schreibvorgänge. Das Urteil über die
 // Fragen-Liste macht der /adopt-Skill.
@@ -138,7 +138,7 @@ function referrers(name) {
 // ---------------------------------------------------------------- Innerhalb der Projekte
 // Ein Ordner, dessen Wurzel schon stimmt, ist NICHT automatisch uebernommen: die
 // Abweichung sitzt dann eine Ebene tiefer. Am 22.07. im ersten echten Lauf aufgefallen —
-// der Plan meldete "11 passt schon, 0 Vorschlaege", waehrend elf von sechzehn Projekten
+// der Plan meldete "11 fine schon, 0 Vorschlaege", waehrend elf von sechzehn Projekten
 // `docs/` statt `work/` fuehrten. Blind fuer genau den Fall, fuer den man ihn braucht.
 // Bewusst nur SICHTBAR machen, nicht vorschlagen: wie ein gewachsener Projektordner
 // heisst, weiss der Nutzer, nicht dieses Script.
@@ -263,7 +263,7 @@ function sammle(dir) {
   return st;
 }
 
-function herkunft(workDir) {
+function provenance(workDir) {
   const out = [];
   let es = [];
   try { es = fs.readdirSync(workDir, { withFileTypes: true }); } catch { return out; }
@@ -297,7 +297,7 @@ function classify(e) {
   // Vorher landete er unter "Zweck nicht erkennbar" — dieselbe Datei, die workspace-audit.js
   // korrekt als Fehler meldet. Zwei Skripte desselben Pakets duerfen nicht verschieden urteilen.
   if (e.link && !fs.existsSync(e.full)) {
-    return { verdict: 'frage', ziel: null,
+    return { verdict: 'question', target: null,
       why: 'Dead link: the target does not exist (any more). Decide before the move whether it can go or has to be repaired.' };
   }
 
@@ -306,7 +306,7 @@ function classify(e) {
   // Steuerberaters dran. Kein Ziel vorzuschlagen ist hier die richtige Antwort, nicht
   // eine fehlende. Siehe WHAT-THIS-SYSTEM-DOES.md.
   if (e.dir && /^(rechnung|buchhalt|invoic|bookkeep|accounting|finanz|belege|steuer|datev|lexoffice)/i.test(e.name)) {
-    return { verdict: 'passt', ziel: e.name,
+    return { verdict: 'fine', target: e.name,
       why: 'Accounting. Stays where it is: this system holds work in progress, not invoices.' };
   }
 
@@ -315,63 +315,63 @@ function classify(e) {
   // Die Regel ist absichtlich breit: lieber etwas liegen lassen als etwas kaputtziehen.
   const CONFIG = /^(package(-lock)?\.json|pnpm-lock\.yaml|yarn\.lock|skills-lock\.json|Makefile|\.?env(\..+)?|tsconfig\.json|requirements\.txt|pyproject\.toml)$/i;
   if (e.name.startsWith('.') || CONFIG.test(e.name)) {
-    return { verdict: 'passt', ziel: e.name,
+    return { verdict: 'fine', target: e.name,
       why: 'Machinery or configuration. Stays where it is, or the folder stops working.' };
   }
 
   // Schon am Platz?
-  if (e.dir && TARGET[e.name]) return { verdict: 'passt', ziel: e.name, why: TARGET[e.name] };
+  if (e.dir && TARGET[e.name]) return { verdict: 'fine', target: e.name, why: TARGET[e.name] };
   // Ein Symlink auf eine Datei, die es hier schon gibt, ist ein Zweitname, kein zweiter
   // Inhalt. AGENT.md -> CLAUDE.md ist der Normalfall (andere Werkzeuge lesen den anderen
   // Namen). Ihn zum Zusammenfuehren vorzuschlagen hiesse, eine Datei in sich selbst zu
   // mergen — am 22.07. im ersten echten Lauf aufgefallen.
   if (e.link && /^(CLAUDE|AGENTS?|README)\.md$/i.test(e.name)) {
-    let ziel = null;
-    try { ziel = path.relative(ROOT, fs.realpathSync(e.full)); } catch {}
-    return { verdict: 'passt', ziel: e.name,
-      why: `Second name for ${ziel || 'a file in this folder'}. Stays, so tools find it under either name.` };
+    let target = null;
+    try { target = path.relative(ROOT, fs.realpathSync(e.full)); } catch {}
+    return { verdict: 'fine', target: e.name,
+      why: `Second name for ${target || 'a file in this folder'}. Stays, so tools find it under either name.` };
   }
   if (/^(CLAUDE|AGENTS?)\.md$/i.test(e.name)) {
-    return { verdict: 'merge', ziel: 'CLAUDE.md',
+    return { verdict: 'merge', target: 'CLAUDE.md',
       why: 'Instructions already exist here. They get added to, never replaced: what is written here was earned.' };
   }
-  if (/^README\.md$/i.test(e.name)) return { verdict: 'passt', ziel: 'README.md', why: 'Einstieg des Ordners' };
+  if (/^README\.md$/i.test(e.name)) return { verdict: 'fine', target: 'README.md', why: 'The entry point of this folder' };
 
   // Code
   if (e.repo) {
-    return { verdict: 'vorschlag', ziel: `projects/<gruppe>/${slug(e.name)}/code/`,
+    return { verdict: 'suggestion', target: `projects/<gruppe>/${slug(e.name)}/code/`,
       why: 'A repo of its own with its own history. It moves as a whole, and the history is left untouched.' };
   }
   if (e.dir && (fs.existsSync(path.join(e.full, 'package.json')) || fs.existsSync(path.join(e.full, 'pyproject.toml')))) {
-    return { verdict: 'vorschlag', ziel: `projects/<gruppe>/${slug(e.name)}/code/`,
+    return { verdict: 'suggestion', target: `projects/<gruppe>/${slug(e.name)}/code/`,
       why: 'Looks like code (package.json or pyproject.toml) but has no git. Check it is backed up before moving it.' };
   }
 
   // Dokumente und Material
   if (!e.dir) {
     if (STATE_DOC.test(e.name) && /\.md$/i.test(e.name)) {
-      return { verdict: 'vorschlag', ziel: `context/${e.name}`,
+      return { verdict: 'suggestion', target: `context/${e.name}`,
         why: 'Carries state (tasks, status, history). State belongs in ONE place, otherwise it drifts.' };
     }
     if (/\.md$/i.test(e.name)) {
-      return { verdict: 'frage', ziel: null,
+      return { verdict: 'question', target: null,
         why: 'A document in the root. Does it belong to a project, or is it reference material?' };
     }
     if (MEDIA.test(e.name)) {
-      return { verdict: 'vorschlag', ziel: 'inbox/',
+      return { verdict: 'suggestion', target: 'inbox/',
         why: 'Loose material. From the inbox it gets assigned to a project instead of sitting in the root.' };
     }
-    return { verdict: 'frage', ziel: null, why: 'File in the root, purpose not recognisable.' };
+    return { verdict: 'question', target: null, why: 'File in the root, purpose not recognisable.' };
   }
 
   // Verbleibende Ordner: nach Inhalt entscheiden, nicht nach Namen
   const w = weigh(e.full);
-  if (w.files === 0) return { verdict: 'frage', ziel: null, why: 'Folder is empty. Remove it, or is it reserved for something?' };
+  if (w.files === 0) return { verdict: 'question', target: null, why: 'Folder is empty. Remove it, or is it reserved for something?' };
   if (w.docs >= w.files * 0.6) {
-    return { verdict: 'vorschlag', ziel: `projects/<gruppe>/${slug(e.name)}/`,
+    return { verdict: 'suggestion', target: `projects/<gruppe>/${slug(e.name)}/`,
       why: `Mostly documents (${w.docs} of ${w.files}). Looks like a project.` };
   }
-  return { verdict: 'frage', ziel: null,
+  return { verdict: 'question', target: null,
     why: `Mixed contents (${w.files} files, of which ${w.docs} documents and ${w.media} media). Placing this needs your answer.` };
 }
 
@@ -382,13 +382,13 @@ const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g
 const entries = topLevel().filter((e) => !/^\.(DS_Store|localized)$/.test(e.name));
 const plan = entries.map((e) => {
   const c = classify(e);
-  const out = { name: e.name, typ: e.dir ? (e.repo ? 'repo' : 'ordner') : 'datei', ...c };
-  if (c.verdict === 'vorschlag') {
+  const out = { name: e.name, typ: e.dir ? (e.repo ? 'repo' : 'folder') : 'file', ...c };
+  if (c.verdict === 'suggestion') {
     const r = referrers(e.name);
     if (r.inside.length || r.outside.length) {
       out.verweise = r;
       out.warnung = r.outside.length
-        ? 'Ein Job ausserhalb des Ordners zeigt hierauf. Der bricht beim Verschieben STILL — erst nachziehen, dann verschieben.'
+        ? 'A job outside this folder points here. Moving it breaks that job SILENTLY. Update the job first, then move.'
         : 'Documents or scripts name this path. Update them after the move.';
     }
     if (!r.outsideChecked) {
@@ -398,19 +398,19 @@ const plan = entries.map((e) => {
   return out;
 });
 
-const gruppen = {
-  passt: plan.filter((p) => p.verdict === 'passt'),
-  vorschlag: plan.filter((p) => p.verdict === 'vorschlag'),
-  frage: plan.filter((p) => p.verdict === 'frage'),
+const groups = {
+  fine: plan.filter((p) => p.verdict === 'fine'),
+  suggestion: plan.filter((p) => p.verdict === 'suggestion'),
+  question: plan.filter((p) => p.verdict === 'question'),
   merge: plan.filter((p) => p.verdict === 'merge'),
   ignorieren: plan.filter((p) => p.verdict === 'ignorieren'),
 };
 
 const result = {
   root: ROOT,
-  bereitsStrukturiert: gruppen.passt.length,
-  zuVerschieben: gruppen.vorschlag.length,
-  offeneFragen: gruppen.frage.length,
+  bereitsStrukturiert: groups.fine.length,
+  zuVerschieben: groups.suggestion.length,
+  offeneFragen: groups.question.length,
   istRepo: hasGit(ROOT),
   plan,
 };
@@ -420,21 +420,21 @@ if (args.includes('--json')) {
 } else {
   const L = (s) => process.stdout.write(s + '\n');
   L(`Adoption plan for ${ROOT}`);
-  L(`${gruppen.passt.length} already fine · ${gruppen.vorschlag.length} suggestions · ${gruppen.frage.length} questions for you\n`);
-  if (gruppen.passt.length) {
-    L('PASST SCHON');
-    for (const p of gruppen.passt) L(`  ${p.name}  —  ${p.why}`);
+  L(`${groups.fine.length} already fine · ${groups.suggestion.length} suggestions · ${groups.question.length} questions for you\n`);
+  if (groups.fine.length) {
+    L('ALREADY FINE');
+    for (const p of groups.fine) L(`  ${p.name}  —  ${p.why}`);
     L('');
   }
-  if (gruppen.merge.length) {
+  if (groups.merge.length) {
     L('MERGE');
-    for (const p of gruppen.merge) L(`  ${p.name}  —  ${p.why}`);
+    for (const p of groups.merge) L(`  ${p.name}  —  ${p.why}`);
     L('');
   }
-  if (gruppen.vorschlag.length) {
+  if (groups.suggestion.length) {
     L('VORSCHLAG ZUM VERSCHIEBEN');
-    for (const p of gruppen.vorschlag) {
-      L(`  ${p.name}  →  ${p.ziel}`);
+    for (const p of groups.suggestion) {
+      L(`  ${p.name}  →  ${p.target}`);
       L(`     ${p.why}`);
       if (p.warnung) L(`     ⚠ ${p.warnung}`);
       if (p.verweise && p.verweise.outside.length) L(`       ausserhalb: ${p.verweise.outside.join(', ')}`);
@@ -443,30 +443,30 @@ if (args.includes('--json')) {
     }
     L('');
   }
-  if (gruppen.frage.length) {
+  if (groups.question.length) {
     L('NEEDS YOUR ANSWER (nothing is guessed here)');
-    for (const p of gruppen.frage) L(`  ${p.name}  —  ${p.why}`);
+    for (const p of groups.question) L(`  ${p.name}  —  ${p.why}`);
     L('');
   }
   // Herkunfts-Trennung: nur auf ausdrueckliche Anfrage, sie kostet einen Durchlauf je Projekt.
-  const hp = argOf('--herkunft');
+  const hp = argOf('--provenance');
   if (hp) {
     const wd = path.resolve(ROOT, hp);
     L(`HERKUNFT IN ${path.relative(ROOT, wd) || '.'}`);
     L('  Was wurde erhalten (inputs), was ist eigene Arbeit (work), was ging raus (outputs)?');
     L('');
-    const rows = herkunft(wd);
-    const frage = rows.filter((r) => r.urteil === '?');
+    const rows = provenance(wd);
+    const question = rows.filter((r) => r.urteil === '?');
     for (const r of rows.filter((x) => x.urteil !== '?')) {
       L(`  ${r.urteil.padEnd(8)} ${r.name.padEnd(28)} ${String(r.n).padStart(4)} Dateien — ${r.why}`);
     }
-    if (frage.length) {
+    if (question.length) {
       L('');
-      L('  BRAUCHT DEINE AUSKUNFT:');
-      for (const r of frage) L(`    ${r.name.padEnd(28)} ${String(r.n).padStart(4)} Dateien — ${r.why}`);
+      L('  NEEDS YOUR ANSWER:');
+      for (const r of question) L(`    ${r.name.padEnd(28)} ${String(r.n).padStart(4)} Dateien — ${r.why}`);
     }
     L('');
-    L('Nichts davon ist passiert. Dieser Lauf liest nur.');
+    L('None of this has happened. This run only reads.');
     process.exit(0);
   }
 
@@ -498,10 +498,10 @@ if (args.includes('--json')) {
       for (const r of inner.versionen.slice(0, 6)) L(`     ${r.label} — ${r.beispiele.join(', ')}`);
     }
     if (!wiederkehrend.length && !inner.ohneReadme.length && !inner.ruhend.length
-        && !inner.lose.length && !inner.versionen.length) L('  Keine wiederkehrende Abweichung gefunden.');
+        && !inner.lose.length && !inner.versionen.length) L('  No recurring deviation found.');
     L('');
   }
-  L('Nichts davon ist passiert. Dieser Lauf liest nur.');
+  L('None of this has happened. This run only reads.');
 }
 
 // --- Selbstprüfung:  node reference/scripts/adopt-plan.js --selftest
@@ -509,7 +509,7 @@ if (args.includes('--selftest')) {
   const assert = require('assert');
   assert.ok(plan.length > 0, 'nothing recorded');
   assert.ok(plan.every((p) => p.verdict && p.why), 'entry without a judgement or a reason');
-  assert.ok(plan.every((p) => p.verdict !== 'vorschlag' || p.ziel), 'Vorschlag ohne Ziel');
+  assert.ok(plan.every((p) => p.verdict !== 'suggestion' || p.target), 'Vorschlag ohne Ziel');
   assert.ok(!JSON.stringify(result).includes('undefined'), 'undefined im Ergebnis');
-  console.error(`ok, ${plan.length} entries, ${gruppen.vorschlag.length} suggestions, ${gruppen.frage.length} questions`);
+  console.error(`ok, ${plan.length} entries, ${groups.suggestion.length} suggestions, ${groups.question.length} questions`);
 }

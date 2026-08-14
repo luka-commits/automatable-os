@@ -1,106 +1,106 @@
-# Die Betriebs-Ebene
+# The business level
 
-Gelesen in Schritt 5 von `/audit`, **nur wenn der Nutzer zugestimmt hat oder `context/profile.md` schon existiert**. Hier steht das kurze Interview, die Ableitung des Soll-Profils, die Bewertung der genutzten Werkzeuge und das Urteil über den Werkzeugkasten als Ganzes.
+Read in step 5 of `/audit`, **only when the user has agreed or `context/profile.md` already exists**. It holds the short interview, the derivation of the target profile, the assessment of the tools in use, and the judgement on the toolkit as a whole.
 
-Diese Ebene ist bewusst optional. In einer Umgebung, in der Werkzeuge von der IT gesetzt werden, ist sie sinnlos — der Ordner-Teil von `/audit` steht für sich.
+This level is deliberately optional. In an environment where tools are set by IT it is pointless, and the folder part of `/audit` stands on its own.
 
-## Das Interview: sechs Fragen
+## The interview: six questions
 
-**Vorbefüllen statt fragen, wo die Antwort schon dasteht** — `context/config.yaml`, der „Who I Am"-Abschnitt der globalen `~/.claude/CLAUDE.md`, die Projektnamen in `context/PROJECTS.md`. Vorschlagen, bestätigen lassen. Auf einem fremden Ordner gibt es diese Quellen nicht, dann wird gefragt.
+**Pre-fill rather than ask, wherever the answer is already written down** — `context/config.yaml`, `context/expertise.md`, the project names in `context/PROJECTS.md`. Propose it, have it confirmed. On a folder that is not yours these sources do not exist, and then you ask.
 
-1. **Was machst du, für wen?** Ein Satz. Daraus folgen Betriebsart, Branche, Zielkunde — und ob lokal oder überregional gearbeitet wird (ableiten und still bestätigen, nicht separat fragen).
-2. **Wie viele Menschen arbeiten mit, und wer fasst diesen Ordner an?** Allein heißt: geteilte Ablage und Team-Chat sind *irrelevant*, nicht *fehlend*.
-3. **Liste alle Werkzeuge, die du täglich nutzt, und wofür jeweils.** Optional: was hast du abgeschafft und warum? Das „wofür" ist der eigentliche Ertrag — es nennt die Aufgabe, an der das Werkzeug gemessen wird, und verrät die Wechselkosten. „War halt schon da" und „unsere ganze Abrechnung hängt dran" führen zu völlig verschiedenen Empfehlungen. Abgeschaffte Werkzeuge verhindern, dass etwas vorgeschlagen wird, das schon durchgefallen ist.
-4. **Wo läuft der Kundenkontakt?** Mail, Telefon, WhatsApp, Formular, Plattform.
-5. **Was kostet dich gerade am meisten Zeit oder Nerven?** Bis zu drei Dinge. Ohne diese Antwort misst das Audit Vollständigkeit statt Nutzen, und eine Empfehlung ohne echten Schmerz wird nie umgesetzt.
-6. **Was soll dieser Ordner tragen, und was ausdrücklich nicht?**
+1. **What do you do, and for whom?** One sentence. From it follow the kind of business, the industry, the target customer — and whether the work is local or spread out (derive and quietly confirm, do not ask separately).
+2. **How many people are involved, and who touches this folder?** Working alone means shared storage and team chat are *irrelevant*, not *missing*.
+3. **List every tool you use daily, and what each is for.** Optional: what have you dropped, and why? The "what for" is the real yield — it names the task the tool is measured against, and it reveals the switching cost. "It was already there" and "our entire billing hangs off it" lead to completely different recommendations. Dropped tools stop you proposing something that has already failed once.
+4. **Where does client contact happen?** Mail, phone, WhatsApp, a form, a platform.
+5. **What currently costs you the most time or patience?** Up to three things. Without this answer the audit measures completeness instead of usefulness, and a recommendation without real pain never gets acted on.
+6. **What should this folder carry, and what explicitly not?**
 
-Zu einem Werkzeug ohne erkennbares „wofür" **eine** Rückfrage, nicht mehr. Ziel: unter zwei Minuten. Danach `context/profile.md` schreiben; abgelehnte Vorschläge früherer Läufe stehen dort mit Datum und Grund und werden nicht erneut vorgeschlagen.
+For a tool with no recognisable "what for", **one** follow-up question, no more. Target: under two minutes. Then write `context/profile.md`; proposals rejected in earlier runs sit there with a date and a reason and are not proposed again.
 
-## Soll-Profil: welche Fähigkeit zählt für wen
+## Target profile: which capability counts for whom
 
-Zwölf Fähigkeits-Slots, die für jeden Betrieb gelten. Jeder bekommt aus dem Profil eine Stufe: **Pflicht · nützlich · irrelevant**.
+Twelve capability slots that apply to any business. Each gets a level from the profile: **required · useful · irrelevant**.
 
 ```
-Mail · Kalender · Ablage · Team-Chat · CRM · Buchhaltung/Rechnung
-Aufgaben/Projekte · Website/Shop · Social/Publishing · Support-Postfach
-Entwicklung · Lokale Sichtbarkeit
+Mail · Calendar · Storage · Team chat · CRM · Accounting/invoicing
+Tasks/projects · Website/shop · Social/publishing · Support inbox
+Development · Local visibility
 ```
 
-**Die Zuordnung folgt Regeln aus den Antworten, nie einer Branchentabelle.** Eine feste Zuordnung „Handwerk braucht X" wäre genau der Bias, den dieses Werkzeug vermeiden soll.
+**The assignment follows rules derived from the answers, never an industry table.** A fixed mapping of "trades need X" would be exactly the bias this tool exists to avoid.
 
-| Aus dem Profil | folgt |
+| From the profile | follows |
 |---|---|
-| Kundenkontakt läuft über einen Kanal | dieser Kanal wird Pflicht |
-| Allein oder zu zweit | Team-Chat und geteilte Ablage irrelevant |
-| Lokal, Laufkundschaft oder Einzugsgebiet | lokale Sichtbarkeit Pflicht |
-| Wiederkehrende Kunden, Angebote, Nachfassen | CRM Pflicht |
-| Rechnungen im eigenen Namen | Buchhaltung Pflicht |
-| Code, Deployments, eigenes Produkt | Entwicklung Pflicht |
-| Reichweite ist Teil des Geschäfts | Social/Publishing Pflicht |
-| Ein Painpoint nennt einen Bereich ausdrücklich | dieser Bereich steigt eine Stufe |
+| Client contact runs over one channel | that channel becomes required |
+| Working alone or as a pair | team chat and shared storage irrelevant |
+| Local, walk-in trade or a catchment area | local visibility required |
+| Repeat customers, quotes, following up | CRM required |
+| Invoices in your own name | accounting required |
+| Code, deployments, an own product | development required |
+| Reach is part of the business | social/publishing required |
+| A pain point names an area explicitly | that area moves up one level |
 
-Ein **irrelevanter Slot taucht im Bericht gar nicht auf**. Ein fehlender Pflicht-Slot ist ein Befund, ein fehlender nützlicher eine Anregung.
+An **irrelevant slot does not appear in the report at all**. A missing required slot is a finding; a missing useful one is a suggestion.
 
-## Das Dossier: fünf Fragen je genanntem Werkzeug
+## The dossier: five questions per named tool
 
-### 1. Funktionsabdeckung
+### 1. Functional coverage
 
-Deckt es die Aufgaben ab, die aus dem „wofür" **und den Painpoints** folgen? Die Soll-Fähigkeiten werden aus dem Schmerz abgeleitet, nicht aus einer generischen Feature-Liste.
+Does it cover the tasks that follow from the "what for" **and from the pain points**? The target capabilities are derived from the pain, not from a generic feature list.
 
-> „Anfragen per WhatsApp gehen verloren" → gebraucht wird ein WhatsApp-Eingang im CRM → kann das genannte Werkzeug das, und ist es eingeschaltet?
+> "Enquiries over WhatsApp get lost" → what is needed is a WhatsApp inbox in the CRM → can the named tool do that, and is it switched on?
 
-### 2. Anbindbarkeit — die Leiter
+### 2. Connectability — the ladder
 
-Immer von oben prüfen, die erste Stufe die trägt gewinnt:
+Always check from the top; the first rung that holds wins:
 
-| Stufe | Weg | Aufwand für den Nutzer |
+| Rung | Route | Effort for the user |
 |---|---|---|
-| 1 | Connector in Claude Cowork | einmal anmelden, keine Konfiguration |
-| 2 | Offizieller MCP-Server (npm oder remote) | Token anlegen, einmal registrieren |
-| 3 | CLI | installieren, authentifizieren |
-| 4 | REST-API mit eigenem Script | Key besorgen, Script bauen |
-| 5 | kein Weg | ehrlich sagen, manuell bleiben |
+| 1 | Connector in Claude Cowork | sign in once, no configuration |
+| 2 | Official MCP server (npm or remote) | create a token, register once |
+| 3 | CLI | install, authenticate |
+| 4 | REST API with your own script | get a key, build a script |
+| 5 | no route | say so honestly, stay manual |
 
-**Die Regel gegen erfundene Wege:** Eine Stufe wird erst genannt, wenn ihr Auth-Weg belegt ist — Doku gelesen oder Endpunkt geprüft. Kein „es gibt bestimmt einen MCP-Server".
+**The rule against invented routes:** a rung is only named once its auth route is evidenced — documentation read, or endpoint checked. No "there is bound to be an MCP server".
 
-Am 21.07.2026 ist genau das schiefgegangen: Für HubSpot sah der HTTP-Endpunkt nach einer fertigen Anbindung aus, hatte aber kein `registration_endpoint`. Der echte Weg war das npm-Paket mit einem Private-App-Token. Wer die Stufe behauptet hätte, hätte den Nutzer in eine Sackgasse geschickt.
+That is exactly what went wrong once: for HubSpot the HTTP endpoint looked like a finished integration but had no `registration_endpoint`. The real route was the npm package with a private-app token. Claiming the rung would have sent the user into a dead end.
 
-Belegte Beispiele als Muster, wie unterschiedlich Stufe 2 aussehen kann:
+Two evidenced examples, as a pattern for how differently rung 2 can look:
 
-- **ClickUp** — offizieller MCP-Server, dokumentiert unter `developer.clickup.com/docs/connect-an-ai-assistant-to-clickups-mcp-server` (Stand 22.07.2026)
-- **GoHighLevel** — LeadConnector MCP unter `services.leadconnectorhq.com/mcp/`, Bearer-PIT-Token plus `locationId`, 36 Tools (Stand 22.07.2026)
+- **ClickUp** — official MCP server, documented at `developer.clickup.com/docs/connect-an-ai-assistant-to-clickups-mcp-server`
+- **GoHighLevel** — LeadConnector MCP at `services.leadconnectorhq.com/mcp/`, bearer PIT token plus `locationId`, 36 tools
 
-Diese beiden sind **Beispiele, keine Vorgaben.** Sie stehen hier, weil sie zeigen, dass „hat MCP" nichts über den Auth-Weg sagt.
+These two are **examples, not requirements.** They are here because they show that "has MCP" says nothing about the auth route.
 
-### 3. Ruf in dieser Branche
+### 3. Reputation in this industry
 
-Was Nutzer wirklich sagen, Vor- **und** Nachteile, aus Bewertungsquellen (G2, Capterra, Reddit, Trustpilot) — **nie aus Herstellertexten**. Ein Herstellertext beschreibt, was das Werkzeug können soll; die Bewertung beschreibt, was es tut.
+What users actually say, advantages **and** disadvantages, from review sources (G2, Capterra, Reddit, Trustpilot) — **never from vendor copy**. Vendor copy describes what the tool is meant to do; the review describes what it does.
 
-### 4. Preis
+### 4. Price
 
-Was gezahlt wird gegen das, was der Markt nimmt. Pro Platz, und was erst später dazukommt (Zusatzmodule, Volumengrenzen, Onboarding-Gebühren).
+What is being paid against what the market charges. Per seat, and what only arrives later (add-on modules, volume limits, onboarding fees).
 
-### 5. Urteil — genau drei Ausgänge
+### 5. Verdict — exactly three outcomes
 
-- **Behalten** — deckt die Aufgabe, Anbindung steht oder ist erreichbar
-- **Behalten und die eine Lücke schließen** — Add-on, Integration oder ein Prozess drumherum
-- **Wechsel wäre einen Blick wert** — nur wenn ein genannter Painpoint das trägt
+- **Keep** — covers the task, the connection is in place or reachable
+- **Keep and close the one gap** — an add-on, an integration, or a process around it
+- **A switch would be worth a look** — only when a stated pain point carries it
 
-## Das Bündel im Ganzen
+## The bundle as a whole
 
-Nach den Einzel-Dossiers ein Urteil über den ganzen Werkzeugkasten. Das sieht niemand, der nur Tool für Tool schaut:
+After the individual dossiers, a judgement on the whole toolkit. This is what nobody sees who only looks tool by tool:
 
-| Frage | Woran erkennbar | Warum sie zählt |
+| Question | How you spot it | Why it counts |
 |---|---|---|
-| **Doppelt besetzt?** | Zwei Werkzeuge mit demselben „wofür" | Doppelte Kosten, geteilte Wahrheit, niemand weiß welches gilt |
-| **Flickenteppich?** | Wo werden Daten von Hand von A nach B kopiert? Fällt aus den „wofür"-Antworten und den Painpoints | Jede Handkopie ist eine wiederkehrende Fehlerquelle und ein Automatisierungs-Kandidat |
-| **Überdimensioniert?** | Werkzeugklasse gegen Betriebsgröße | Über- und Unterdimensionierung kosten beide, nur unterschiedlich |
-| **Steuerbar?** | Anteil der Werkzeuge mit belegtem Anbindungsweg | **Die Kennzahl des Bündels:** „6 von 9 Werkzeugen kann Claude erreichen." Sagt in einer Zeile, wie weit Automatisierung überhaupt tragen kann |
-| **Was kostet das zusammen?** | Summe der Abos gegen Betriebsgröße, plus was doppelt bezahlt wird | Oft der einzige Befund, der sofort Geld freisetzt |
+| **Doubled up?** | Two tools with the same "what for" | Double cost, split truth, nobody knows which one counts |
+| **Patchwork?** | Where is data copied by hand from A to B? Falls out of the "what for" answers and the pain points | Every manual copy is a recurring source of error and a candidate for automation |
+| **Oversized?** | Tool class against business size | Over- and undersizing both cost, just differently |
+| **Steerable?** | Share of tools with an evidenced connection route | **The bundle's one metric:** "Claude can reach 6 of your 9 tools." Says in one line how far automation can carry at all |
+| **What does it cost together?** | Sum of the subscriptions against business size, plus what is paid for twice | Often the only finding that frees up money immediately |
 
-Auch hier kein Alleinurteil: Doppelbesetzung kann bewusst sein, Überdimensionierung kann Wachstumsvorbereitung sein. Der Befund benennt die Beobachtung und die Frage dazu, nicht das Verdikt.
+No solo verdict here either: being doubled up can be deliberate, oversizing can be preparation for growth. The finding names the observation and the question that goes with it, not the verdict.
 
-## Ablage
+## Where it goes
 
-Ergebnisse nach `context/tool-dossiers.md`, je Werkzeug ein Block mit **Datum und Quelle** pro Aussage. Beim nächsten Lauf wird von dort gelesen; nachrecherchiert wird nur, was älter als drei Monate ist oder wofür der Nutzer eine Änderung gemeldet hat.
+Results into `context/tool-dossiers.md`, one block per tool with **a date and a source** per statement. The next run reads from there; only what is older than three months, or what the user has reported a change for, gets researched again.

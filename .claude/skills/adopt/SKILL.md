@@ -5,184 +5,184 @@ description: "Rebuilds an EXISTING folder into the workspace structure without l
 
 # /adopt
 
-Bringt einen gewachsenen Ordner in die Workspace-Struktur. **Fertig ist es, wenn der Ordner nicht mehr davon zu unterscheiden ist, als wäre er frisch aufgesetzt worden** — plus die vorhandenen Inhalte an ihrem richtigen Platz.
+Brings a folder that grew on its own into the workspace structure. **It is finished when the folder is indistinguishable from one that was set up fresh** — plus the existing contents in their right place.
 
-**Der Unterschied zu `/setup`:** `/setup` richtet einen frisch kopierten, leeren Workspace ein und darf alles anlegen. `/adopt` trifft auf fremde Arbeit und darf fast nichts anfassen, ohne zu fragen. Das ist kein Detailunterschied, das ist die ganze Schwierigkeit.
+**The difference to `/setup`:** `/setup` prepares a freshly copied, empty workspace and may create anything. `/adopt` meets someone else's work and may touch almost nothing without asking. That is not a detail, that is the entire difficulty.
 
-## Das Ziel ist die Struktur dieses Pakets, nicht ein Kompromiss mit der vorgefundenen
+## The target is this package's structure, not a compromise with the one you found
 
-**Vorsicht gilt den Inhalten, nie dem Schema.** Was in den Dateien steht, gehört dem Nutzer, da wird nichts geraten und nichts stillschweigend bewegt. Aber **wie die Ordner heißen, ist keine Verhandlungssache** — es ist das, was er gekauft hat.
+**Caution applies to the contents, never to the schema.** What is written in the files belongs to the user; nothing there is guessed and nothing is quietly moved. But **what the folders are called is not up for negotiation** — it is what they came for.
 
-Der Grund ist mechanisch, nicht ästhetisch: `/ingest` schreibt nach `inputs/`, `/eod` liest aus `work/`, `projects/README.md` beschreibt genau diese drei Ordner, und das Audit prüft dagegen. Ein Workspace, der `docs/` behält, hat kein zweites gültiges Schema, sondern Werkzeuge, die ins Leere greifen. Und zwar still, was die schlimmere Sorte ist.
+The reason is mechanical, not aesthetic: `/ingest` writes to `inputs/`, `/eod` reads from `work/`, `projects/README.md` describes exactly those three folders, and the audit checks against them. A workspace that keeps `docs/` does not have a second valid schema, it has tools reaching into thin air. Quietly, which is the worse kind.
 
-Deshalb, ohne Ausnahme:
+So, without exception:
 
-- **`inputs/`, `work/`, `outputs/` sind die Namen.** Ein vorgefundener `docs/`, `notizen/`, `material/` wird umbenannt, nicht als gleichwertig geführt.
-- **Gefragt wird, was wohin gehört, nicht ob umbenannt wird.** „Ist `docs/` bei dir eigene Arbeit oder Erhaltenes?" ist die Frage. „Wollen wir `docs/` behalten?" ist keine.
-- **Bleibt ein fremder Name doch stehen**, weil der Nutzer ausdrücklich darauf besteht, ist das seine Entscheidung und sie wird respektiert. Aber sie kommt in den Bericht aus Schritt 5, mit dem Satz, was dadurch nicht funktioniert. Eine bewusste Ausnahme ist tragbar, eine unbemerkte ist eine Zeitbombe.
+- **`inputs/`, `work/`, `outputs/` are the names.** A `docs/`, `notes/`, `material/` you find gets renamed, not treated as equivalent.
+- **The question is what goes where, not whether to rename.** "Is `docs/` your own work, or things you received?" is the question. "Shall we keep `docs/`?" is not.
+- **If a foreign name does stay**, because the user explicitly insists, that is their decision and it is respected. But it goes into the report in step 5, with the sentence saying what stops working because of it. A deliberate exception is bearable; an unnoticed one is a time bomb.
 
-**Der Selbsttest:** Wenn am Ende jemand `/ingest` sagt und die Datei landet nicht in `inputs/`, war der Umbau nicht fertig, egal wie aufgeräumt es aussieht.
+**The self-test:** if at the end someone says `/ingest` and the file does not land in `inputs/`, the rebuild was not finished, however tidy it looks.
 
-## Warum das der heikelste Ablauf im ganzen System ist
+## Why this is the most delicate flow in the whole system
 
-Ein Umbau ist unumkehrbar, wenn man ihn nicht umkehrbar baut. Drei Wege in den Schaden, alle drei real erlebt:
+A rebuild is irreversible unless you build it to be reversible. Three routes into damage, all three seen for real:
 
-1. **Eine bestehende `CLAUDE.md` wird überschrieben.** Darin steckt oft Monate an Feinschliff, und der Verlust fällt erst Wochen später auf, wenn Claude sich anders verhält und niemand weiß warum.
-2. **Ein Ordner wird verschoben, auf den etwas zeigt.** Am 22.07.2026 hat genau das den Morning-Digest getötet: ein launchd-Job zeigte auf den alten Pfad, startete täglich, starb mit Exit 127, und **niemand bekam eine Meldung**. Vier Monate hätte das so laufen können.
-3. **Etwas wird einsortiert, das bewusst woanders lag.** Ordnung nach fremdem Schema ist keine Ordnung.
+1. **An existing `CLAUDE.md` gets overwritten.** It often holds months of refinement, and the loss only shows up weeks later, when Claude behaves differently and nobody knows why.
+2. **A folder gets moved that something points at.** That is exactly what once killed a morning digest: a launchd job pointed at the old path, started daily, died with exit 127, and **nobody was told**. It could have run like that for months.
+3. **Something gets filed that was deliberately somewhere else.** Order imposed by a foreign schema is not order.
 
-Daraus folgen die Regeln unten. Sie sind nicht Vorsicht um der Vorsicht willen, jede steht für einen konkreten Schaden.
+The rules below follow from that. They are not caution for its own sake; each one stands for a concrete piece of damage.
 
-## Schritt 1 — Plan erstellen (fasst nichts an)
+## Step 1 — Build the plan (touches nothing)
 
 ```
-node reference/scripts/adopt-plan.js --root <pfad>
+node reference/scripts/adopt-plan.js --root <path>
 ```
 
-Liest den Ordner und teilt jeden Eintrag in vier Gruppen: **passt schon** · **zusammenführen** · **Vorschlag zum Verschieben** · **braucht Auskunft**. Maschinerie (alles mit Punkt am Anfang, Konfigurationsdateien) wird nie zum Verschieben vorgeschlagen — sie zu bewegen macht den Ordner kaputt.
+Reads the folder and sorts every entry into four groups: **already fine** · **merge** · **suggested move** · **needs your answer**. Machinery (anything starting with a dot, configuration files) is never suggested for moving — moving it breaks the folder.
 
-Bei jedem Verschiebe-Vorschlag steht dabei, **wer auf diesen Pfad zeigt**: Dokumente, Scripts, und besonders Jobs außerhalb des Ordners (`~/Library/LaunchAgents`). Ein Vorschlag mit externem Verweis wird **nie ohne Nachziehen ausgeführt**.
+Every move suggestion states **who points at this path**: documents, scripts, and especially jobs outside the folder (`~/Library/LaunchAgents`). A suggestion with an external reference is **never carried out without updating it**.
 
-## Schritt 2 — Den Plan zeigen und die Lücken klären
+## Step 2 — Show the plan and settle the gaps
 
-Den Plan in Klartext vorlesen, nicht die JSON. Struktur: was schon passt (eine Zeile, nicht aufzählen), was verschoben würde und warum, und dann die Fragen.
+Read the plan out in plain language, not the JSON. Structure: what already fits (one line, do not enumerate), what would move and why, and then the questions.
 
-**Eine Frage stellt das Script nie, sie gehört aber immer dazu: liegt hier Material von mehr als einem Kunden?** Wenn ja, entscheidet der Nutzer VOR dem Umbau, ob jeder Kunde einen eigenen Ordner bekommt. Danach zu fragen ist zu spät, dann liegt alles schon beieinander und muss ein zweites Mal angefasst werden.
+**One question the script never asks, but it always belongs: is there material from more than one client here?** If so, the user decides BEFORE the rebuild whether each client gets their own folder. Asking afterwards is too late; by then everything sits together and has to be touched a second time.
 
-**Die Fragen sind der wichtigste Teil.** Das Script rät bewusst nicht. Typische Fälle: ein Ordner mit gemischtem Inhalt, ein Dokument in der Wurzel, ein leeres Verzeichnis. Frage je Fall in einem Satz, mit einem Vorschlag als Default — Auswählen ist schneller als Erklären.
+**The questions are the most important part.** The script deliberately does not guess. Typical cases: a folder with mixed contents, a document in the root, an empty directory. One sentence per case, with a suggestion as the default — choosing is faster than explaining.
 
-Erst wenn keine Frage mehr offen ist, geht es weiter. **Ein „ich weiß nicht" heißt: der Eintrag bleibt liegen.** Liegenlassen ist immer richtig, Raten nie.
+Only when no question is left does it continue. **An "I don't know" means: the entry stays where it is.** Leaving it is always right, guessing never is.
 
-## Schritt 2b — Innerhalb der Projekte
+## Step 2b — Inside the projects
 
-Ein Ordner, dessen Wurzel schon stimmt, ist nicht übernommen. Genau das war der Befund vom 22.07.: der Plan meldete „11 passt schon, 0 Vorschläge", während elf von sechzehn Projekten `docs/` statt `work/` führten. **Wer nur die oberste Ebene prüft, ist blind für den Normalfall** — jemand hat schon eine Ordnung, sie ist nur eine andere.
+A folder whose root is already correct has not been adopted. That was exactly the finding on the first real run: the plan reported "11 already fine, 0 suggestions" while eleven of sixteen projects used `docs/` instead of `work/`. **Checking only the top level is blind to the normal case** — someone already has an order, it is just a different one.
 
-Der Plan zeigt dazu vier Dinge. Aus jedem wird eine Frage, nie eine Bewegung:
+The plan shows four things for this. Each becomes a question, never a movement:
 
-| Was der Plan zeigt | Die Frage dazu |
+| What the plan shows | The question it raises |
 |---|---|
-| **Ein Ordnername in vielen Projekten**, den das Schema nicht kennt (`docs/`, `notizen/`) | **Was liegt da drin — eigene Arbeit oder Erhaltenes?** Danach wird umbenannt: eigene Arbeit → `work/`, Erhaltenes → `inputs/`, Rausgegangenes → `outputs/`. Einmal entschieden, dann überall gleich. Liegt beides gemischt darin, ist das die Trennung aus dem Abschnitt unten, nicht ein Grund, den alten Namen zu behalten. **Die Frage ist wohin, nie ob.** |
-| **Ein Projekt ohne Änderung seit über 90 Tagen** | Ruht es oder ist es zu Ende? Antwort „zu Ende" → der Ablauf aus `projects/README.md` § „Projekt archivieren", **mit** der Frage nach den offenen Aufgaben. Ein Projekt still wegzuräumen und seine Tasks stehen zu lassen ist die schlimmere Unordnung. |
-| **Lose Dateien direkt im Projektordner** | Ist das eigene Arbeit (`work/`) oder etwas Erhaltenes (`inputs/`)? Bei mehr als fünf Dateien nicht einzeln fragen, sondern einmal pro Projekt. |
-| **Versionsspuren im Dateinamen** (`final`, `v2`, `Kopie`, ` 2.`) | Welche gilt? Der Umbau ist die eine Gelegenheit, das zu klären, danach fragt es nie wieder jemand. Antwort → die geltende bleibt in `work/`, die anderen nach `_archive/` im Projekt. **Nie raten, nie stillschweigend löschen.** |
+| **A folder name across many projects** that the schema does not know (`docs/`, `notes/`) | **What is in there — your own work, or things you received?** Then it gets renamed: own work → `work/`, received → `inputs/`, sent out → `outputs/`. Decided once, then applied everywhere. If both are mixed in there, that is the separation described in the section below, not a reason to keep the old name. **The question is where to, never whether.** |
+| **A project untouched for more than 90 days** | Is it dormant or is it over? Answer "over" → the flow in `projects/README.md` § "archiving a project", **including** the question about its open tasks. Quietly filing a project away and leaving its tasks standing is the worse kind of mess. |
+| **Loose files directly in the project folder** | Is that your own work (`work/`) or something received (`inputs/`)? With more than five files, do not ask file by file, ask once per project. |
+| **Version markers in the file name** (`final`, `v2`, `copy`, ` 2.`) | Which one counts? The rebuild is the one occasion to settle that; afterwards nobody ever asks again. Answer → the current one stays in `work/`, the others go to `_archive/` inside the project. **Never guess, never quietly delete.** |
 
-**Was hier nie angefasst wird:** ein Unterordner mit eigenem `.git`. Das ist Kundencode, ein Produkt-Repo oder ein geklonter Fremdstand — eigene Historie, oft ein anderer Eigentümer. Der Plan listet solche Ordner getrennt als „unberührt" auf, und dabei bleibt es. Auch nicht „nur die README verschieben".
+**What is never touched here:** a subfolder with its own `.git`. That is client code, a product repo or a cloned third-party checkout — its own history, often a different owner. The plan lists such folders separately as "untouched", and that is where it ends. Not even "just move the README".
 
-### Erhaltenes von Eigenem trennen
+### Separating what was received from what you made
 
-Ein `work/`, in dem alles zusammenliegt, ist der Normalfall bei gewachsenen Ordnern. Die Trennung lohnt sich, weil `inputs/` beantwortet, **was der Kunde geschickt hat** — die Frage, die drei Monate später kommt und dann niemand mehr belegen kann.
+A `work/` with everything piled together is the normal case in folders that grew. The separation pays off because `inputs/` answers **what the client sent** — the question that arrives three months later, when nobody can prove it any more.
 
 ```
-node reference/scripts/adopt-plan.js --root <pfad> --herkunft projects/<gruppe>/<projekt>/work
+node reference/scripts/adopt-plan.js --root <path> --provenance projects/<group>/<project>/work
 ```
 
-**Geurteilt wird auf der ERSTEN Ebene unter `work/`, nie tiefer.** Das ist der ganze Trick, und er wurde teuer gelernt: pro Datei entstehen Hunderte Rückfragen, pro Blattordner immer noch dutzende und lauter Unsinn — jede fremde CSS-Datei einer geklonten Website galt als „selbst geschrieben". Auf der ersten Ebene sind es zwei Fragen, und die Urteile stimmen. Ein Mensch denkt genauso: „der website-Ordner ist eine Kopie, ernaehrung ist ein Vorhaben."
+**Judge on the FIRST level under `work/`, never deeper.** That is the whole trick, and it was learned expensively: per file you get hundreds of follow-up questions, per leaf folder still dozens and plenty of nonsense — every foreign CSS file of a cloned website counted as "written by hand". On the first level it is two questions, and the judgements are right. A person thinks the same way: "the website folder is a copy, nutrition is a project."
 
-**Was NICHT funktioniert, damit es niemand noch einmal baut:**
+**What does NOT work, so nobody builds it again:**
 
-- **Zeitstempel** („nie bearbeitet, also erhalten"). Ein einziger Ordner-Umzug setzt Erstell- und Änderungszeit gleich, danach sieht jede Datei unbearbeitet aus. An echten Daten geprüft und verworfen.
-- **Die git-Historie** („einmal hinzugefügt, also erhalten"). Struktur-Commits fassen alle Dateien gleichzeitig an; die Zahl ist danach für jede Datei dieselbe. Ebenfalls geprüft und verworfen.
+- **Timestamps** ("never edited, so it was received"). A single folder move sets creation and modification time equal, after which every file looks untouched. Tested against real data and discarded.
+- **The git history** ("added once, so it was received"). Structural commits touch every file at the same time; the number is then identical for every file. Also tested and discarded.
 
-Was trägt, ist unspektakulär: **Format und Name**. PDF, DOCX, Sprachnachrichten und Kamerabilder bekommt man; Markdown, HTML und Code schreibt man. Ein Ordner mit `wp-content`, `node_modules` oder `vendor` irgendwo darin ist eine heruntergeladene Fremdsache, ganz gleich was sonst darin liegt.
+What works is unspectacular: **format and name**. PDFs, DOCX, voice messages and camera images are things you get; Markdown, HTML and code are things you write. A folder with `wp-content`, `node_modules` or `vendor` anywhere inside it is a downloaded third-party thing, whatever else is in there.
 
-**Und die Regel, die über allem steht: was gemischt ist, wird gefragt, nicht geraten.** Bei einem Testlauf blieben zwei von zwölf Einträgen offen — genau die zwei, die wirklich gemischt waren. Beide Male ist die Rückfrage die richtige Antwort, nicht ein Fehler des Werkzeugs.
+**And the rule above all others: what is mixed gets asked about, not guessed.** On a test run, two of twelve entries stayed open — exactly the two that really were mixed. Both times the follow-up question is the right answer, not a failure of the tool.
 
-**Reihenfolge:** diese Fragen kommen zusammen mit denen aus Schritt 2, in EINER Runde. Zweimal nachzufragen ist der sicherste Weg, den Nutzer mitten im Umbau zu verlieren.
+**Order:** these questions come together with the ones from step 2, in ONE round. Asking twice is the surest way to lose the user mid-rebuild.
 
-## Schritt 3 — Ausführen, mit Rückweg
+## Step 3 — Execute, with a way back
 
-**Vor der ersten Bewegung** ein Manifest anlegen: `context/.adopt-manifest.json` mit Zeitstempel und einer Zeile je geplanter Bewegung (`von`, `nach`, `methode`). Das ist der Rückweg — ohne ihn ist der Umbau ein Sprung ohne Netz.
+**Before the first movement**, create a manifest: `context/.adopt-manifest.json` with a timestamp and one line per planned movement (`from`, `to`, `method`). That is the way back; without it the rebuild is a jump without a net.
 
-**Das Gerüst gehört mit ins Manifest.** In einem gewachsenen Ordner gibt es `context/` noch gar nicht, das Anlegen der vier Ordner ist also selbst schon eine Veränderung. Sie zuerst eintragen, sonst deckt der Rückweg genau den Anfang nicht ab (im Testlauf am 22.07. aufgefallen).
+**The scaffolding belongs in the manifest too.** In a folder that grew there is no `context/` yet, so creating the four folders is itself already a change. Record it first, or the way back does not cover the very beginning.
 
-**Läuft ein Cloud-Sync mit (OneDrive, Dropbox, iCloud), erst pausieren lassen.** Verschieben während einer laufenden Synchronisierung erzeugt Konfliktkopien (`STATUS 2.md`), und die tauchen erst Tage später auf. Ein Satz an den Nutzer genügt. Bereits vorhandene Konfliktkopien **nie selbst auflösen**: welche Fassung gilt, weiß nur er.
+**If a cloud sync is running (OneDrive, Dropbox, iCloud), have it paused first.** Moving during an active sync creates conflict copies (`STATUS 2.md`), and those only surface days later. One sentence to the user is enough. Conflict copies that already exist are **never resolved by you**: only they know which version counts.
 
-Dann der Reihe nach:
+Then, in order:
 
-- **Verschieben mit `git mv`, wenn der Ordner ein Repo ist**, sonst mit `mv`. Nie `cp` und danach löschen: das erzeugt einen Moment, in dem beides existiert, und einen zweiten, in dem nichts stimmt.
-- **Ein verschachteltes Repo zieht als Ganzes um.** Nie in seine Historie eingreifen, nie neu initialisieren.
-- **`CLAUDE.md` zusammenführen, nie ersetzen.** Der bestehende Inhalt bleibt vollständig; unsere Abschnitte kommen dazu, klar getrennt. Bei einem Widerspruch gewinnt der bestehende Text, und der Widerspruch wird genannt statt still aufgelöst.
-- **Nichts löschen.** „Weg" heißt `inbox/archive/YYYY-MM-<thema>/`.
-- **Nach jeder Bewegung die Verweise nachziehen**, die Schritt 1 gemeldet hat. Erst dann die nächste. Sammelt man das auf, vergisst man die Hälfte.
+- **Move with `git mv` when the folder is a repo**, otherwise with `mv`. Never `cp` and then delete: that creates a moment where both exist, and a second where nothing is right.
+- **A nested repo moves as a whole.** Never touch its history, never re-initialise it.
+- **Merge `CLAUDE.md`, never replace it.** The existing content stays complete; our sections are added, clearly separated. On a contradiction the existing text wins, and the contradiction gets named rather than quietly resolved.
+- **Delete nothing.** "Gone" means `inbox/archive/YYYY-MM-<topic>/`.
+- **After every movement, update the references** step 1 reported. Only then the next one. Collect them up and you forget half.
 
-**Drei Regeln fürs Archivieren, alle drei am 22.07. im ersten echten Lauf gelernt, jede auf die harte Tour:**
+**Three rules for archiving, all three learned the hard way on the first real run:**
 
-1. **Beim Archivieren den Pfad mitnehmen, nie nur den Dateinamen.** Flach nach `inbox/archive/` verschieben heißt: zwei Dateien mit demselben Namen überschreiben sich gegenseitig, lautlos. Von 13 Dateien kamen 10 an. Richtig ist `inbox/archive/YYYY-MM-<thema>/<originalpfad>/<datei>`.
-2. **Ein Muster im Dateinamen ist kein Beweis.** „Enthält 2" traf `Seedance 2.0`, einen Produktnamen. Eine Sync-Konfliktkopie erkennt man daran, dass **die Datei ohne die 2 danebenliegt** — sonst ist es einfach ein Name mit einer Zahl darin. Das Script prüft das inzwischen, aber die Regel gilt für jede Mustersuche, die du selbst schreibst.
-3. **Suchläufe halten an der Repo-Grenze.** Ein `find` über den ganzen Ordner läuft in `code/` hinein und damit in fremde Historie. Beim ersten Lauf wurde so ein Verzeichnis aus einem Kunden-Repo herausgezogen — genau die Grenze, die zwei Absätze weiter oben als hart bezeichnet wird. Jede Suche schließt Ordner mit eigenem `.git` aus, nicht nur die Bewegung.
+1. **When archiving, carry the path along, never just the file name.** Moving flat into `inbox/archive/` means two files with the same name overwrite each other, silently. Of 13 files, 10 arrived. The right form is `inbox/archive/YYYY-MM-<topic>/<originalpath>/<file>`.
+2. **A pattern in a file name is not proof.** "Contains 2" matched `Seedance 2.0`, a product name. You recognise a sync conflict copy by **the file without the 2 sitting next to it** — otherwise it is simply a name with a number in it. The script checks this now, but the rule holds for every pattern search you write yourself.
+3. **Searches stop at the repo boundary.** A `find` over the whole folder runs into `code/` and therefore into someone else's history. On the first run a directory was pulled out of a client repo that way — exactly the boundary called hard two paragraphs above. Every search excludes folders with their own `.git`, not just every movement.
 
-**Und eine fürs Manifest:** es wird **je Schritt** geschrieben, gegen die Pfade, die in diesem Moment gelten. Ein Manifest, das am Anfang alle Bewegungen auf einmal festhält, zeigt nach der ersten Umbenennung auf Pfade, die es nicht mehr gibt — und der Rückweg legt die Dateien dann in einen neu erfundenen Ordner statt zurück.
+**And one for the manifest:** it is written **per step**, against the paths that hold at that moment. A manifest that records all movements at once points, after the first rename, at paths that no longer exist — and the way back then puts the files into a newly invented folder instead of back.
 
-Bricht etwas mittendrin ab: das Manifest sagt, was schon passiert ist. Rückbau heißt, die Liste rückwärts abzuarbeiten.
+If something breaks midway, the manifest says what has already happened. Rolling back means working the list backwards.
 
-## Schritt 3b — Die Ausstattung nachziehen
+## Step 3b — Catch up the tooling
 
-Struktur allein ist nicht übernommen. Ein frisch aufgesetzter Workspace hat auch **Werkzeuge**: installierte Plugins, vorhandene CLIs, verbundene Connectoren, hinterlegte Zugänge. Ein Ordner mit perfekter Ordnerlogik und ohne Werkzeuge ist ein halber Umbau.
+Structure alone is not adoption. A freshly set-up workspace also has **tools**: installed plugins, available CLIs, connected connectors, stored credentials. A folder with perfect folder logic and no tools is half a rebuild.
 
-Den Ist-Stand liefert das Inventar, ohne Raten:
+The inventory supplies the current state, without guessing:
 
 ```
 node reference/scripts/inventory.js
 ```
 
-### Erst die Gegenüberstellung zeigen, dann anbieten
+### Show the comparison first, then offer
 
-**Der Nutzer sieht als Erstes eine Liste in zwei Spalten, nicht eine Reihe von Einzelfragen.** Wer schon zehn Dinge hat und drei nicht, will das auf einen Blick sehen — und nicht zehnmal „hast du schon…" beantworten, um am Ende nicht zu wissen, was jetzt eigentlich fehlt.
+**The user sees a two-column list first, not a series of individual questions.** Someone who already has ten things and lacks three wants to see that at a glance, not answer "do you already have…" ten times and still not know at the end what is actually missing.
 
-Gegenzuhalten ist gegen: `reference/plugins.md` (die sechs Plugins), `reference/tools.md` (`firecrawl`, `playwright`, Node.js, die `claude`-Kommandozeile), `reference/mcp.md` (die sechs Verbindungen).
+Compare against: `reference/plugins.md` (the plugins), `reference/tools.md` (`firecrawl`, `playwright`, Node.js, the `claude` command line), `reference/mcp.md` (the connections).
 
-> **Ist schon da:** Node.js, firecrawl, GitHub-Login, Postfach verbunden, 3 von 7 Plugins
-> **Fehlt noch:** playwright (Claude kann keine Webseiten bedienen) · 4 Plugins · Kalender · kein eigenes Repo, also kein Backup
+> **Already here:** Node.js, firecrawl, GitHub login, mailbox connected, 3 of 7 plugins
+> **Still missing:** playwright (Claude cannot operate web pages) · 4 plugins · calendar · no repo of its own, so no backup
 
-Jede Zeile in „fehlt noch" trägt in Klammern, **was dadurch heute nicht geht** — nicht den Namen des Werkzeugs. „playwright fehlt" sagt niemandem etwas, „Claude kann keine Webseiten für dich bedienen" schon.
+Every line under "still missing" carries in brackets **what does not work today because of it** — not the name of the tool. "playwright is missing" tells nobody anything; "Claude cannot operate web pages for you" does.
 
-Danach **anbieten, nicht stumm nachinstallieren** — und zwar nach derselben Regel wie im Setup (Schritt 7.1): **eine Frage pro Gruppe**, mit dem was sie tut und was sie kostet, nie sechs Fragen hintereinander und nie ungefragt installieren. Ein Werkzeug, dessen Zweck der Nutzer nicht kennt, wird nie benutzt und ist genau der Ballast, den `/audit` später meldet. Die einzige Ausnahme sind Node.js und die `claude`-Kommandozeile: ohne die existiert ein Drittel des Pakets nicht, die werden angesagt und installiert, nicht erfragt.
+Then **offer, do not silently install** — by the same rule as in setup: **one question per group**, with what it does and what it costs, never six questions in a row and never install unasked. A tool whose purpose the user does not know never gets used and is exactly the ballast `/audit` reports later. The only exception is Node.js and the `claude` command line: without them a third of the package does not exist, so those are announced and installed, not asked about.
 
-**Und was schon da ist, wird nicht nochmal angeboten.** Die Gegenüberstellung ist genau dafür da: sie wird EINMAL am Anfang erhoben, aus der Maschine gelesen (`claude plugin list` mit `Status: ✔ enabled`, `<name> --version`, `ToolSearch` für die Verbindungen), nicht aus dem, was in irgendeiner Datei behauptet wird. Danach wird nur noch die rechte Spalte abgearbeitet, Gruppe für Gruppe, in fester Reihenfolge.
+**And what is already there does not get offered again.** That is what the comparison is for: it is taken ONCE at the start, read from the machine (`claude plugin list` with `Status: ✔ enabled`, `<name> --version`, `ToolSearch` for the connections), not from what some file claims. After that only the right-hand column is worked through, group by group, in a fixed order.
 
-**Kein Schritt fällt still weg** — dieselbe Regel wie im Setup, und aus demselben Grund. Jede Zeile aus „fehlt noch" hat am Ende genau einen von drei Zuständen: **eingerichtet**, **abgelehnt** (der Nutzer hat Nein gesagt — das ist eine vollständige Antwort und wird mit `status: false` notiert) oder **nicht möglich** (mit dem Grund und dem, was es gebracht hätte). Was keinen dieser drei Zustände hat, wurde nicht entschieden, sondern vergessen: dann geh zurück und hol es nach, statt es im Bericht wegzulassen. Eine Gruppe, die nie gefragt wurde, ist kein Nein.
+**No step falls away silently** — the same rule as in setup, for the same reason. Every line from "still missing" ends in exactly one of three states: **set up**, **declined** (the user said no; that is a complete answer and is recorded with `status: false`) or **not possible** (with the reason, and what it would have given them). Anything in none of those three states was not decided, it was forgotten: go back and get it, rather than leaving it out of the report. A group that was never asked about is not a no.
 
-**Was hier nicht passieren darf:** dass am Ende niemand sagen kann, was der Ordner jetzt hat und was nicht. Die Gegenüberstellung geht deshalb auch in den Bericht aus Schritt 5, mit dem Stand nach dem Umbau — in denselben drei Spalten, damit sich Anfang und Ende direkt vergleichen lassen.
+**What must not happen here:** that at the end nobody can say what the folder now has and what it does not. The comparison therefore also goes into the report in step 5, with the state after the rebuild, in the same columns, so beginning and end can be compared directly.
 
-**Das eigentliche Einrichten nicht hier nachbauen.** Die Schritte 7.1 bis 7.4 des `/setup`-Skills machen genau das (Werkzeuge installieren, die sechs Verbindungen durchgehen, Zugänge anlegen, Projekt-Repos anhängen). Von hier aus dorthin verweisen und sie ausführen, statt eine zweite, schlechtere Fassung zu schreiben.
+**Do not rebuild the actual setting-up here.** Steps 7.1 to 7.4 of the `/setup` skill do exactly that (install tools, work through the connections, create credentials, attach project repos). Point there from here and run them, rather than writing a second, worse version.
 
-## Schritt 4 — Abnahme gegen den Soll-Zustand
+## Step 4 — Sign-off against the target state
 
-Der Umbau ist fertig, wenn der Ordner aussieht wie nach einem frischen Setup. Das ist prüfbar, nicht Geschmackssache:
+The rebuild is done when the folder looks like it does after a fresh setup. That is checkable, not a matter of taste:
 
 ```
-node reference/scripts/workspace-audit.js --root <pfad>
+node reference/scripts/workspace-audit.js --root <path>
 node reference/scripts/inventory.js
 ```
 
-**Die Abnahme, drei Hälften:**
+**The sign-off, in three parts:**
 
-1. **Struktur** — das Audit darf keine `act`-Dimension melden, die durch den Umbau entstanden ist. Besonders `Erreichbarkeit`: tote Verweise sind die typische Umbau-Narbe.
-2. **Schema** — kein Projekt führt mehr einen Ordnernamen, den das System nicht kennt. Dafür **denselben Planer noch einmal laufen lassen**, der den Umbau eröffnet hat:
+1. **Structure** — the audit must report no `act` dimension that the rebuild created. `Reachability` especially: dead links are the typical rebuild scar.
+2. **Schema** — no project still carries a folder name the system does not know. For that, **run the same planner again** that opened the rebuild:
 
    ```
-   node reference/scripts/adopt-plan.js --root <pfad>
+   node reference/scripts/adopt-plan.js --root <path>
    ```
 
-   Er kennt die erlaubten Namen (`inputs`, `work`, `outputs`, `code`, `_archive`) und zählt die Projekte gegen sie. Die Zeile am Ende muss aufgehen: **so viele Projekte wie „mit work/" wie „mit inputs/"**. Klafft da noch etwas, ist der Umbau nicht fertig.
+   It knows the permitted names (`inputs`, `work`, `outputs`, `code`, `_archive`) and counts the projects against them. The line at the end has to add up: **as many projects "with work/" as "with inputs/"**. If there is still a gap, the rebuild is not finished.
 
-   Was übrig bleibt, ist entweder eine bewusste, im Bericht benannte Ausnahme oder ein vergessener Umbau. Ein drittes gibt es nicht.
-3. **Ausstattung** — die Setup-Kachel im Dashboard zeigt die Pflichtschritte auf 100 %.
+   Whatever remains is either a deliberate exception named in the report, or a forgotten rebuild. There is no third option.
+3. **Tooling** — the setup tile on the dashboard shows the required steps at 100%.
 
-Erst wenn beides steht, ist der Ordner ununterscheidbar von einem frisch aufgesetzten. Bleibt etwas offen, gehört es benannt statt weggelächelt: welcher Punkt, warum er offen ist, und was ihn schließen würde.
+Only when all of that holds is the folder indistinguishable from a freshly set-up one. If something stays open, it belongs named rather than smiled away: which point, why it is open, and what would close it.
 
-## Schritt 5 — Berichten
+## Step 5 — Report
 
-Kurz: was verschoben wurde (Zahl, nicht Liste), was liegen blieb und warum, was der Nutzer noch entscheiden muss. Dazu der Satz, wie man alles rückgängig macht, und wo das Manifest liegt.
+Briefly: what was moved (a number, not a list), what stayed put and why, what the user still has to decide. Plus the sentence on how to undo everything, and where the manifest is.
 
-**Nicht loben, was selbstverständlich ist.** „Alle 40 Dateien erfolgreich verschoben" ist keine Nachricht. Interessant ist, was nicht ging und was jetzt anders ist.
+**Do not praise what is a given.** "All 40 files moved successfully" is not news. What is interesting is what did not work and what is different now.
 
-## Selbstverbesserung
+## Self-improvement
 
-Zwei Signale: eine Zuordnung wird korrigiert („das gehört woanders hin"), oder ein Vorschlag wird gelobt.
+Two signals: an assignment gets corrected ("that belongs somewhere else"), or a suggestion gets praised.
 
-- **Falsche oder fehlende Zuordnungsregel** → nach `reference/scripts/adopt-plan.js`, in `classify()`. Eine zählbare Regel gehört ins Script, sonst ist sie Deko.
-- **Eine Datei- oder Ordner-Art, die als „braucht Auskunft" landet, obwohl sie eindeutig ist** → ebenfalls ins Script, als neue Regel. Jede Frage, die das Script selbst beantworten kann, spart dem nächsten Menschen eine Minute.
-- **Ton oder Aufbau des Berichts** → in diesen Skill, Schritt 5.
+- **A wrong or missing assignment rule** → into `reference/scripts/adopt-plan.js`, in `classify()`. A countable rule belongs in the script, otherwise it is decoration.
+- **A kind of file or folder that lands in "needs your answer" although it is unambiguous** → also into the script, as a new rule. Every question the script can answer itself saves the next person a minute.
+- **Tone or structure of the report** → into this skill, step 5.
 
-Und die Regel, die über allem steht: **wird geraten und liegt es falsch, wird nicht die Zuordnung nachgebessert, sondern das Raten abgeschafft.** Der Eintrag gehört dann auf die Fragen-Liste.
+And the rule above all others: **if something is guessed and the guess is wrong, do not improve the assignment, abolish the guessing.** The entry then belongs on the questions list.

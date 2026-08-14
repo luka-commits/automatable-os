@@ -1,50 +1,50 @@
-# Berichtsform
+# Report form
 
-Gelesen in Schritt 3 und 4 von `/audit`. Regelt, wie Befunde und Vorschläge formuliert werden.
+Read in steps 3 and 4 of `/audit`. Governs how findings and proposals are worded.
 
-## Der Bericht im Chat
+## The report in chat
 
-Aufbau, in dieser Reihenfolge:
+Structure, in this order:
 
-1. **Ein Satz Gesamturteil.** Nicht „das Audit ist abgeschlossen", sondern was Sache ist: „Der Ordner trägt, aber die Hälfte deiner Dokumente ist für Claude unsichtbar."
-2. **Je Dimension höchstens eine Zeile**, und nur für die, die etwas zu sagen haben. Dimensionen auf `ok` werden in einem Sammelsatz erledigt („Sicherung, Kaltstart und Entscheidungs-Gedächtnis sind in Ordnung"). Niemand liest eine Liste bestandener Prüfungen.
-3. **Die drei Dinge mit dem größten Hebel**, ausformuliert. Warum drei: mehr wird nicht umgesetzt, weniger wirkt beliebig.
-4. **Was `unknown` blieb**, in einem Halbsatz, mit dem Grund. Ein fehlender Beleg ist keine gute Note.
+1. **One sentence of overall judgement.** Not "the audit is complete", but what is actually the case: "The folder carries the work, but half your documents are invisible to Claude."
+2. **At most one line per dimension**, and only for the ones with something to say. Dimensions sitting at `ok` are handled in one collective sentence ("Backup, cold start and decision memory are fine"). Nobody reads a list of passed checks.
+3. **The three things with the most leverage**, written out. Why three: more does not get done, fewer feels arbitrary.
+4. **What stayed `unknown`**, in half a sentence, with the reason. Missing evidence is not a good grade.
 
-## Wie ein Befund formuliert wird
+## How a finding is worded
 
-**Konsequenz statt Messwert.** Der Messwert ist die Herkunft der Aussage, nicht die Aussage.
+**Consequence rather than measurement.** The measurement is where the statement came from, not the statement.
 
-| Nicht so | Sondern so |
+| Not this | But this |
 |---|---|
-| „12 Waisen-Dokumente gefunden" | „Diese zwölf Dokumente liest Claude nie, weil nichts auf sie zeigt" |
-| „Token-Last 18.400" | „Jede Unterhaltung zahlt rund 18.000 Token, bevor irgendetwas passiert" |
-| „5 Wiederholungsmuster erkannt" | „Diesen Ablauf hast du 40-mal von Hand getippt" |
-| „confidence 0.9, severity high" | (Werte gehören in die JSON, nicht in den Satz) |
+| "Found 12 orphaned documents" | "Claude never reads these twelve documents, because nothing points at them" |
+| "Token load 18,400" | "Every conversation pays about 18,000 tokens before anything happens" |
+| "5 repetition patterns detected" | "You have typed this sequence by hand 40 times" |
+| "confidence 0.9, severity high" | (values belong in the JSON, not in the sentence) |
 
-Jeder Befund beantwortet drei Dinge: **was ist**, **warum das schadet**, **was dagegen hilft**. Fehlt der mittlere Teil, ist es eine Statistik und keine Erkenntnis.
+Every finding answers three things: **what is the case**, **why that hurts**, **what helps against it**. Without the middle part it is a statistic, not an insight.
 
-**Keine Schulnoten, keine Prozentwerte über alles.** Ein Gesamtscore mittelt einen toten Journal-Strang gegen sauberes Repo-Handling weg und suggeriert Vergleichbarkeit, die es nicht gibt.
+**No grades, no overall percentage.** A single score averages a dead journal against clean repo handling and suggests a comparability that does not exist.
 
-## Wie Vorschläge aussehen
+## What proposals look like
 
-**Nie eine Einzelempfehlung.** Es gibt kein bestes Werkzeug und keinen besten Weg, es gibt Abwägungen — und wer nur einen Weg nennt, nimmt dem Gegenüber die Entscheidung ab, die ihm gehört.
+**Never a single recommendation.** There is no best tool and no best route, there are trade-offs — and naming only one route takes away a decision that belongs to the other person.
 
-Je Vorschlag zwei bis drei Wege nebeneinander, in einer Tabelle:
+Per proposal, two or three routes side by side, in a table:
 
-| Weg | Aufwand | Laufend | Was du dafür bekommst | Was du dir einhandelst |
+| Route | Effort | Ongoing | What you get | What you take on |
 |---|---|---|---|---|
-| … | einmalig 20 min | 0 € | … | … |
+| … | 20 min once | $0 | … | … |
 
-Darunter **eine** markierte Empfehlung mit Begründung in einem Satz („würde ich nehmen, weil …"). Die anderen Wege bleiben gleichwertig stehen, jeder mit seinem eigenen Vorteil — sie sind keine Strohmänner.
+Below it **one** marked recommendation with a one-sentence reason ("I would take this one, because …"). The other routes stay standing as equals, each with its own advantage — they are not straw men.
 
-**Was jemand schon benutzt, schlägt das theoretisch bessere Werkzeug.** Ein Wechsel taucht nur als Option auf, wenn ein genannter Painpoint ihn trägt. Einem Betrieb den Umstieg zu empfehlen, weil etwas „Best Practice" ist, ist schlechte Beratung: der Umstieg kostet Wochen, und der Schmerz war ein anderer.
+**What someone already uses beats the theoretically better tool.** A switch only appears as an option when a stated pain point carries it. Recommending a migration because something is "best practice" is bad advice: the migration costs weeks, and the pain was something else.
 
-## Ton
+## Tone
 
-Ein erfahrener Mensch, der sich das Setup angesehen hat und jetzt sagt, was ihm aufgefallen ist. Nicht „Diagnose abgeschlossen, 7 von 11 Prüfungen bestanden".
+An experienced person who has looked at the setup and is now saying what stood out. Not "diagnosis complete, 7 of 11 checks passed".
 
-- Alltagssprache. Fachbegriffe nur, wo sie etwas hinzufügen.
-- Keine Dringlichkeits-Rhetorik. Kein „kritisch", kein „dringend", keine Ausrufezeichen. Was wirklich wehtut, erkennt man an der beschriebenen Konsequenz.
-- Offene Punkte sind Möglichkeiten, keine Vorwürfe. Ein Ordner ohne Routinen ist nicht nachlässig geführt, er hat eine Möglichkeit noch nicht genutzt.
-- Keine Em-Dashes.
+- Everyday language. Technical terms only where they add something.
+- No urgency rhetoric. No "critical", no "urgent", no exclamation marks. What really hurts is recognisable from the consequence you described.
+- Open points are opportunities, not accusations. A folder without routines is not sloppily run, it has an opportunity it has not taken yet.
+- No em-dashes.

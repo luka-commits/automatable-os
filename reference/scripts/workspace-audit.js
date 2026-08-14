@@ -355,9 +355,9 @@ function scheduledJobs() {
   }
   if (!inv.routines.length && !jobs.length) {
     findings.push(finding('automation', 'low', 0.8,
-      'Keine Routine eingerichtet',
+      'No routine set up',
       'Everything happens only when someone remembers it. The recurring things are the first to be dropped.',
-      'Mit dem anfangen, was taeglich sowieso passiert.'));
+      'Start with what happens daily anyway.'));
   }
   // Auf einem fremden Ordner wurden geplante Jobs bewusst NICHT gelesen (sie beschreiben
   // die Maschine). Das gehoert gesagt statt als "0 Jobs" behauptet — nicht geprueft und
@@ -593,7 +593,7 @@ function scheduledJobs() {
   if (tokens > 12000) {
     findings.push(finding('bloat', tokens > 25000 ? 'high' : 'medium', 0.8,
       `The entry files cost roughly ${tokens.toLocaleString('en-US')} tokens per session`,
-      'Das faellt bei jeder einzelnen Unterhaltung an, bevor irgendetwas passiert.',
+      'That is paid on every single conversation, before anything happens.',
       'Move rarely used rules into a reference file and have them read only when needed.',
       { tokens }));
   }
@@ -666,7 +666,7 @@ function scheduledJobs() {
     const missing = [];
     if (!/(ordner|struktur|folder|structure|verzeichnis)/.test(t)) missing.push('the folder structure');
     if (!/(skill|kommando|command|\/[a-z-]{3,})/.test(t)) missing.push('the available commands');
-    if (!/(zweck|purpose|wofuer|ziel|was ist)/.test(t)) missing.push('den Zweck des Ordners');
+    if (!/(zweck|purpose|wofuer|ziel|was ist)/.test(t)) missing.push('the purpose of the folder');
     if (missing.length) {
       findings.push(finding('coldstart', missing.length > 1 ? 'medium' : 'low', 0.75,
         `The entry file does not explain: ${missing.join(', ')}`,
@@ -727,7 +727,7 @@ function scheduledJobs() {
     findings.push(finding('lifecycle', 'low', 0.7,
       `${clones.length} file names occur in more than one place`,
       'Same name, two places: sooner or later somebody edits the wrong copy.',
-      'Einen Ort zur Wahrheit machen.',
+      'Make one place the truth.',
       { examples: clones.slice(0, 5).map(([k, v]) => ({ name: k, at: v })) }));
   }
   dim('lifecycle', 'Craft', 'Life cycle', worst(findings),
@@ -911,7 +911,7 @@ function renderFragment() {
   const findingRows = (d) => d.findings.length
     ? d.findings.map((f) => `<div class="audfind"><b>${esc2(f.what)}</b>`
         + `<p>${esc2(f.why)}</p>${samples(f)}<p class="audfix">${esc2(f.fix)}</p></div>`).join('')
-    : `<div class="audfind"><p>${esc2(d.note || 'Nichts gefunden.')}</p></div>`;
+    : `<div class="audfind"><p>${esc2(d.note || 'Nothing found.')}</p></div>`;
   const row = (d) => `<details class="audrow lvl-${esc2(d.level)}"><summary>`
     + `<span class="audlvl">${d.level === 'act' ? 'handeln' : 'beobachten'}</span>`
     + `<span class="audname">${esc2(d.label)}</span>`
@@ -931,7 +931,7 @@ function renderFragment() {
       ? d.findings.map((f) => `<div class="ivrow"><div class="ivname"><b>${esc(f.what)}</b>`
           + `<span class="inv-badge${f.severity === 'high' ? '' : ' xref'}">${esc(f.severity)}</span></div>`
           + `<p>${esc(f.why)}</p><p><b>${esc(f.fix)}</b></p></div>`).join('')
-      : `<div class="ivempty">${esc(d.note || 'Nichts gefunden.')}</div>`;
+      : `<div class="ivempty">${esc(d.note || 'Nothing found.')}</div>`;
     return `<details class="kpi ${cls[d.level] || 'none'}" id="aud-${esc(d.id)}"><summary>`
       + `<span class="kpi-num">${d.level === 'ok' ? '✓' : d.level === 'unknown' ? '–' : d.findings.length}</span>`
       + `<span class="kpi-lab">${esc(d.label)}</span>`
@@ -977,7 +977,7 @@ function renderFragment() {
     + group('Hier musst du ran', `${acts.length} of ${data.dimensions.length}`, acts.map(row).join(''))
     + group('Im Auge behalten', `${watches.length} of ${data.dimensions.length}`, watches.map(row).join(''))
     + quiet('In Ordnung:', oks, 'Nothing to do. Expanded, this would only say that everything is fine.')
-    + quiet('Nicht messbar:', unknowns, 'No evidence available. That is a limit of the audit, not a fault in your folder.');
+    + quiet('Not measurable:', unknowns, 'No evidence available. That is a limit of the audit, not a fault in your folder.');
 }
 
 // --- Selbstpruefung:  node reference/scripts/workspace-audit.js --selftest
