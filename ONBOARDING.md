@@ -88,6 +88,12 @@ on one topic and the user stops hearing the second. Once `setup` has archived it
 `context/expertise.md` means the screener, the proposals and the pitch pages have nothing to
 read.
 
+**Three answers, not two.** "I work on Upwork" reads the account; "I do not" switches the
+layer off for good; **"I want to start"** is its own path, because there is no account to
+read yet and the profile becomes the first thing you build rather than something audited.
+A plain yes/no question loses that third person, who answers no truthfully and then never
+hears about it again.
+
 **Unless you said you do not work on Upwork.** With `upwork_enabled: false` in your config,
 this handover never fires and never nags. Optional means optional, and that includes the
 acquisition half of the system.

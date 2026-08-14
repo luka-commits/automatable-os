@@ -366,6 +366,20 @@ A no here is a full answer and costs nothing else; everything in the system work
 
 **Three more exist but install differently**, so they stay a one-liner in the summary rather than a step: `codeburn` needs no installation at all (`npx codeburn` shows what the usage costs), `find-skills` comes through the skill registry (`npx skills add vercel-labs/skills --skill find-skills`), and `herdr` (`brew install herdr`) keeps a long-running job alive when the laptop closes. **Do not install herdr on spec.** Most work here is over in seconds, and anything that should run without a person in front of it belongs in `/schedule`, which is already built in. It is worth a sentence in the summary so they know it exists on the day a job actually runs for hours.
 
+**Group: shipping something a client can click.** ONE question, and only when the earlier answers suggest they build things (websites, automations, apps) rather than only advise:
+
+> *"Two more, and they change what you can put in front of a client. With these I can build the thing you are pitching, put it online, and give you a link, instead of describing it. For a website job that is the difference between a client imagining your work and clicking it. Both are free, and you sign in once each. Want them?"*
+
+**On yes:** `brew install gh` and `npm i -g vercel`, then walk them through `gh auth login` and `vercel login`. Both are interactive, so this is the one place in this step where you hand over and wait rather than doing it yourself.
+
+**On no:** nothing downstream breaks. `upwork-pitch-page` still draws the diagram, which is what it does for most jobs anyway. Record it as declined so nobody asks again.
+
+**Group: the tools they may already live in.** ONE question, and it is a question about them rather than an offer:
+
+> *"Last one, and nothing gets installed. Do you work with Google Workspace day to day, or with Supabase or another database? There are handbooks in here for both, and they only help if I know to reach for them."*
+
+This exists because the package ships eight `gws-*` skills and a `supabase` one, and **a skill nobody knows about is a skill that never runs.** Whatever they name goes into `inventory.clis`, and from then on the right handbook gets read instead of the command being guessed at. **Not naming anything is a complete answer**, and the skills stay in the folder for the day it becomes true.
+
 If an install fails (marketplace unreachable, no network): name which one is missing and what it would have done, then carry on. The system runs without every single one of them.
 
 Check the result per tool with `<name> --version` and write it into `inventory.clis`. Plugins are read live from the machine, so nothing has to be written into `inventory.plugins` by hand. The bundled skills (`playwright-cli`, the `firecrawl-*` family) are already in the package, there's nothing to download — ONE sentence in the summary that they're there.
@@ -456,9 +470,14 @@ from referrals or direct outreach never needs it.
 
 So ask once, plainly, and accept either answer:
 
-> _"One more thing. This workspace has a full Upwork pipeline built in: it searches and scores
-> jobs against your own niche, writes the proposals, and tracks what you sent. Do you work on
-> Upwork?"_
+> _"One more thing. This workspace has a full Upwork pipeline built in: it searches and
+> scores jobs against your own niche, writes the proposals, and tracks what you sent. Do you
+> work on Upwork, or would you like to start?"_
+
+**Name the third option out loud.** A plain "do you work on Upwork?" makes someone who has
+been meaning to start answer no, because at that moment it is the true answer to the question
+asked. They then get the layer switched off and never hear about it again, which is the one
+outcome nobody wanted.
 
 **If yes** → hand straight over to the `setup-freelancer-os` skill. Do not make them find it
 themselves and do not describe it and stop; call it. It verifies the connector, reads what
@@ -473,8 +492,31 @@ your dashboard stays empty, and nothing else here needs it."_ Then:
   dashboard. A person who said no has answered.
 - `morning` skips its Upwork pass on that flag alone; the day loop is unaffected.
 
-**If unsure ("maybe later")** → treat it as no, and say the one sentence that makes it
-reversible: _"Say 'set up upwork' whenever you want it."_ One sentence, once, never repeated.
+**If they want to start** ("no, but I'd like to", "I'm thinking about it", an account with
+nothing in it yet) → **this is a third answer, not a soft no**, and it is a different path.
+`setup-freelancer-os` normally reads their account to learn the niche: profile, past
+contracts, the full text of sent proposals. A new account has none of that, so there is
+nothing to read and the reading step would come back empty and confusing.
+
+So say what is actually true, in one sentence: _"Then we do it the other way round. Normally
+I read your account to learn what you do. There is nothing there yet, so you tell me, and
+then the first thing we build is the profile."_ Then:
+
+- Run `setup-freelancer-os` anyway, but expect its fallback interview rather than the reading
+  path. It says so itself when the connector returns an empty account.
+- Go to `upwork-profile` **in the same run**, on its "no profile yet" path. For someone
+  starting out this is not an audit, it is the first piece of work: without a profile they
+  do not appear in search results at all, and every proposal lands somewhere weaker than it
+  had to.
+- Set `upwork_enabled: true`. They are starting, not declining.
+
+**If unsure ("ask me another time")** → treat it as no, and say the one sentence that makes
+it reversible: _"Say 'set up upwork' whenever you want it."_ One sentence, once, never
+repeated.
+
+**The distinction matters more than it looks.** "I do not work on Upwork" and "I have not
+started yet" get the same answer from a yes/no question and need opposite things: one wants
+the whole layer gone, the other wants more help than an existing user, not less.
 
 ## Step 8: Archive This Skill + Confirm
 
