@@ -609,7 +609,16 @@ function scheduledJobs() {
 
 (function bloat() {
   const findings = [];
-  const bytes = ENTRIES.reduce((n, f) => n + read(f).length, 0) + GLOBAL_MD.length;
+  // Count what a session ACTUALLY loads by itself, which is not the same as the
+  // entry-file list used elsewhere in this script. README.md is read on demand,
+  // not on startup, so charging it to every conversation overstates the cost by
+  // thousands of tokens. And the global CLAUDE.md belongs to whoever is running
+  // the audit: on a foreign folder it is not part of what was handed over, and
+  // including it made a repo look twice as expensive as it is.
+  const AUTOLOADED = /^(CLAUDE|AGENTS?)\.md$/i;
+  const own = ENTRIES.filter((f) => AUTOLOADED.test(f));
+  const bytes = own.reduce((n, f) => n + read(f).length, 0)
+              + (FOREIGN_ROOT ? 0 : GLOBAL_MD.length);
   const tokens = Math.round(bytes / 4);
   if (tokens > 12000) {
     findings.push(finding('bloat', tokens > 25000 ? 'high' : 'medium', 0.8,
@@ -670,7 +679,11 @@ function scheduledJobs() {
       'Make one place the truth and have the others point at it.',
       { examples: dupes.slice(0, 4).map(([k, v]) => ({ files: [...v], preview: k.slice(0, 90) })) }));
   }
-  dim('bloat', 'Knowledge', 'Dead weight', worst(findings), `~${tokens.toLocaleString('en-US')} tokens per session`, findings);
+  // Name what is in the number. "12,732 tokens" with no basis invites the
+  // reasonable-but-wrong assumption that it shrinks once setup is done.
+  const basis = own.join(' + ') + (FOREIGN_ROOT || !GLOBAL_MD ? '' : ' + your global CLAUDE.md');
+  dim('bloat', 'Knowledge', 'Dead weight', worst(findings),
+      `~${tokens.toLocaleString('en-US')} tokens per session (${basis || 'no entry file'})`, findings);
 })();
 
 // =========================================================== 7. Cold start

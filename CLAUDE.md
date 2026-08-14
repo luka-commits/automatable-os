@@ -104,6 +104,7 @@ CLAUDE.md                          this file
 README.md                          what this is, setup walkthrough, what to install
 ONBOARDING.md                      the intended path end to end
 SYSTEM.html                        the whole system on one page, for looking at rather than reading
+ONBOARDING.html                    the four first-run steps, visually. Open on a double click
 CHANGELOG.md                       what changed, and what needs your hand
 context/
   config.yaml                      name, language, upwork ids, your daily goal

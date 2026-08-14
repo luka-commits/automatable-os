@@ -13,8 +13,9 @@ into a project that a won job does.
 It's a template, not a hosted product. You clone it, run one setup skill, and it's yours: your own
 niche, your own data, your own repo.
 
-**Want the picture before the detail?** Open [`SYSTEM.html`](SYSTEM.html) with a double click.
-Every step, what happens inside it, and why it is shaped that way, on one page.
+**Want the picture before the detail?** Two pages, both offline and both a double click:
+[`ONBOARDING.html`](ONBOARDING.html) is the four first-run steps and what each one leaves
+behind; [`SYSTEM.html`](SYSTEM.html) is every step of the day and why it is shaped that way.
 
 ## What you get
 
@@ -22,11 +23,17 @@ Every step, what happens inside it, and why it is shaped that way, on one page.
   narrow compound phrases — narrow queries just shrink the pool), scores every result 0–100 against
   your own `context/expertise.md`, logs every real candidate, and optionally sends you a Slack DM
   when a strong match shows up.
-- **A dashboard with two tabs**, generated as one static HTML file you open in a browser:
-  - **Today** — your open tasks, sorted Eisenhower-style (urgent × important).
+- **A dashboard with five tabs**, generated as one static HTML file you open in a browser:
+  - **Today** — your briefing, then your open tasks sorted Eisenhower-style (urgent × important),
+    filterable by quadrant, by what is due, and by project.
+  - **Projects** — how each one stands, and where it came from.
   - **Upwork** — the pipeline, in three views: a sortable **list**, a **Pipeline** board (Outreach →
     In contact → Offer sent, one column each, cards that move as the status changes), and **Stats**
     (a funnel: how many jobs made it from found → applied → in contact → offer → won).
+  - **Tooling** — what this machine actually has: skills, CLIs, connections, plugins, keys. Read
+    from the machine on every render, not from a list somebody maintains.
+  - **System** — the explainer page, so what the thing does is one click away rather than in a
+    file you have to know about.
 - **`upwork-pitch-page`** (optional) — builds a one-page pitch site for a single job: an
   interactive, editable SVG diagram of the solution (pan, zoom, rename nodes, no design tool
   needed), a slot for a video walkthrough you record yourself, testimonials, and your CV.
@@ -112,13 +119,17 @@ cd freelancer-os
 claude
 ```
 
-Then, in the chat:
+**You do not have to type anything to start.** A session-start hook notices the setup has
+not run and begins it on your first message. If you would rather drive it yourself, say
+`set up freelancer os`.
 
-> set up upwork cockpit
+The setup asks for your language and name, then — only if you say you work on Upwork — connects
+your account and *reads* it before asking anything: your profile, your past contracts, and the
+full text of proposals you have already sent. What it cannot read, it asks, and that is three
+questions rather than twelve. Out of it come `context/config.yaml`, `context/expertise.md` and
+`context/experience.md`.
 
-The setup skill checks your Upwork connection, interviews you for your niche and background (a
-few minutes, not a form to fill out alone), and writes your own `context/config.yaml`,
-`context/expertise.md`, and `context/experience.md`. Once it's done:
+The visual version of those steps is [`ONBOARDING.html`](ONBOARDING.html). Once setup is done:
 
 > check upwork
 

@@ -166,27 +166,43 @@ def cmd_summary(args):
         print(f'\nFound between {min(stamps)} and {max(stamps)}.')
 
 
-def cmd_migrate(args):
-    """Seeds history for jobs that don't have one yet. Idempotent.
+def derived_history(j):
+    """A job's stage history, reconstructed read-only when none was recorded.
 
-    Only what is provable gets reconstructed: 'new' at found_at, plus today's
-    status at status_updated_at. Steps that were never recorded are NOT invented
-    — a fabricated history curve is worse than a short one.
+    Only what is provable: 'new' at found_at, plus the current status at
+    status_updated_at. Steps that were never recorded are NOT invented — a
+    fabricated curve is worse than a short one. This is the one place that
+    rule lives; `migrate` writes what this returns and `export` reads it.
     """
+    if j.get('history'):
+        return list(j['history'])
+    out = []
+    found = j.get('found_at') or j.get('status_updated_at')
+    if found:
+        out.append({'status': 'new', 'at': found})
+    st = j.get('status', 'new')
+    if st != 'new':
+        at = (j.get('applied_at') if st == 'proposal_sent' else None) or j.get('status_updated_at') or found
+        if at:
+            out.append({'status': st, 'at': at})
+    return out
+
+
+def cmd_migrate(args):
+    """Seeds history for jobs that don't have one yet. Idempotent."""
     jobs = load()
     seeded = applied = 0
     for j in jobs:
         if j.get('history'):
             continue
-        found = j.get('found_at') or j.get('status_updated_at')
-        if found:
-            add_history(j, 'new', found)
-        st = j.get('status', 'new')
-        if st != 'new':
-            add_history(j, st, j.get('status_updated_at') or found)
+        derived = derived_history(j)
+        if not derived:
+            continue
+        j['history'] = derived
         seeded += 1
+        st = j.get('status', 'new')
         if st in ('proposal_sent', 'interviewing', 'offer_sent', 'hired') and not j.get('applied_at'):
-            j['applied_at'] = j.get('status_updated_at') or found
+            j['applied_at'] = j.get('status_updated_at') or j.get('found_at')
             applied += 1
     if args.dry_run:
         print(f'DRY RUN: {seeded} of {len(jobs)} jobs would get a history, {applied} an applied_at.')
@@ -195,9 +211,80 @@ def cmd_migrate(args):
     print(f'{seeded} of {len(jobs)} jobs given a history, {applied} an applied_at.')
 
 
-# Upwork's terms cap caching of API responses at 24 hours. That covers the
-# verbatim Upwork content, not your own work — score, rationale, status, notes
-# and history are yours and stay.
+# --- export ---------------------------------------------------------------
+#
+# Counters, and nothing else. This is the whole payload the community app ever
+# receives: how many jobs reached a stage on a given day. No job id, no title,
+# no client, no budget, no description.
+#
+# That is not squeamishness, it is the condition under which syncing is allowed
+# at all. Upwork's terms cap caching of their content at 24 hours and rule out
+# commercial use of their data; a shared server holding many users' job lists
+# would be exactly the thing that gets accounts closed. Counters are your own
+# activity, not Upwork's content, so they travel.
+#
+# The whitelist below is enforced before anything is printed. If a later change
+# adds a field carrying job content, the export fails loudly here instead of
+# quietly publishing it to everyone else's database.
+COUNTER_OF = {
+    'new': 'found', 'proposal_sent': 'applied', 'interviewing': 'replied',
+    'offer_sent': 'offers', 'hired': 'won', 'rejected': 'lost',
+}
+COUNTERS = ('found', 'applied', 'replied', 'offers', 'won', 'lost')
+EXPORT_KEYS = {'schema', 'generated_at', 'reported_through', 'history_recorded', 'days'}
+
+
+def cmd_export(args):
+    """Daily counters for the community sync. Prints JSON, writes nothing."""
+    jobs = load()
+    today = datetime.date.today()
+    since = args.since or (today - datetime.timedelta(days=args.days)).isoformat()
+
+    days, reconstructed = {}, 0
+    for j in jobs:
+        if not j.get('history'):
+            reconstructed += 1
+        for h in derived_history(j):
+            counter = COUNTER_OF.get(h.get('status'))
+            day = str(h.get('at', ''))[:10]
+            if not counter or len(day) != 10 or day < since:
+                continue
+            days.setdefault(day, dict.fromkeys(COUNTERS, 0))[counter] += 1
+
+    payload = {
+        'schema': 1,
+        'generated_at': now_iso(),
+        # Everything up to this date is known: a day missing from `days` is a
+        # real zero, a day after it is "no data yet". Without this the app
+        # cannot tell an idle day from a day the OS simply never ran.
+        'reported_through': today.isoformat(),
+        # False means some rows were reconstructed from found_at/status_updated_at
+        # rather than recorded live, so intermediate steps are missing.
+        'history_recorded': reconstructed == 0,
+        'days': [dict(day=d, **days[d]) for d in sorted(days)],
+    }
+
+    assert set(payload) == EXPORT_KEYS, f'export carries unexpected keys: {set(payload) - EXPORT_KEYS}'
+    for row in payload['days']:
+        extra = set(row) - {'day'} - set(COUNTERS)
+        assert not extra, f'export row carries job content: {extra}'
+
+    out = json.dumps(payload, indent=2)
+    if args.out and args.out != '-':
+        pathlib.Path(args.out).write_text(out, encoding='utf-8')
+        print(f'{len(payload["days"])} day(s) written to {args.out}.')
+    else:
+        print(out)
+    if reconstructed:
+        print(f'NOTE: {reconstructed} of {len(jobs)} jobs have no recorded history, so their '
+              f'intermediate steps are missing. Run `migrate` once to freeze what is provable.',
+              file=sys.stderr)
+
+
+# --- prune ----------------------------------------------------------------
+#
+# The same 24-hour rule, applied locally: verbatim Upwork content expires,
+# your own work — score, rationale, status, notes and history — stays.
 CACHED_FIELDS = ('description', 'client', 'budget', 'job_type', 'posted_date')
 
 
@@ -256,6 +343,12 @@ p_sum.set_defaults(func=cmd_summary)
 p_mig = sub.add_parser('migrate', help='Seed history for existing records (idempotent).')
 p_mig.add_argument('--dry-run', action='store_true')
 p_mig.set_defaults(func=cmd_migrate)
+
+p_exp = sub.add_parser('export', help='Daily counters for the community sync — counters only, no job content.')
+p_exp.add_argument('--since', help='YYYY-MM-DD, overrides --days.')
+p_exp.add_argument('--days', type=int, default=90)
+p_exp.add_argument('--out', help='File path, or "-" for stdout (default).')
+p_exp.set_defaults(func=cmd_export)
 
 p_pru = sub.add_parser('prune', help="Drop Upwork content older than 24h (Upwork's caching rule).")
 p_pru.add_argument('--hours', type=int, default=24)

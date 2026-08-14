@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Freelancer OS: the first run</title>
+<style>
+  /* Tokens from reference/design.md, same as the dashboard and the pitch pages. */
+  :root{
+    --brand:#c1663e; --brand-deep:#a24f2e; --brand-soft:#f3e4db;
+    --bg:#f3efe6; --bg-band:#ece5d7; --card:#fbf9f4;
+    --ink:#1c1712; --on-ink:#f3efe6;
+    --text:#262019; --text-2:#5c5347; --text-3:#6f6656;
+    --border:#e2d9c8; --border-strong:#cfc2ab; --border-soft:#eae3d3;
+    --amber:#a2540f; --amber-soft:#f7ecd9; --amber-border:#e3caa0;
+    --pad:22px; --gap:14px;
+    --shadow-1:0 1px 2px rgba(28,23,18,.05);
+    --shadow-2:0 6px 20px rgba(28,23,18,.09);
+    --ease:cubic-bezier(.16,1,.3,1);
+    --serif:Georgia,"Iowan Old Style","Times New Roman",ui-serif,serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--text-2);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:0 20px 96px;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:840px;margin:0 auto}
+  h1,h2{color:var(--text);margin:0;font-family:var(--serif);font-weight:400;text-wrap:balance}
+  h1{font-size:clamp(31px,5vw,48px);line-height:1.08;letter-spacing:-.024em}
+  h2{font-size:clamp(22px,2.7vw,29px);letter-spacing:-.015em}
+  h3{color:var(--text);margin:0;font-size:16.5px;letter-spacing:-.005em}
+  p{margin:0;max-width:66ch;text-wrap:pretty}
+  code{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--bg-band);
+       color:var(--text-2);padding:.1em .45em;border-radius:8px;white-space:nowrap}
+
+  header{padding:72px 0 8px}
+  .eyebrow{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3);
+           margin-bottom:14px}
+  .lede{font-size:18.5px;line-height:1.55;margin-top:18px}
+  .lede strong{color:var(--text);font-weight:600}
+  section{padding:52px 0 0}
+  .sec-sub{color:var(--text-3);font-size:15px;margin-top:6px}
+
+  /* The road: a numbered spine you can see your position on. */
+  .road{margin-top:26px;position:relative;padding-left:44px}
+  .road::before{content:"";position:absolute;left:15px;top:14px;bottom:34px;width:2px;
+                background:var(--border);border-radius:2px}
+  .stop{position:relative;margin-bottom:14px}
+  .stop::before{
+    content:counter(stop);counter-increment:stop;position:absolute;left:-44px;top:16px;
+    width:32px;height:32px;border-radius:999px;background:var(--brand-soft);
+    color:var(--brand-deep);border:2px solid var(--bg);
+    display:grid;place-items:center;font-size:13px;font-weight:600;
+  }
+  .road{counter-reset:stop}
+  .stop-card{background:var(--card);border:1px solid var(--border);border-radius:14px;
+             padding:18px 20px;box-shadow:var(--shadow-1)}
+  .stop-cmd{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--brand-deep);
+            background:var(--brand-soft);border-radius:999px;padding:2px 11px;display:inline-block;
+            margin-bottom:9px}
+  .stop-card h3{margin-bottom:6px}
+  .stop-card p{font-size:14.5px;color:var(--text-2)}
+  .stop-out{margin-top:12px;padding-top:11px;border-top:1px solid var(--border-soft);
+            font-size:12.5px;color:var(--text-3);display:flex;flex-wrap:wrap;gap:6px;
+            align-items:baseline}
+  .stop-out b{font-weight:600;color:var(--text-2);margin-right:2px}
+  .stop-out code{font-size:11.5px;background:var(--bg-band)}
+  .need{display:inline-block;font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+        border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:2px;font-weight:600}
+  .need.req{background:var(--ink);color:var(--on-ink)}
+  .need.opt{background:transparent;color:var(--text-3);border:1px dashed var(--border-strong)}
+
+  .skipbox{margin-top:22px;background:var(--amber-soft);border:1px solid var(--amber-border);
+           border-radius:14px;padding:var(--pad)}
+  .skipbox h3{color:var(--amber)}
+  .skipbox p{font-size:14.5px;margin-top:8px}
+
+  /* The daily loop, once the first run is done. */
+  .floor{list-style:none;margin:24px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:10px;
+         align-items:stretch;justify-content:center}
+  .fl{flex:1 1 170px;background:var(--card);border:1px solid var(--border);border-radius:14px;
+      padding:13px 16px;text-align:center}
+  .fl.on{background:var(--brand-soft);border-color:var(--brand)}
+  .fl b{display:block;font:600 14.5px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text)}
+  .fl.on b{color:var(--brand-deep)}
+  .fl span{display:block;font-size:12.5px;color:var(--text-3);margin-top:3px}
+  .fl-arrow{flex:0 0 24px;display:grid;place-items:center;color:var(--border-strong)}
+  .fl-arrow svg{width:22px;height:22px}
+  @media(max-width:560px){
+    .floor{flex-direction:column}
+    .fl{flex:none}
+    .fl-arrow{flex:none;padding:2px 0}
+    .fl-arrow svg{transform:rotate(90deg)}
+  }
+
+  table{border-collapse:collapse;width:100%;margin-top:18px;font-size:14.5px}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border-soft);vertical-align:top}
+  th{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);
+     font-weight:500;white-space:nowrap}
+  td:first-child{white-space:nowrap}
+  tbody tr:last-child td{border-bottom:0}
+
+  footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--border);
+         color:var(--text-3);font-size:13.5px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<script>
+  // Tightens the spacing when this page is shown inside the dashboard.
+  if (window.self !== window.top) document.documentElement.classList.add('embedded');
+</script>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Freelancer OS</div>
+  <h1>From a cloned folder to a working morning.</h1>
+  <p class="lede">
+    Four steps, once. Each one produces a file the next one needs, which is why the order is
+    the order. <strong>Two of the four are optional</strong>, and skipping them costs you the
+    Upwork half and nothing else.
+  </p>
+</header>
+
+<section>
+  <h2>The first run</h2>
+  <p class="sec-sub">Say the command, answer what is asked. Nothing here is a form to fill in alone.</p>
+
+  <div class="road">
+    <div class="stop">
+      <div class="stop-card">
+        <span class="stop-cmd">setup</span><span class="need req">Required</span>
+        <h3>The workspace becomes yours</h3>
+        <p>Language, your name, how you want to be addressed, which folders you need. It writes
+        the files everything else reads, creates your project folders, then archives itself so
+        it can never run twice.</p>
+        <div class="stop-out"><b>Leaves behind</b> <code>context/config.yaml</code>
+          <code>STATUS.md</code> <code>PROJECTS.md</code> <code>projects/</code></div>
+      </div>
+    </div>
+
+    <div class="stop">
+      <div class="stop-card">
+        <span class="stop-cmd">setup-freelancer-os</span><span class="need opt">Only for Upwork</span>
+        <h3>Upwork is connected, and the system reads your account</h3>
+        <p>It checks the connector answers, then <strong>reads before it asks</strong>: your
+        profile, your past contracts, and the full text of proposals you have already sent.
+        That last one is your writing, in the right register, already approved by you once.</p>
+        <p style="margin-top:9px">Then three questions, and only three, because they are the
+        ones no API can answer: what you want more of, what you would turn down today, and
+        your name.</p>
+        <div class="stop-out"><b>Leaves behind</b> <code>expertise.md</code>
+          <code>experience.md</code> <code>testimonials.json</code>
+          <code>upwork_org_uid</code></div>
+      </div>
+    </div>
+
+    <div class="stop">
+      <div class="stop-card">
+        <span class="stop-cmd">upwork-profile</span><span class="need opt">Only for Upwork</span>
+        <h3>Your profile can carry an application</h3>
+        <p>Before the first application, not after the tenth. The profile decides whether you
+        appear in search results at all, and it is the first thing a client opens after your
+        cover letter. Applying around a weak one makes every proposal more expensive than it
+        needs to be.</p>
+        <div class="stop-out"><b>Leaves behind</b> finished text to paste in, and a list of
+          what each weakness costs you</div>
+      </div>
+    </div>
+
+    <div class="stop">
+      <div class="stop-card">
+        <span class="stop-cmd">morning</span><span class="need req">Required</span>
+        <h3>The first day starts</h3>
+        <p>There is nothing left to configure. The briefing reads what the previous steps
+        wrote, sorts your tasks, and hands them to you one at a time. If Upwork is connected it
+        makes one pass over the pipeline while it is there.</p>
+        <div class="stop-out"><b>Leaves behind</b> <code>BRIEFING.md</code> and a rendered
+          dashboard you can open on a double click</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="skipbox">
+    <h3>Skipping steps 2 and 3</h3>
+    <p>Say you do not work on Upwork and the whole acquisition layer stands down: no connector
+    asked for, no reminders, no half-empty tab in the dashboard. The day loop, your projects
+    and the delivery half are untouched, and a client from a referral takes exactly the same
+    route into a project that a won job does.</p>
+  </div>
+</section>
+
+<section>
+  <h2>What it looks like afterwards</h2>
+  <p class="sec-sub">The setup is over. From here it is two commands and whatever the day holds.</p>
+
+  <ol class="floor">
+    <li class="fl on"><b>morning</b><span>what today is</span></li>
+    <li class="fl-arrow" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 12h15m0 0l-5-5m5 5l-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </li>
+    <li class="fl"><b>the work</b><span>skills, on demand</span></li>
+    <li class="fl-arrow" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 12h15m0 0l-5-5m5 5l-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </li>
+    <li class="fl on"><b>eod</b><span>what happened</span></li>
+  </ol>
+
+  <p style="margin-top:20px">
+    What every step does and why it is shaped that way is in
+    <a href="SYSTEM.html" style="color:var(--brand-deep)">SYSTEM.html</a>. This page only
+    covers getting there.
+  </p>
+</section>
+
+<section>
+  <h2>What you need, and what you do not</h2>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Thing</th><th>Needed for</th><th>Without it</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>Claude Code</b></td>
+        <td>All of it</td>
+        <td>Nothing runs. This is the one hard requirement</td>
+      </tr>
+      <tr>
+        <td><b>An Upwork connector</b></td>
+        <td>Steps 2 and 3, the screener, proposals, the inbox</td>
+        <td>The day loop, projects and the dashboard work exactly as they do with it</td>
+      </tr>
+      <tr>
+        <td><b>Node.js</b></td>
+        <td>The dashboard renderer and the Tooling tab</td>
+        <td>The briefing still runs in the chat; you lose the rendered page</td>
+      </tr>
+      <tr>
+        <td><b>Mail and calendar</b></td>
+        <td>A briefing that knows your day, not just your tasks</td>
+        <td><code>morning</code> still runs and names in one line what it skipped</td>
+      </tr>
+      <tr>
+        <td><b>A private git remote</b></td>
+        <td>The evening backup</td>
+        <td>Everything works. Nothing is backed up, which is its own risk</td>
+      </tr>
+      <tr>
+        <td><b>Slack, Firecrawl, a scraping key</b></td>
+        <td>Individual conveniences</td>
+        <td>The skill that wanted it says so and carries on</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p style="margin-top:22px">
+    The rule underneath all of that: <strong>a missing tool degrades a step, it never fails a
+    run</strong>. Anything that would be installed gets asked about first, and no is a complete
+    answer that gets recorded rather than asked again.
+  </p>
+</section>
+
+<footer>
+  The same path in prose, with more detail on each step, is in <code>ONBOARDING.md</code>.
+  What the system does once you are set up is <code>SYSTEM.html</code>. No external fonts and
+  no network calls, so this works on a double click, offline.
+</footer>
+
+</div>
+</body>
+</html>
