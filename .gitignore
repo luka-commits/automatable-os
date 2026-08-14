@@ -16,6 +16,22 @@ context/today.html
 jobs/
 .claude/skills/upwork-pitch-page/library/
 
+# Written by a skill on first use, and full of your data the moment it exists.
+# BRIEFING.md carries mail summaries, .mail_cache.json carries the mail itself,
+# EMAIL_STYLE.md is derived from your own sent messages. These have no .example
+# because nothing ships them; they appear when you first run the skill that
+# writes them, which is exactly when they stop being safe to commit.
+context/BRIEFING.md
+context/EMAIL_STYLE.md
+context/profile.md
+context/tool-dossiers.md
+context/.mail_cache.json
+context/.fragments.json
+context/.adopt-manifest.json
+context/.routinen_log.json
+context/archive/
+context/tool-knowledge/
+
 # Credentials, never
 .env
 .env.local

@@ -68,7 +68,7 @@ Read `context/config.yaml`.
 
 - **Contains `[YOUR NAME]`** → fresh, unpersonalized package. Proceed straight to Step 0.5 — nothing to lose here.
 - **A real name is already filled in** → **an earlier run was interrupted.** No "already set up": Step 8 archives this skill away when it finishes, so the fact that you are running at all means the last run broke off somewhere between Step 3 (writes the name) and Step 8. Say that honestly and continue where things are missing instead of overwriting everything: check what still carries placeholders (`context/PROJECTS.md` → `[First project`, `context/STATUS.md` → `[YYYY-MM-DD]`, project folders in `projects/`, is `context/EMAIL_STYLE.md` there?) and only make up the gap. Pattern: *"Your setup didn't run all the way through last time — name and location are in, but your projects are still missing. I'll catch that up, takes 5 minutes."* Only overwrite everything if the user explicitly wants to start over.
-- **File missing entirely** → the copy is incomplete and cannot be reconstructed: `config.yaml` is the only place that knows the expected schema, and `/morning` reads exact keys from it. Don't invent anything, say it: the folder has to be copied fresh (contact person in `VERSION.md`).
+- **File missing entirely** → the copy is incomplete and cannot be reconstructed: `config.yaml` is the only place that knows the expected schema, and `/morning` reads exact keys from it. Don't invent anything, say it: the folder has to be cloned fresh (see `VERSION.md`).
 
 ## Step 0.5: Ask the Working Language (FIRST — before anything else)
 
@@ -292,7 +292,7 @@ npm install -g playwright firecrawl-cli
 playwright install chromium
 ```
 
-Non-interactive, so you do it yourself. If the installation fails on permissions: **never suggest `sudo`**, name the contact person from `VERSION.md` instead.
+Non-interactive, so you do it yourself. If the installation fails on permissions: **never suggest `sudo`**, point at the issue tracker in `VERSION.md` instead.
 
 #### Before that: the two things everything else stands on
 
@@ -492,10 +492,12 @@ reversible: _"Say 'set up upwork' whenever you want it."_ One sentence, once, ne
 
    `gh` creates the repo under the **user's logged-in account** — they own it from the start, there is no transfer. `upstream` stays in place as the source, updates come through it later (`git pull upstream main`).
 
-   Then the **second question, asked separately and never pre-selected** (contact person's name and GitHub account from `VERSION.md`): _"Should <contact person> get access to this repo? Then they can help you directly with problems and push in improvements. But it also lets them read everything that ends up here over time — your projects, notes and mail summaries. You can withdraw the access any time."_
-
-   - Yes → `gh api -X PUT repos/<user>/<repo>/collaborators/<github-account> -f permission=push`, then ONE confirming sentence including a note on where to take it back (repo → Settings → Collaborators).
-   - No → move on without comment. That is exactly as correct an answer, and it is never renegotiated.
+   **Do not offer anyone else access to it.** The package used to ask here whether a
+   contact person should be added as a collaborator, which made sense when it was
+   handed over by a consultant. This repo has no such person: it is theirs alone, and
+   everything that accumulates in it over time — projects, notes, mail summaries — is
+   nobody else's to read. If they later want help from someone, adding a collaborator
+   is their call to make, in GitHub, not a question the setup asks.
 
    Enter the created repo in `context/config.yaml → inventory.repos`. If a command fails: don't dramatize it, ONE sentence in the summary plus an offer of help — the workspace runs fully without a repo, only the backup is missing.
 3. Output a summary: what was written to config.yaml, what was filled in (context/ files), which projects were scaffolded, which documents were filed, whether EMAIL_STYLE.md was derived (Step 7), plus these follow-ups.

@@ -85,7 +85,7 @@ The second command downloads the browser that playwright drives. Without it the 
 playwright screenshot https://example.com test.png
 ```
 
-> **On managed company laptops** this browser download can be blocked or forced through an internal proxy. If it fails, it is almost never your fault: get in touch with the contact person from `VERSION.md`. The rest of the system continues to run fully without playwright.
+> **On managed company laptops** this browser download can be blocked or forced through an internal proxy. If it fails, it is almost never your fault: open an issue (the link is in `VERSION.md`). The rest of the system continues to run fully without playwright.
 
 ## OpenRouter: images and specialist models (optional)
 

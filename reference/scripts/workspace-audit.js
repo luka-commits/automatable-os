@@ -480,14 +480,20 @@ function scheduledJobs() {
       if (!hit) {
         // Ein Befehl ist kein Verweis. `open context/today.html` und
         // `cmd //c start "" context/today.html` stehen in der Doku als AUSFUEHRBARE Zeile,
-        // nicht als Link — wer sie als Pfad liest, meldet drei tote Verweise, die keine
-        // sind. Und ein Pruefwerkzeug, das dauerhaft falsch meckert, wird ignoriert:
-        // der Fehlalarm ist teurer als der Befund. Gefunden am 23.07. im eigenen Paket.
+        // not as a link. Reading those as paths reports three dead links that are not
+        // dead, and a checker that complains wrongly gets ignored: the false alarm is
+        // more expensive than the finding.
         const looksLikePath = target.includes('/') && !/\s/.test(target);
-        // Ein Journal beschreibt die Vergangenheit, ein Archiv ebenso. Dass dort Genanntes
-        // heute nicht mehr existiert, ist der Normalfall und kein Befund.
+        // A journal describes the past, an archive likewise. That something named there
+        // no longer exists today is the normal case, not a finding.
         const isChronicle = /(JOURNAL|CHANGELOG|HISTORY)/i.test(path.basename(cur)) || ARCHIVE.test('/' + cur);
-        if (looksLikePath && !isChronicle && /\.(md|html|ya?ml|json|js|py|sh)$/i.test(target)) {
+        // A file that ships as <name>.example is created by the user on first setup.
+        // Pointing at it before that has happened is correct, not a broken link: the
+        // .example IS the promise that the real one appears. Without this, every
+        // workspace built from a template reports its own convention as damage.
+        const shipsAsExample = fs.existsSync(path.join(ROOT, target + '.example'));
+        if (looksLikePath && !isChronicle && !shipsAsExample
+            && /\.(md|html|ya?ml|json|js|py|sh)$/i.test(target)) {
           dead.push({ from: cur, to: target });
         }
         continue;

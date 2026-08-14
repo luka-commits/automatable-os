@@ -6,16 +6,15 @@ Every link with the moment you need it. Guides from the package first, then the 
 
 | File | When |
 |---|---|
-| [`SETUP.md`](../SETUP.md) | The setup, step by step — once per person |
-| [`SETUP-ROADMAP.html`](../SETUP-ROADMAP.html) | The same steps as a visual map to tick off (double-click, opens in the browser) |
-| [`ONBOARDING.md`](../ONBOARDING.md) | What day-to-day life with the system looks like — read after the setup |
+| [`README.md`](../README.md) | What this is, the setup walkthrough, what to install — start here |
+| [`ONBOARDING.md`](../ONBOARDING.md) | What day-to-day life with the system looks like, read after the setup |
+| [`CLAUDE.md`](../CLAUDE.md) | How Claude works in this repo, where everything lives, the full skill table |
 | [`exercises.md`](exercises.md) | Exercises for the first week: learning on real scenarios |
-| [`FOLDER-MAP.html`](../FOLDER-MAP.html) | What each folder is and which parts belong to you |
 | [`WHAT-THIS-SYSTEM-DOES.md`](../WHAT-THIS-SYSTEM-DOES.md) | What gets read and what never happens — also for compliance questions |
-| [`VISION.md`](../VISION.md) | Why the package exists and the working principles behind it |
 | [`extending-the-system.md`](extending-the-system.md) | Adding your own commands and tools, without programming |
 | [`routines.md`](routines.md) | Prebuilt routines (e.g. an automatic morning briefing) to switch on |
-| [`VERSION.md`](../VERSION.md) | Version number + contact person, when something is broken |
+| [`CHANGELOG.md`](../CHANGELOG.md) | What changed between versions, and what needs your hand |
+| [`VERSION.md`](../VERSION.md) | Which version you are on, and where to report something broken |
 
 ## Installing (step 0 of the setup)
 

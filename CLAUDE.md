@@ -120,11 +120,45 @@ context/
   skills/                          29 skills, see the table at the bottom of this file
   hooks/                           session-start checks: setup done? update available?
   settings.json                    which hooks run when
-reference/scripts/
-  render_dashboard.py              builds context/today.html — re-run any time, fully derived
-  upwork_status.py                 the small CRM: stages, history, applied_at, prune
+reference/
+  *.md                             the handbooks, listed in the table below
+  scripts/                         the seven scripts, listed in the table below
 jobs/                              generated per-job artifacts (pitch pages, proposal drafts)
 ```
+
+### The handbooks in `reference/`
+
+Read on demand, not up front. Each one is the single place its topic is settled, so a
+skill links here instead of restating it.
+
+| Read this | When |
+|---|---|
+| [`reference/upwork-mcp.md`](reference/upwork-mcp.md) | Before building anything on Upwork. What the API actually does, measured. Reading gives you a lot, writing almost nothing |
+| [`reference/upwork-regeln.md`](reference/upwork-regeln.md) | Before automating anything on Upwork. What is allowed, with the numbers and the sources |
+| [`reference/mcp.md`](reference/mcp.md) | Connecting mail, calendar, storage or anything else. What each connection unlocks |
+| [`reference/tools.md`](reference/tools.md) | Which CLI does what, and what stops working without it |
+| [`reference/plugins.md`](reference/plugins.md) | Which plugins are worth having, and what each one notices for you |
+| [`reference/vendor-skills.md`](reference/vendor-skills.md) | Skills in here that other people wrote: where they came from, how they update |
+| [`reference/gws-cli.md`](reference/gws-cli.md) | Driving Google Workspace from the command line |
+| [`reference/mail-triage-rules.md`](reference/mail-triage-rules.md) | Changing how `morning` decides what a mail is |
+| [`reference/routines.md`](reference/routines.md) | Running something on a schedule, and when not to |
+| [`reference/dashboard-render.md`](reference/dashboard-render.md) | Touching the dashboard. Why it is a pure view, and what that forbids |
+| [`reference/design.md`](reference/design.md) | The visual language the dashboard and the pitch pages share |
+| [`reference/links.md`](reference/links.md) | Where a generated page gets hosted |
+| [`reference/self-test.md`](reference/self-test.md) | The list `checkup` works through |
+| [`reference/ATTRIBUTION.md`](reference/ATTRIBUTION.md) | What in here is not ours, and under which licence |
+
+### The scripts in `reference/scripts/`
+
+| Script | What it does |
+|---|---|
+| [`reference/scripts/render_dashboard.py`](reference/scripts/render_dashboard.py) | Builds `context/today.html`. Fully derived, safe to re-run any time |
+| [`reference/scripts/upwork_status.py`](reference/scripts/upwork_status.py) | The small CRM: stages, history, `applied_at`, `prune` |
+| [`reference/scripts/workspace-audit.js`](reference/scripts/workspace-audit.js) | Measures the folder for `audit`; writes `context/audit.json` |
+| [`reference/scripts/adopt-plan.js`](reference/scripts/adopt-plan.js) | Plans a rebuild for `adopt`. Reads only, moves nothing |
+| [`reference/scripts/inventory.js`](reference/scripts/inventory.js) | What this machine actually has: CLIs, plugins, connections |
+| [`reference/scripts/lib-workspace.js`](reference/scripts/lib-workspace.js) | Shared readers for the two above |
+| [`reference/scripts/check_repo.py`](reference/scripts/check_repo.py) | Seven checks that gate a release. Run it before publishing |
 
 **The `.example` rule, and why it is the load-bearing one:** every file above that becomes
 *yours* is in `.gitignore` and ships as `<name>.example` instead. That is what makes

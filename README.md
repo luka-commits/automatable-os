@@ -194,7 +194,7 @@ are the shipped versions; they update, your real files do not.
 
 Read `CHANGELOG.md` before pulling. Anything marked **Action needed** means a file you own
 has to change; everything else takes effect on its own. The version you are on is in
-`VERSION`.
+[`VERSION.md`](VERSION.md).
 
 If you edited a shipped file directly - a skill, `render_dashboard.py`, the dashboard
 template - git will tell you about the conflict. That is the cost of editing in place, and

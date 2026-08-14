@@ -91,7 +91,7 @@ git add -A && git commit -m "eod YYYY-MM-DD" && git push
 
 - Only if the workspace is a git repo (otherwise skip silently, not a word about it).
 - Commit works, push fails (offline, auth expired): no drama — the commit is the backup, the push catches up next time. Say it calmly ONCE per session: _"Everything is backed up — only the copy on GitHub is lagging behind right now, that catches up next time."_ If the push keeps failing (several days): suggest `gh auth login` once (it is in SETUP.md step 0).
-- Never `--force`, never resolve conflicts yourself: if the push reports a conflict (a second machine?), say what is going on and recommend the contact person from `VERSION.md`.
+- Never `--force`, never resolve conflicts yourself: if the push reports a conflict (a second machine?), say what is going on and stop. A conflict here means two machines wrote the same day; resolving it blind is how a day's work disappears.
 - The commit covers the whole workspace — `.gitignore` keeps runtime artifacts (cache, ledger, today.html, backups) out anyway.
 
 ---

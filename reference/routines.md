@@ -1,6 +1,6 @@
 # Prebuilt routines
 
-Routines are tasks that run on a schedule in Anthropic's cloud, without anyone sitting in front of them — how they work technically and what happens to the data is described in `SETUP.md` § "Running the briefing automatically". This file is the catalog: ready-made routines to switch on, each with one sentence to copy.
+Routines are tasks that run on a schedule in Anthropic's cloud, without anyone sitting in front of them — how they work technically and what happens to the data is described in `README.md` § "Updating" and `reference/routines.md` itself. This file is the catalog: ready-made routines to switch on, each with one sentence to copy.
 
 **The one prerequisite for all of them:** a routine works with a fresh clone of the repo — it only sees what has been pushed. The end of day (`/eod`) pushes automatically; if you do `/eod` regularly, there is nothing else to do here. A routine's results land in the repo and are there after a `git pull` (or readable on the go in the GitHub app).
 

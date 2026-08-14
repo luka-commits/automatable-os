@@ -219,14 +219,34 @@ def check_subcommands():
 
 def check_examples():
     """The invariant the whole "git pull keeps your work" promise rests on:
-    every file that becomes the user's is gitignored and ships as .example."""
+    every file that becomes the user's is gitignored and ships as .example.
+
+    RUNTIME is checked against the same rule, and that coupling is the point.
+    Those files have no .example because nothing ships them — they appear the
+    first time a skill writes them, which is exactly the moment they fill up
+    with the user's data. Measured once with all ten unignored: BRIEFING.md
+    holds mail summaries, .mail_cache.json holds the mail, EMAIL_STYLE.md is
+    derived from their own sent messages. Anyone who ran `morning` and then
+    committed would have published all three.
+
+    So adding a path to RUNTIME to silence a missing-file finding now also
+    obliges you to protect it. One list, both duties.
+    """
     findings = []
+    def ignored(rel):
+        return subprocess.run(['git', 'check-ignore', '-q', rel], cwd=W).returncode == 0
+
     for ex in (W / 'context').glob('*.example'):
         real = str(ex.relative_to(W))[:-len('.example')]
-        r = subprocess.run(['git', 'check-ignore', '-q', real], cwd=W)
-        if r.returncode != 0:
+        if not ignored(real):
             findings.append(f'{real} has an .example but is not gitignored — '
                             f'a user filling it in would publish it')
+    for rel in RUNTIME:
+        if rel.startswith('.claude/') or rel == 'context/today.html':
+            continue                      # shipped machinery, or covered above
+        if not ignored(rel):
+            findings.append(f'{rel} is written at runtime but is not gitignored — '
+                            f'it fills with their data and would get committed')
     return findings
 
 
