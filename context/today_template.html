@@ -21,6 +21,12 @@
     --accent-soft: #f3e4db;
     --on-accent: #ffffff;
     --border: #e2d9c8; --border-strong: #cfc2ab; --border-soft: #eae3d3;
+    /* Warning levels, tuned to the warm ground. Defined here rather than left
+       to a fallback in each rule: an undefined var() without one voids the whole
+       declaration, silently, which is how the amber date marker rendered as
+       ordinary grey text for a while without anyone seeing a thing. */
+    --sev-amber: #a2540f; --amber-soft: #f7ecd9; --amber-border: #e3caa0;
+    --sev-red: #a3271c; --red-soft: #f7e3df; --red-border: #e6bfb7; --red-deep: #822017;
     --shadow-1: 0 1px 2px rgba(28, 23, 18, .05);
     --shadow-2: 0 6px 20px rgba(28, 23, 18, .09);
     --ease: cubic-bezier(.16, 1, .3, 1);
@@ -157,8 +163,8 @@
   .pr-purpose { margin: 0 0 6px; font-size: 13.5px; line-height: 1.5; }
   .pr-foot { font-size: 11.5px; color: var(--text-3); margin: 8px 0 0; }
   .pr-status { margin: 0; font-size: 13px; color: var(--text-2); line-height: 1.5; }
-  .pr-blocker { margin-top: 9px; padding: 7px 10px; border-radius: 7px; font-size: 12.5px;
-    background: var(--red-soft, #FBE8E5); color: var(--red-deep, #911C13); }
+  .pr-blocker { margin-top: 9px; padding: 8px 11px; border-radius: var(--radius-sm); font-size: 12.5px;
+    background: var(--red-soft); color: var(--red-deep); }
   .pill { font: inherit; font-size: 12px; font-weight: 500; cursor: pointer;
     color: var(--text-2); background: var(--card); border: 1px solid var(--border);
     border-radius: 999px; padding: 4px 12px; }
@@ -172,8 +178,9 @@
   .task-list li:first-child { border-top: none; }
   .c-quad { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 20px;
     border-radius: 5px; font-size: 10px; font-weight: 700; background: var(--bg); color: var(--text-3); }
-  .c-quad.q1 { background: color-mix(in srgb, #B0143C 14%, transparent); color: #B0143C; }
-  .c-quad.q2 { background: color-mix(in srgb, var(--brand) 16%, transparent); color: var(--brand-deep); }
+  .c-quad.q1 { background: var(--red-soft); color: var(--sev-red); }
+  .c-quad.q2 { background: var(--accent-soft); color: var(--accent-deep); }
+  .c-quad.q3 { background: var(--amber-soft); color: var(--sev-amber); }
   .c-proj, .c-cat, .c-status, .c-due { font-size: 11.5px; color: var(--text-3); }
   /* A due date the renderer could not read. Amber rather than blank, because a
      blank cell reads as "no deadline" and that is the wrong conclusion. */
@@ -247,11 +254,24 @@
   .uw-score.strong { color: #fff; background: var(--brand); }
   .uw-project { font-size: 11.5px; color: var(--text-3); }
   .uw-project code { font-size: 11px; }
-  .uw-status { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
-    color: var(--text-3); background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
-    padding: 2px 6px; white-space: nowrap; }
-  .uw-status.notified { color: var(--brand-deep); border-color: var(--brand); }
-  .uw-due-badge { display: inline-block; margin-top: 3px; font-size: 10.5px; font-weight: 700; color: #B0143C; }
+  /* A pipeline is a progression, so the badge reads as one: nothing has happened
+     yet is quiet, you acted gets an edge, they replied gets the tint, done is
+     filled. One flat grey for every stage said nothing and looked washed out. */
+  .uw-status { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-3); background: var(--bg-band); border: 1px solid var(--border);
+    border-radius: 999px; padding: 3px 9px; white-space: nowrap; display: inline-block; }
+  .uw-status.new, .uw-status.notified { color: var(--text-2); }
+  .uw-status.proposal_sent { color: var(--accent-deep); border-color: var(--border-strong);
+    background: var(--card); }
+  .uw-status.interviewing { color: var(--accent-deep); background: var(--accent-soft);
+    border-color: var(--accent-soft); }
+  .uw-status.offer_sent { color: var(--on-accent); background: var(--accent-deep);
+    border-color: var(--accent-deep); }
+  .uw-status.hired { color: var(--on-ink); background: var(--ink); border-color: var(--ink); }
+  .uw-status.rejected, .uw-status.archived, .uw-status.ignored {
+    color: var(--text-3); background: transparent; border-style: dashed; }
+  .uw-due-badge { display: inline-block; margin-top: 3px; font-size: 10.5px; font-weight: 700;
+    color: var(--sev-red); }
   .uw-desc { margin-top: 4px; font-size: 11.5px; }
   .uw-desc summary { cursor: pointer; color: var(--brand-deep); font-weight: 600; }
   .uw-desc p { margin-top: 4px; color: var(--text-2); white-space: pre-wrap; }

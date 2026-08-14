@@ -16,6 +16,7 @@ Everything here is mechanical. It checks what can be checked without judgement:
     5. Every skill has a name and a description in its frontmatter
     6. Every {{PLACEHOLDER}} in a template is filled by its renderer
     7. Nothing shipped here still speaks German, unless it does so on purpose
+    8. Every CSS var() resolves, because an unresolved one fails silently
 
 Exit 1 on any finding, so it can gate a release rather than be read politely.
 
@@ -268,6 +269,38 @@ def check_frontmatter():
     return findings
 
 
+def check_css_vars():
+    """A var() with no definition and no fallback voids its whole declaration.
+
+    Silently. The browser drops the rule and the element keeps whatever it
+    inherited, so the page looks plausible and the thing you styled is simply
+    not there. Hit twice in this repo: once when a border never rendered, and
+    once when a deliberately amber warning marker came out as ordinary grey
+    text — which is worse, because the whole point of that marker was to be
+    noticed.
+
+    Cheap to check and impossible to spot by reading, which is the definition of
+    something that belongs in a checker.
+    """
+    findings = []
+    for rel in ('context/today_template.html', 'SYSTEM.html'):
+        f = W / rel
+        if not f.is_file():
+            continue
+        txt = f.read_text(encoding='utf-8')
+        defined = set(re.findall(r'(--[a-z0-9-]+)\s*:', txt))
+        seen = set()
+        for m in re.finditer(r'var\((--[a-z0-9-]+)([^)]*)\)', txt):
+            name, rest = m.group(1), m.group(2)
+            if name in defined or rest.strip().startswith(',') or name in seen:
+                continue
+            seen.add(name)
+            line = txt[:m.start()].count('\n') + 1
+            findings.append(f'{rel}:{line} uses {name}, which is never defined and has '
+                            f'no fallback — the whole declaration is dropped')
+    return findings
+
+
 def check_placeholders():
     """A {{PLACEHOLDER}} the renderer never fills aborts the render."""
     findings = []
@@ -290,6 +323,7 @@ CHECKS = [
     ('.example pairs', check_examples),
     ('skill frontmatter', check_frontmatter),
     ('template placeholders', check_placeholders),
+    ('css variables', check_css_vars),
 ]
 
 
