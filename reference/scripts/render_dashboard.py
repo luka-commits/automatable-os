@@ -84,6 +84,9 @@ TXT = {
               'q3': 'dringend + nicht wichtig', 'q4': 'nicht dringend + nicht wichtig'},
         wd_short=['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
         tab_today='Heute', tab_upwork='Upwork', title='Freelancer OS',
+        tab_onboarding='Onboarding',
+        onb_hint='Was der erste Durchlauf tut: die fuenf Phasen, welche Werkzeuge verbunden werden und warum, und wo die Schluessel landen.',
+        onb_missing='ONBOARDING.html fehlt im Ordner. Die Kopie ist unvollstaendig.',
         tab_system='System',
         f_all='Alle', f_due='Faellig',
         tab_tooling='Ausstattung',
@@ -110,6 +113,9 @@ TXT = {
               'q3': 'urgent + not important', 'q4': 'not urgent + not important'},
         wd_short=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
         tab_today='Today', tab_upwork='Upwork', title='Freelancer OS',
+        tab_onboarding='Onboarding',
+        onb_hint='What the first run does: the five phases, which tools get connected and why, and where the keys end up.',
+        onb_missing='ONBOARDING.html is missing from the folder. The copy is incomplete.',
         tab_system='System',
         f_all='All', f_due='Due',
         tab_tooling='Tooling',
@@ -640,7 +646,8 @@ def _uw_tracker(jobs, open_jobs, today):
         f'<span class="uw-tracker-meta">{esc(T["streak"].format(n=streak))} · '
         f'{esc(T["week"].format(n=week_done))}</span>'
         f'</div>'
-        f'<div class="uw-progress"><span class="uw-progress-fill" style="width:{pct}%"></span></div>'
+        f'<div class="uw-progress"><span class="uw-progress-fill" '
+        f'style="transform:scaleX({pct / 100:.3f})"></span></div>'
         f'<div class="uw-days">{"".join(bars)}</div>'
         f'{next_html}'
         f'</div>'
@@ -861,22 +868,25 @@ def parse_briefing():
     return ''.join(parts)
 
 
-def parse_system():
-    """The System tab: SYSTEM.html embedded, not restated.
+def parse_page(filename, note_key, missing_key, title_key):
+    """Embed one of the shipped HTML pages as a tab.
 
-    A second copy of the explanation inside this renderer is exactly the
-    duplication the rest of the repo forbids, and it would drift within a month.
-    The iframe also keeps that page's CSS out of the dashboard's, which matters
-    because both define .card and both style tables.
-
-    If the file is not there, say so plainly rather than showing an empty frame:
-    an empty box is indistinguishable from a broken one.
+    Embedded rather than restated: those pages are the single source, and the
+    iframe keeps their CSS out of the dashboard's, which matters because both
+    define .card and both style tables. If the file is not there, say so rather
+    than showing an empty frame, since an empty box is indistinguishable from a
+    broken one.
     """
-    if not (W / 'SYSTEM.html').is_file():
-        return f'<p class="sysnote">{esc(TXT["sys_missing"])}</p>'
-    return (f'<p class="sysnote">{esc(TXT["sys_note"])}</p>'
-            f'<iframe class="sysframe" src="../SYSTEM.html" '
-            f'title="{esc(TXT["tab_system"])}" loading="lazy"></iframe>')
+    if not (W / filename).is_file():
+        return f'<p class="sysnote">{esc(TXT[missing_key])}</p>'
+    return (f'<p class="sysnote">{esc(TXT[note_key])}</p>'
+            f'<iframe class="sysframe" src="../{filename}" '
+            f'title="{esc(TXT[title_key])}" loading="lazy"></iframe>')
+
+
+def parse_system():
+    """The System tab. Same shape as the Onboarding one, so it is the same call."""
+    return parse_page('SYSTEM.html', 'sys_note', 'sys_missing', 'tab_system')
 
 
 def parse_upwork():
@@ -975,6 +985,8 @@ vals = {
     'TOOLING_HINT': esc(TXT['tool_hint']),
     'TOOLING': parse_tooling(),
     'UPWORK_ITEMS': parse_upwork(),
+    'TAB_ONBOARDING': esc(TXT['tab_onboarding']),
+    'ONBOARDING': parse_page('ONBOARDING.html', 'onb_hint', 'onb_missing', 'tab_onboarding'),
     'TAB_SYSTEM': esc(TXT['tab_system']),
     'SYSTEM': parse_system(),
 }

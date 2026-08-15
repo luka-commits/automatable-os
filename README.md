@@ -14,8 +14,8 @@ It's a template, not a hosted product. You clone it, run one setup skill, and it
 niche, your own data, your own repo.
 
 **Want the picture before the detail?** Two pages, both offline and both a double click:
-[`ONBOARDING.html`](ONBOARDING.html) is the four first-run steps and what each one leaves
-behind; [`SYSTEM.html`](SYSTEM.html) is every step of the day and why it is shaped that way.
+[`ONBOARDING.html`](ONBOARDING.html) is the first run: five phases, which tools get
+connected and why, and where the keys end up; [`SYSTEM.html`](SYSTEM.html) is every step of the day and why it is shaped that way.
 
 ## What you get
 
@@ -23,7 +23,7 @@ behind; [`SYSTEM.html`](SYSTEM.html) is every step of the day and why it is shap
   narrow compound phrases — narrow queries just shrink the pool), scores every result 0–100 against
   your own `context/expertise.md`, logs every real candidate, and optionally sends you a Slack DM
   when a strong match shows up.
-- **A dashboard with five tabs**, generated as one static HTML file you open in a browser:
+- **A dashboard with six tabs**, generated as one static HTML file you open in a browser:
   - **Today** — your briefing, then your open tasks sorted Eisenhower-style (urgent × important),
     filterable by quadrant, by what is due, and by project.
   - **Projects** — how each one stands, and where it came from.
@@ -32,6 +32,7 @@ behind; [`SYSTEM.html`](SYSTEM.html) is every step of the day and why it is shap
     (a funnel: how many jobs made it from found → applied → in contact → offer → won).
   - **Tooling** — what this machine actually has: skills, CLIs, connections, plugins, keys. Read
     from the machine on every render, not from a list somebody maintains.
+  - **Onboarding** — the first run, so the setup is visible from inside the thing it set up.
   - **System** — the explainer page, so what the thing does is one click away rather than in a
     file you have to know about.
 - **`upwork-pitch-page`** (optional) — builds a one-page pitch site for a single job: an

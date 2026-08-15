@@ -23,295 +23,361 @@
   html{-webkit-text-size-adjust:100%}
   body{
     margin:0;background:var(--bg);color:var(--text-2);
-    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    padding:0 20px 96px;-webkit-font-smoothing:antialiased;
+    font:15.5px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:0 20px 90px;-webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:840px;margin:0 auto}
+  .wrap{max-width:900px;margin:0 auto}
   h1,h2{color:var(--text);margin:0;font-family:var(--serif);font-weight:400;text-wrap:balance}
-  h1{font-size:clamp(31px,5vw,48px);line-height:1.08;letter-spacing:-.024em}
-  h2{font-size:clamp(22px,2.7vw,29px);letter-spacing:-.015em}
-  h3{color:var(--text);margin:0;font-size:16.5px;letter-spacing:-.005em}
-  p{margin:0;max-width:66ch;text-wrap:pretty}
-  code{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--bg-band);
+  h1{font-size:clamp(29px,4.6vw,44px);line-height:1.08;letter-spacing:-.024em}
+  h2{font-size:clamp(21px,2.6vw,27px);letter-spacing:-.015em}
+  h3{color:var(--text);margin:0;font-size:16px;letter-spacing:-.005em}
+  p{margin:0;max-width:68ch;text-wrap:pretty}
+  code{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--bg-band);
        color:var(--text-2);padding:.1em .45em;border-radius:8px;white-space:nowrap}
+  a{color:var(--brand-deep)}
 
-  header{padding:72px 0 8px}
+  header{padding:64px 0 6px}
+  .embedded header{padding:24px 0 6px}
+  .embedded body{padding-bottom:44px}
   .eyebrow{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3);
-           margin-bottom:14px}
-  .lede{font-size:18.5px;line-height:1.55;margin-top:18px}
+           margin-bottom:13px}
+  .lede{font-size:18px;line-height:1.55;margin-top:16px}
   .lede strong{color:var(--text);font-weight:600}
-  section{padding:52px 0 0}
-  .sec-sub{color:var(--text-3);font-size:15px;margin-top:6px}
+  section{padding:46px 0 0}
+  .embedded section{padding-top:40px}
+  .sec-sub{color:var(--text-3);font-size:14.5px;margin-top:6px}
 
-  /* The road: a numbered spine you can see your position on. */
-  .road{margin-top:26px;position:relative;padding-left:44px}
-  .road::before{content:"";position:absolute;left:15px;top:14px;bottom:34px;width:2px;
+  /* Phase spine. Each phase says what runs, and what it leaves behind. */
+  .road{margin-top:24px;position:relative;padding-left:42px}
+  .road::before{content:"";position:absolute;left:14px;top:14px;bottom:30px;width:2px;
                 background:var(--border);border-radius:2px}
-  .stop{position:relative;margin-bottom:14px}
-
-  .stop-card{background:var(--card);border:1px solid var(--border);border-radius:14px;
-             padding:18px 20px;box-shadow:var(--shadow-1)}
-  .stop-cmd{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--brand-deep);
-            background:var(--brand-soft);border-radius:999px;padding:2px 11px;display:inline-block;
-            margin-bottom:9px}
-  .stop-card h3{margin-bottom:6px}
-  .stop-card p{font-size:14.5px;color:var(--text-2)}
-  .stop-out{margin-top:12px;padding-top:11px;border-top:1px solid var(--border-soft);
-            font-size:12.5px;color:var(--text-3);display:flex;flex-wrap:wrap;gap:6px;
-            align-items:baseline}
-  .stop-out b{font-weight:600;color:var(--text-2);margin-right:2px}
-  .stop-out code{font-size:11.5px;background:var(--bg-band)}
-  .need{display:inline-block;font-size:11px;letter-spacing:.05em;text-transform:uppercase;
-        border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:2px;font-weight:600}
-  .need.req{background:var(--ink);color:var(--on-ink)}
-  .need.opt{background:transparent;color:var(--text-3);border:1px dashed var(--border-strong)}
-
-  /* Tick-off. The point of a roadmap over a list is that it remembers where you
-     stopped: the first run happens across a couple of sittings, and coming back
-     to four identical cards means re-reading all of them to find your place. */
+  .stop{position:relative;margin-bottom:12px}
   .tick{
-    position:absolute;left:-44px;top:16px;width:32px;height:32px;border-radius:999px;
+    position:absolute;left:-42px;top:15px;width:30px;height:30px;border-radius:999px;
     background:var(--brand-soft);color:var(--brand-deep);border:2px solid var(--bg);
-    display:grid;place-items:center;font-size:13px;font-weight:600;cursor:pointer;
+    display:grid;place-items:center;font-size:12.5px;font-weight:600;cursor:pointer;
     padding:0;font-family:inherit;transition:background .18s var(--ease);
   }
   .tick:hover{background:var(--border)}
   .tick:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
   .stop.done .tick{background:var(--ink);color:var(--on-ink)}
-  .stop.done .stop-card{opacity:.62}
-  .stop.done .stop-card h3{text-decoration:line-through;text-decoration-thickness:1px}
-  .progress{
-    margin-top:18px;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text-3);
-  }
+  .stop.done .stop-card{opacity:.6}
+  .stop.done h3{text-decoration:line-through;text-decoration-thickness:1px}
+  .stop-card{background:var(--card);border:1px solid var(--border);border-radius:14px;
+             padding:16px 19px;box-shadow:var(--shadow-1)}
+  .stop-cmd{font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--brand-deep);
+            background:var(--brand-soft);border-radius:999px;padding:2px 10px;display:inline-block;
+            margin-bottom:8px}
+  .stop-card h3{margin-bottom:5px}
+  .stop-card p{font-size:14px}
+  .stop-list{margin:9px 0 0;padding-left:17px;font-size:13.5px}
+  .stop-list li{margin-bottom:3px}
+  .stop-out{margin-top:11px;padding-top:10px;border-top:1px solid var(--border-soft);
+            font-size:12.5px;color:var(--text-3)}
+  .stop-out b{font-weight:600;color:var(--text-2)}
+  .need{display:inline-block;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
+        border-radius:999px;padding:2px 9px;margin-left:7px;vertical-align:2px;font-weight:600}
+  .need.req{background:var(--ink);color:var(--on-ink)}
+  .need.opt{background:transparent;color:var(--text-3);border:1px dashed var(--border-strong)}
+
+  .progress{margin-top:16px;display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--text-3)}
   .progress-track{flex:1;height:5px;border-radius:999px;background:var(--border);overflow:hidden}
-  .progress-track i{display:block;height:100%;width:0;background:var(--brand);
-                    border-radius:999px;transition:width .3s var(--ease)}
-  .progress button{
-    font:inherit;font-size:12px;color:var(--text-3);background:none;border:0;
-    cursor:pointer;text-decoration:underline;padding:0;
-  }
+  /* scaleX rather than width: animating width makes the browser redo layout on
+     every frame, and transform does not touch layout at all. */
+  .progress-track i{display:block;height:100%;width:100%;background:var(--brand);
+                    border-radius:999px;transform:scaleX(0);transform-origin:left;
+                    transition:transform .3s var(--ease)}
+  .progress button{font:inherit;font-size:12px;color:var(--text-3);background:none;border:0;
+                   cursor:pointer;text-decoration:underline;padding:0}
 
-  .skipbox{margin-top:22px;background:var(--amber-soft);border:1px solid var(--amber-border);
-           border-radius:14px;padding:var(--pad)}
-  .skipbox h3{color:var(--amber)}
-  .skipbox p{font-size:14.5px;margin-top:8px}
-
-  /* The daily loop, once the first run is done. */
-  .floor{list-style:none;margin:24px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:10px;
-         align-items:stretch;justify-content:center}
-  .fl{flex:1 1 170px;background:var(--card);border:1px solid var(--border);border-radius:14px;
-      padding:13px 16px;text-align:center}
-  .fl.on{background:var(--brand-soft);border-color:var(--brand)}
-  .fl b{display:block;font:600 14.5px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text)}
-  .fl.on b{color:var(--brand-deep)}
-  .fl span{display:block;font-size:12.5px;color:var(--text-3);margin-top:3px}
-  .fl-arrow{flex:0 0 24px;display:grid;place-items:center;color:var(--border-strong)}
-  .fl-arrow svg{width:22px;height:22px}
-  @media(max-width:560px){
-    .floor{flex-direction:column}
-    .fl{flex:none}
-    .fl-arrow{flex:none;padding:2px 0}
-    .fl-arrow svg{transform:rotate(90deg)}
-  }
-
-  table{border-collapse:collapse;width:100%;margin-top:18px;font-size:14.5px}
+  table{border-collapse:collapse;width:100%;margin-top:16px;font-size:14px}
   .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border-soft);vertical-align:top}
-  th{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);
+  th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--border-soft);vertical-align:top}
+  th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);
      font-weight:500;white-space:nowrap}
-  td:first-child{white-space:nowrap}
   tbody tr:last-child td{border-bottom:0}
+  td:first-child{white-space:nowrap;color:var(--text);font-weight:600}
+  .tag{display:inline-block;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;
+       border-radius:999px;padding:2px 8px;font-weight:600;white-space:nowrap}
+  .tag.must{background:var(--ink);color:var(--on-ink)}
+  .tag.ask{background:var(--brand-soft);color:var(--brand-deep)}
+  .tag.only{background:transparent;color:var(--text-3);border:1px dashed var(--border-strong)}
 
-  footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--border);
-         color:var(--text-3);font-size:13.5px}
+  .note{margin-top:20px;background:var(--amber-soft);border:1px solid var(--amber-border);
+        border-radius:14px;padding:18px 20px}
+  .note h3{color:var(--amber)}
+  .note p{font-size:14px;margin-top:7px}
+
+  footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--border);
+         color:var(--text-3);font-size:13px}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
 <script>
-  // Tightens the spacing when this page is shown inside the dashboard.
   if (window.self !== window.top) document.documentElement.classList.add('embedded');
 </script>
 <div class="wrap">
 
 <header>
-  <div class="eyebrow">Freelancer OS</div>
-  <h1>From a cloned folder to a working morning.</h1>
+  <div class="eyebrow">Freelancer OS · Onboarding</div>
+  <h1>What the first run actually does.</h1>
   <p class="lede">
-    Four steps, once. Each one produces a file the next one needs, which is why the order is
-    the order. <strong>Two of the four are optional</strong>, and skipping them costs you the
-    Upwork half and nothing else.
+    One conversation, not a form, and roughly half an hour. Below is every phase it goes
+    through, <strong>which tools get connected and why</strong>, and where the keys end up.
+    Nothing is installed or connected before you have said yes to it.
   </p>
 </header>
 
 <section>
-  <h2>The first run</h2>
-  <p class="sec-sub">Say the command, answer what is asked. Nothing here is a form to fill in alone.</p>
+  <h2>The five phases</h2>
+  <p class="sec-sub">Started by a session-start hook on your first message. You do not have to
+  know a command to begin.</p>
 
   <div class="road">
-    <div class="stop" data-step="setup">
-      <button class="tick" type="button" aria-pressed="false" aria-label="Mark step 1 as done">1</button>
+    <div class="stop" data-step="p1">
+      <button class="tick" type="button" aria-pressed="false" aria-label="Mark phase 1 done">1</button>
       <div class="stop-card">
         <span class="stop-cmd">setup</span><span class="need req">Required</span>
-        <h3>The workspace becomes yours</h3>
-        <p>Language, your name, how you want to be addressed, which folders you need. It writes
-        the files everything else reads, creates your project folders, then archives itself so
-        it can never run twice.</p>
-        <div class="stop-out"><b>Leaves behind</b> <code>context/config.yaml</code>
-          <code>STATUS.md</code> <code>PROJECTS.md</code> <code>projects/</code></div>
+        <h3>Who you are, and what you are working on</h3>
+        <p>Language first, then six questions. The one that matters most is the fifth: which
+        tools you work with every day, <em>and what each one is for</em>. Everything in phase 3
+        is derived from that answer rather than from a checklist.</p>
+        <ul class="stop-list">
+          <li>Your name, how you want to be addressed, your working language</li>
+          <li>Whether this folder is empty or already holds work</li>
+          <li>Your running projects, one sentence each</li>
+          <li>Your daily tools, and what each is for</li>
+        </ul>
+        <div class="stop-out"><b>Leaves behind</b> <code>context/config.yaml</code>,
+        <code>STATUS.md</code>, <code>PROJECTS.md</code>, and a folder per project</div>
       </div>
     </div>
 
-    <div class="stop" data-step="setup-freelancer-os">
-      <button class="tick" type="button" aria-pressed="false" aria-label="Mark step 2 as done">2</button>
+    <div class="stop" data-step="p2">
+      <button class="tick" type="button" aria-pressed="false" aria-label="Mark phase 2 done">2</button>
       <div class="stop-card">
-        <span class="stop-cmd">setup-freelancer-os</span><span class="need opt">Only for Upwork</span>
-        <h3>Upwork is connected, and the system reads your account</h3>
-        <p>It checks the connector answers, then <strong>reads before it asks</strong>: your
-        profile, your past contracts, and the full text of proposals you have already sent.
-        That last one is your writing, in the right register, already approved by you once.</p>
-        <p style="margin-top:9px">Then three questions, and only three, because they are the
-        ones no API can answer: what you want more of, what you would turn down today, and
-        your name.</p>
-        <div class="stop-out"><b>Leaves behind</b> <code>expertise.md</code>
-          <code>experience.md</code> <code>testimonials.json</code>
-          <code>upwork_org_uid</code></div>
+        <h3>Your existing material gets filed</h3>
+        <p>Documents you already have are read, summarised and put where they belong: what a
+        client sent into <code>inputs/</code>, what you made into <code>work/</code>. If the
+        folder already had a structure, it is measured first and you are asked before anything
+        moves.</p>
+        <div class="stop-out"><b>Leaves behind</b> your documents inside the right project,
+        and nothing deleted</div>
       </div>
     </div>
 
-    <div class="stop" data-step="upwork-profile">
-      <button class="tick" type="button" aria-pressed="false" aria-label="Mark step 3 as done">3</button>
+    <div class="stop" data-step="p3">
+      <button class="tick" type="button" aria-pressed="false" aria-label="Mark phase 3 done">3</button>
       <div class="stop-card">
-        <span class="stop-cmd">upwork-profile</span><span class="need opt">Only for Upwork</span>
-        <h3>Your profile can carry an application</h3>
-        <p>Before the first application, not after the tenth. The profile decides whether you
-        appear in search results at all, and it is the first thing a client opens after your
-        cover letter. Applying around a weak one makes every proposal more expensive than it
-        needs to be.</p>
-        <div class="stop-out"><b>Leaves behind</b> finished text to paste in, and a list of
-          what each weakness costs you</div>
+        <h3>The equipment</h3>
+        <p>The part that otherwise never happens. Four rounds, and each is <strong>one question
+        per group rather than one per tool</strong>, because six questions in a row get answered
+        with "yes, yes, yes", which is not consent.</p>
+        <ul class="stop-list">
+          <li><b>Tools</b> installed on your machine</li>
+          <li><b>Connections</b> to the systems you named in phase 1</li>
+          <li><b>Keys</b>, for the tools that are half dead without one</li>
+          <li><b>Repos</b>, cloned into the project they belong to</li>
+        </ul>
+        <div class="stop-out">All four are broken out in the tables below</div>
       </div>
     </div>
 
-    <div class="stop" data-step="morning">
-      <button class="tick" type="button" aria-pressed="false" aria-label="Mark step 4 as done">4</button>
+    <div class="stop" data-step="p4">
+      <button class="tick" type="button" aria-pressed="false" aria-label="Mark phase 4 done">4</button>
+      <div class="stop-card">
+        <span class="stop-cmd">setup-freelancer-os</span><span class="need opt">Upwork only</span>
+        <h3>The acquisition channel</h3>
+        <p>One question: do you work on Upwork, <strong>or would you like to start</strong>.
+        Three answers, and they lead three different ways.</p>
+        <ul class="stop-list">
+          <li><b>Yes</b> → the connector is verified and your account is <em>read</em>: profile,
+          past contracts, and the full text of proposals you have already sent. Then three
+          questions, because they are the only ones no API can answer</li>
+          <li><b>Starting out</b> → nothing to read, so it asks instead, and
+          <code>upwork-profile</code> builds your profile rather than auditing it</li>
+          <li><b>No</b> → the whole layer stands down and is never mentioned again</li>
+        </ul>
+        <div class="stop-out"><b>Leaves behind</b> <code>expertise.md</code>,
+        <code>experience.md</code> and your Upwork ids, or <code>upwork_enabled: false</code></div>
+      </div>
+    </div>
+
+    <div class="stop" data-step="p5">
+      <button class="tick" type="button" aria-pressed="false" aria-label="Mark phase 5 done">5</button>
       <div class="stop-card">
         <span class="stop-cmd">morning</span><span class="need req">Required</span>
         <h3>The first day starts</h3>
-        <p>There is nothing left to configure. The briefing reads what the previous steps
-        wrote, sorts your tasks, and hands them to you one at a time. If Upwork is connected it
-        makes one pass over the pipeline while it is there.</p>
-        <div class="stop-out"><b>Leaves behind</b> <code>BRIEFING.md</code> and a rendered
-          dashboard you can open on a double click</div>
+        <p>The setup skill archives itself away, so it can never run twice. Nothing is left to
+        configure: the briefing reads what the phases above wrote and hands you your tasks one
+        at a time.</p>
+        <div class="stop-out"><b>Leaves behind</b> <code>BRIEFING.md</code> and a dashboard you
+        open on a double click</div>
       </div>
     </div>
   </div>
 
   <div class="progress">
-    <span id="prog-label">0 of 4 done</span>
+    <span id="prog-label">0 of 5 done</span>
     <span class="progress-track" aria-hidden="true"><i id="prog-bar"></i></span>
     <button type="button" id="prog-reset">start over</button>
   </div>
-
-  <div class="skipbox">
-    <h3>Skipping steps 2 and 3</h3>
-    <p>Say you do not work on Upwork and the whole acquisition layer stands down: no connector
-    asked for, no reminders, no half-empty tab in the dashboard. The day loop, your projects
-    and the delivery half are untouched, and a client from a referral takes exactly the same
-    route into a project that a won job does.</p>
-    <p style="margin-top:12px"><strong>Starting out is a third answer, not a soft no.</strong>
-    Step 2 normally learns your niche by reading your account, and a new account has nothing
-    to read. So it asks you instead, and step 3 stops being an audit and becomes the first
-    piece of work: without a profile you do not appear in search results at all.</p>
-  </div>
 </section>
 
 <section>
-  <h2>What it looks like afterwards</h2>
-  <p class="sec-sub">The setup is over. From here it is two commands and whatever the day holds.</p>
-
-  <ol class="floor">
-    <li class="fl on"><b>morning</b><span>what today is</span></li>
-    <li class="fl-arrow" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M4 12h15m0 0l-5-5m5 5l-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </li>
-    <li class="fl"><b>the work</b><span>skills, on demand</span></li>
-    <li class="fl-arrow" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M4 12h15m0 0l-5-5m5 5l-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </li>
-    <li class="fl on"><b>eod</b><span>what happened</span></li>
-  </ol>
-
-  <p style="margin-top:20px">
-    What every step does and why it is shaped that way is in
-    <a href="SYSTEM.html" style="color:var(--brand-deep)">SYSTEM.html</a>. This page only
-    covers getting there.
-  </p>
-</section>
-
-<section>
-  <h2>What you need, and what you do not</h2>
+  <h2>What gets connected</h2>
+  <p class="sec-sub">All of it through Claude's own connector settings. This package brings no
+  connection of its own and never sees a password: you sign in, Claude gets the access.</p>
 
   <div class="scroll">
   <table>
-    <thead><tr><th>Thing</th><th>Needed for</th><th>Without it</th></tr></thead>
+    <thead><tr><th>Slot</th><th></th><th>What it is</th><th>Without it</th></tr></thead>
     <tbody>
       <tr>
-        <td><b>Claude Code</b></td>
-        <td>All of it</td>
-        <td>Nothing runs. This is the one hard requirement</td>
+        <td>Mail</td><td><span class="tag must">Not optional</span></td>
+        <td>Microsoft 365 or Google Workspace. You are not asked whether, only which</td>
+        <td><code>morning</code> is an empty shell: tasks with no day around them</td>
       </tr>
       <tr>
-        <td><b>An Upwork connector</b></td>
-        <td>Steps 2 and 3, the screener, proposals, the inbox</td>
-        <td>The day loop, projects and the dashboard work exactly as they do with it</td>
+        <td>Calendar</td><td><span class="tag must">Not optional</span></td>
+        <td>Comes with the same account as mail</td>
+        <td>Your appointments never reach the briefing</td>
       </tr>
       <tr>
-        <td><b>Node.js</b></td>
-        <td>The dashboard renderer and the Tooling tab</td>
-        <td>The briefing still runs in the chat; you lose the rendered page</td>
+        <td>Storage</td><td><span class="tag ask">Asked</span></td>
+        <td>SharePoint, OneDrive or Drive. Usually one checkbox once mail is connected</td>
+        <td>Documents have to be copied into the folder by hand</td>
       </tr>
       <tr>
-        <td><b>Mail and calendar</b></td>
-        <td>A briefing that knows your day, not just your tasks</td>
-        <td><code>morning</code> still runs and names in one line what it skipped</td>
+        <td>Chat</td><td><span class="tag ask">Asked</span></td>
+        <td>Teams or Slack. Also where the screener messages you about a strong match</td>
+        <td>Agreements made in chat stay invisible, matches land in the dashboard only</td>
       </tr>
       <tr>
-        <td><b>A private git remote</b></td>
-        <td>The evening backup</td>
-        <td>Everything works. Nothing is backed up, which is its own risk</td>
+        <td>CRM</td><td><span class="tag ask">Asked</span></td>
+        <td>HubSpot, GoHighLevel and others, <b>with the honest limit</b> that the briefing does
+        not pull CRM data today. It is there for asking directly</td>
+        <td>Client status lives outside the system</td>
       </tr>
       <tr>
-        <td><b><code>gh</code> and <code>vercel</code></b></td>
-        <td>Building the thing you are pitching and giving the client a live link</td>
-        <td>The pitch page draws the plan instead of linking it, which is what it does for
-        most jobs anyway</td>
+        <td>Upwork</td><td><span class="tag only">Phase 4</span></td>
+        <td>The connector everything in the acquisition half reads</td>
+        <td>Screener, proposals, pitch pages and inbox stand down together</td>
       </tr>
       <tr>
-        <td><b>Google Workspace, Supabase</b></td>
-        <td>Nothing gets installed. Setup only asks whether you use them</td>
-        <td>The handbooks stay in the folder unread, and the commands get guessed at instead</td>
-      </tr>
-      <tr>
-        <td><b>Slack, Firecrawl, a scraping key</b></td>
-        <td>Individual conveniences</td>
-        <td>The skill that wanted it says so and carries on</td>
+        <td>Dev</td><td><span class="tag only">If relevant</span></td>
+        <td>GitHub and the like. Only raised if you work with repos</td>
+        <td>No route to your code or your deployments</td>
       </tr>
     </tbody>
   </table>
   </div>
 
-  <p style="margin-top:22px">
-    The rule underneath all of that: <strong>a missing tool degrades a step, it never fails a
-    run</strong>. Anything that would be installed gets asked about first, and no is a complete
-    answer that gets recorded rather than asked again.
-  </p>
+  <div class="note">
+    <h3>A connector that does not exist gets said out loud</h3>
+    <p>The catalogue moves in both directions, so a route is never guessed at. If your system
+    is not in it you hear that plainly, along with what stays possible, rather than being
+    walked into a dead end. A connection that fails twice is recorded as not set up and the
+    setup carries on: the rest does not wait for it.</p>
+  </div>
+</section>
+
+<section>
+  <h2>What gets installed</h2>
+  <p class="sec-sub">Nothing lands on your machine before you have heard what it is and what it
+  does for you. One question per group, and no is a complete answer that gets recorded so
+  nobody asks twice.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Tool</th><th></th><th>What it buys you</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Node.js</td><td><span class="tag must">Prerequisite</span></td>
+        <td>The dashboard, the inventory, the audit and the adoption planner. A third of the
+        package does not exist without it, so it is announced rather than asked about</td>
+      </tr>
+      <tr>
+        <td><code>claude</code> CLI</td><td><span class="tag must">Prerequisite</span></td>
+        <td>Installing plugins at all. Same reason</td>
+      </tr>
+      <tr>
+        <td>playwright</td><td><span class="tag ask">Offered</span></td>
+        <td>A real browser. Installed early on purpose, so the later steps can open an
+        interface and look, instead of describing from memory where you should click</td>
+      </tr>
+      <tr>
+        <td>firecrawl</td><td><span class="tag ask">Offered</span></td>
+        <td>Reading web pages properly. Needs its own key, see below</td>
+      </tr>
+      <tr>
+        <td>Plugins</td><td><span class="tag ask">One question</span></td>
+        <td>A curated set, installed together. New ones appear almost daily, and telling this
+        week's real thing from the noise is the work being taken off you</td>
+      </tr>
+      <tr>
+        <td><code>gh</code> + <code>vercel</code></td><td><span class="tag ask">If you build</span></td>
+        <td>Building what you are pitching, putting it online, and handing the client a link
+        instead of a description. On a website job that is the whole application</td>
+      </tr>
+      <tr>
+        <td>Google Workspace, Supabase</td><td><span class="tag only">Only asked</span></td>
+        <td>Nothing gets installed. The package ships handbooks for both, and they only get
+        used if the system knows to reach for them</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>Where the keys go</h2>
+  <p class="sec-sub">Into <code>~/.config/credentials.env</code>, outside this folder, always.</p>
+
+  <p style="margin-top:14px"><strong>Never into the repo</strong>, and the reason is not
+  caution: this folder gets cloned and versioned, and a key committed once stays in the history
+  even after you delete the file. Outside the folder there is nothing to clean up later.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Key</th><th></th><th>Why</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Firecrawl</td><td><span class="tag ask">Offered</span></td>
+        <td>Without it the tool is installed and cannot read a page. Your own account, the free
+        tier is enough to try it</td>
+      </tr>
+      <tr>
+        <td>OpenRouter</td><td><span class="tag ask">Offered</span></td>
+        <td>Images, and models that do not come from Anthropic. Without it the system says so
+        honestly rather than failing at the moment you ask</td>
+      </tr>
+      <tr>
+        <td>Anthropic API</td><td><span class="tag only">On request</span></td>
+        <td>Only the <code>managed-agents</code> skill needs one, and it bills separately from
+        your subscription. Never offered unprompted for that reason</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <h3>And one repo, which is your backup</h3>
+    <p>The setup offers to create a private GitHub repo under <em>your</em> account, and the end
+    of each day pushes the state of this folder into it. That is the one thing that ever leaves
+    your machine, it belongs to you, and nobody else is offered access to it.</p>
+    <p style="margin-top:9px">Project repos are separate: if a project has one, it is cloned
+    into <code>projects/&lt;slug&gt;/code</code>, so its history stays its own instead of being
+    mixed into the workspace.</p>
+  </div>
 </section>
 
 <footer>
-  The same path in prose, with more detail on each step, is in <code>ONBOARDING.md</code>.
-  What the system does once you are set up is <code>SYSTEM.html</code>. No external fonts and
-  no network calls, so this works on a double click, offline.
+  What happens after the setup, every day, is on
+  <a href="SYSTEM.html" target="_top">SYSTEM.html</a>. The same path in prose, with the
+  reasoning behind each step, is <code>ONBOARDING.md</code>. No external fonts and no network
+  calls, so this works on a double click, offline.
 </footer>
 
 </div>
@@ -330,15 +396,15 @@
     catch { done = new Set(); }
 
     function paint() {
-      stops.forEach(s => {
+      stops.forEach((s, i) => {
         const on = done.has(s.dataset.step);
         s.classList.toggle('done', on);
         const t = s.querySelector('.tick');
         t.setAttribute('aria-pressed', String(on));
-        t.textContent = on ? '\u2713' : String(stops.indexOf(s) + 1);
+        t.textContent = on ? '✓' : String(i + 1);
       });
       const n = stops.filter(s => done.has(s.dataset.step)).length;
-      bar.style.width = (n / stops.length * 100) + '%';
+      bar.style.transform = 'scaleX(' + (n / stops.length) + ')';
       label.textContent = n + ' of ' + stops.length + ' done';
       try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch {}
     }
@@ -347,9 +413,7 @@
       done.has(s.dataset.step) ? done.delete(s.dataset.step) : done.add(s.dataset.step);
       paint();
     }));
-    document.getElementById('prog-reset').addEventListener('click', () => {
-      done.clear(); paint();
-    });
+    document.getElementById('prog-reset').addEventListener('click', () => { done.clear(); paint(); });
     paint();
   })();
 </script>

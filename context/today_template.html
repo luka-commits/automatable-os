@@ -296,8 +296,10 @@
   .uw-tracker-meta { margin-left: auto; font-size: 12px; color: var(--text-3); }
   .uw-progress { height: 6px; border-radius: 999px; background: var(--bg-band);
     margin: 12px 0 14px; overflow: hidden; }
-  .uw-progress-fill { display: block; height: 100%; background: var(--accent);
-    border-radius: 999px; transition: width .3s var(--ease); }
+  /* scaleX rather than width, same reason as the onboarding page: width forces a
+     layout pass per frame, transform does not touch layout. */
+  .uw-progress-fill { display: block; height: 100%; width: 100%; background: var(--accent);
+    border-radius: 999px; transform-origin: left; transition: transform .3s var(--ease); }
   .uw-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
   /* Every day gets a track, so an empty day reads as empty and not as missing. A bar
      at 2% of the height was 0.8px in the palest colour on the page, which is to say
@@ -372,6 +374,7 @@
     <button class="tab" data-tab="projects">{{TAB_PROJECTS}}</button>
     <button class="tab" data-tab="upwork">{{TAB_UPWORK}}</button>
     <button class="tab" data-tab="tooling">{{TAB_TOOLING}}</button>
+    <button class="tab" data-tab="onboarding">{{TAB_ONBOARDING}}</button>
     <button class="tab" data-tab="system">{{TAB_SYSTEM}}</button>
   </nav>
 
@@ -418,6 +421,10 @@
 {{TOOLING}}
   </div><!-- /pane-tooling -->
 
+  <div class="tabpane" id="pane-onboarding" hidden>
+{{ONBOARDING}}
+  </div><!-- /pane-onboarding -->
+
   <div class="tabpane" id="pane-system" hidden>
 {{SYSTEM}}
   </div><!-- /pane-system -->
@@ -431,7 +438,7 @@
 </div>
 
 <script>
-  const panes = { today: document.getElementById('pane-today'), projects: document.getElementById('pane-projects'), upwork: document.getElementById('pane-upwork'), tooling: document.getElementById('pane-tooling'), system: document.getElementById('pane-system') };
+  const panes = { today: document.getElementById('pane-today'), projects: document.getElementById('pane-projects'), upwork: document.getElementById('pane-upwork'), tooling: document.getElementById('pane-tooling'), onboarding: document.getElementById('pane-onboarding'), system: document.getElementById('pane-system') };
   function showTab(name) {
     if (!panes[name]) name = 'today';
     Object.entries(panes).forEach(([k, p]) => p.hidden = k !== name);
