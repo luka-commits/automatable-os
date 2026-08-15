@@ -9,19 +9,66 @@ capability that leaves your setup alone, patch means a fix.
 
 ## [Unreleased]
 
-Work in progress on the author's machine, not yet in this repo. Listed so you know what
-is coming and can decide whether to wait:
+Nothing pending. Everything previously listed here shipped in 0.2.0.
 
-- A daily proposal tracker in the dashboard: goal, streak, week, and a one-click handover
-  of the day's remaining applications
-- Job history per record (`history`, `applied_at`), which turns the funnel from a snapshot
-  into a real cohort and makes "how many went out today" answerable at all
-- A detail overlay per job with the fields that decide an application: connects cost,
-  competing bid range, whether the client already hired, and whether you clear their
-  minimum bar
-- `upwork-inbox` and `upwork-reply`: the account side (messages, invitations, offers) and
-  drafted client replies. Drafts only, never sends
-- The rules of the road in one place: what Upwork allows, with numbers and sources
+## [0.2.0] - 2026-08-15
+
+The half that was missing. 0.1.0 found work; this one carries it through to a project you
+deliver, and stops calling itself an Upwork tool.
+
+### Added
+- **`upwork-won` and `new_project.py`** - a won job becomes a project: the folder, its first
+  task, the proposal and pitch page moved in as material, and a link back to the job record
+  so the funnel still counts it. Without this, everything before it was a lead generator
+- **`projects/`** - one folder per engagement, with the template it is created from. Nine
+  places referenced `projects/README.md` and it did not exist
+- **`upwork-inbox` and `upwork-reply`** - the account side: messages, invitations, offers,
+  contracts. Drafts three replies with different directions, sends nothing
+- **`upwork-profile`** - audits your profile, or walks you through creating one. Comes
+  before the first application, because the profile decides whether you appear at all
+- **A daily tracker** - goal, today's count, streak, the week, and a one-paste handover of
+  the applications still missing. Reads `daily_proposal_goal`, which until now was a config
+  key nothing consumed
+- **A detail panel per job** - connects cost, the competing bid range, whether the client is
+  already interviewing, whether you clear their minimum bar, and the screening instruction
+  that hides in the description and gets a proposal thrown out when missed
+- **A Tooling tab** - what the machine actually has: skills, CLIs, connections, plugins,
+  keys, read live rather than from a maintained list
+- **A briefing on Today**, to the format `reference/dashboard-render.md` had documented and
+  nothing had ever implemented
+- **`SYSTEM.html` and `ONBOARDING.html`** - the system and the first run, as pages you look
+  at. The onboarding one ticks off and remembers where you stopped
+- **`check_repo.py`** - eight mechanical checks that gate a release
+
+### Changed
+- **The whole thing is optional, including Upwork.** Say you do not use it and the
+  acquisition layer stands down: no connector, no nagging, no half-empty tab
+- The setup asks "do you work on Upwork, **or would you like to start**". Two answers lost
+  the person who had been meaning to begin
+- The setup reads your account before it asks anything: profile, past contracts, and the
+  full text of proposals you have already sent
+- The setup now covers `gh`, `vercel`, Google Workspace and Supabase. It shipped handbooks
+  for all four and mentioned none of them
+- **The design matches the pitch pages** the system generates: warm paper, one accent in two
+  strengths, serif display type. Every contrast ratio is measured and written next to its
+  token
+- Due dates are ISO (`due 2026-08-16`). `DD.MM.` still parses; anything else now shows amber
+  in the column instead of silently dropping the deadline
+
+### Fixed
+- Ten runtime files were not gitignored, including `BRIEFING.md` and `.mail_cache.json`.
+  Running `morning` and then committing would have published your mail summaries
+- The renderer crashed on a `client` written as a plain name rather than an object, in two
+  places, because the block existed twice
+- Five CSS variables were used and never defined. An undefined `var()` without a fallback
+  voids its whole declaration, silently
+- `audit` and `adopt` printed German, as did a session-start hook, whose language becomes
+  the language you get answered in
+
+### Action needed
+- **None.** Every file you own is untouched by this release. `daily_proposal_goal` already
+  existed in `config.yaml.example`; if your config predates it, add it or the tracker
+  stays hidden, which is the intended behaviour rather than a failure.
 
 ## [0.1.0] - 2026-08-14
 

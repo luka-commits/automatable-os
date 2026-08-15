@@ -1,6 +1,6 @@
 # Version
 
-**v0.1.0**
+**v0.2.0**
 
 What changed in it, and whether any of it needs your hand, is in
 [`CHANGELOG.md`](CHANGELOG.md). How to move to a newer one is the Updating section of

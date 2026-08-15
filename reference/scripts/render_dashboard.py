@@ -59,6 +59,11 @@ def _cfg():
 
 
 CFG = _cfg()
+# The raw text as well, for the few settings read by pattern rather than by key.
+try:
+    CFG_TEXT = (W / 'context/config.yaml').read_text(encoding='utf-8')
+except OSError:
+    CFG_TEXT = ''
 LANG = CFG.get('language', 'en') if CFG.get('language') in ('de', 'en') else 'en'
 USER_NAME = CFG.get('name', '')
 
@@ -77,6 +82,7 @@ TXT = {
         todos='Offene To-dos', no_tasks='Noch keine offenen Tasks — trag sie in context/STATUS.md ein.',
         quad={'q1': 'dringend + wichtig', 'q2': 'nicht dringend + wichtig',
               'q3': 'dringend + nicht wichtig', 'q4': 'nicht dringend + nicht wichtig'},
+        wd_short=['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
         tab_today='Heute', tab_upwork='Upwork', title='Freelancer OS',
         tab_system='System',
         f_all='Alle', f_due='Faellig',
@@ -102,6 +108,7 @@ TXT = {
         todos='Open to-dos', no_tasks='No open tasks yet — add them to context/STATUS.md.',
         quad={'q1': 'urgent + important', 'q2': 'not urgent + important',
               'q3': 'urgent + not important', 'q4': 'not urgent + not important'},
+        wd_short=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
         tab_today='Today', tab_upwork='Upwork', title='Freelancer OS',
         tab_system='System',
         f_all='All', f_due='Due',
@@ -364,6 +371,18 @@ UW_I18N = {
         say_won='Setze Upwork-Job {jid} auf "hired".',
         say_lost='Setze Upwork-Job {jid} auf "rejected".',
         say_task='Leg eine Task an: Follow-up für Upwork-Job „{title}" (fällig {nf}).',
+        d_connects='Connects', d_bids='Gebote', d_bids_range='(Spanne {span})',
+        d_activity='Aktivitaet', d_activity_v='{inv} eingeladen, {hired} eingestellt',
+        d_bar='Mindestanforderung', d_bar_none='keine',
+        d_terms='Rahmen', d_where='Kunde', d_screening='Screening-Anweisung',
+        d_none='Fuer diesen Job wurden noch keine Details geholt. Der Screener holt sie beim naechsten Lauf.',
+        d_close='Schliessen',
+        today_lbl='Heute', proposals='Bewerbungen',
+        streak='{n} Tage in Folge', week='{n} diese Woche',
+        next_up='Als naechstes', goal_done='Tagesziel steht.',
+        no_open='Keine offenen Jobs mehr in der Liste.',
+        btn_batch='Alle {n} abarbeiten',
+        say_batch='Arbeite mein Upwork-Tagesziel ab: {n} Bewerbungen, der Reihe nach. {list}. Pro Job erst kurz pruefen, ob er wirklich passt, dann das Proposal, dann zeigen bevor etwas rausgeht.',
         went_to='Wurde zu', btn_convert='In ein Projekt umwandeln',
         say_convert='Ich habe Upwork-Job {jid} gewonnen, leg das Projekt an.',
     ),
@@ -395,6 +414,18 @@ UW_I18N = {
         say_won='Set Upwork job {jid} to "hired".',
         say_lost='Set Upwork job {jid} to "rejected".',
         say_task='Add a task: follow up on Upwork job "{title}" (due {nf}).',
+        d_connects='Connects', d_bids='Bids', d_bids_range='(range {span})',
+        d_activity='Activity', d_activity_v='{inv} invited, {hired} hired',
+        d_bar='Their minimum bar', d_bar_none='none',
+        d_terms='Terms', d_where='Client', d_screening='Screening instruction',
+        d_none='No details fetched for this job yet. The screener picks them up on its next run.',
+        d_close='Close',
+        today_lbl='Today', proposals='proposals',
+        streak='{n} days running', week='{n} this week',
+        next_up='Next up', goal_done="Today's goal is met.",
+        no_open='No untouched jobs left in the list.',
+        btn_batch='Work through all {n}',
+        say_batch='Work through my Upwork goal for today: {n} applications, one after the other. {list}. For each one check first whether it actually fits, then the proposal, then show me before anything goes out.',
         went_to='Became', btn_convert='Turn it into a project',
         say_convert='I won Upwork job {jid}, set up the project.',
     ),
@@ -502,6 +533,120 @@ def _uw_stage_actions(j, is_due=False, nf=None):
     return actions
 
 
+def _uw_goal():
+    """The daily goal from config.yaml. No entry means no tracker: better none at
+    all than one measuring against a number nobody chose."""
+    m = re.search(r'^\s*daily_proposal_goal:\s*(\d+)', CFG_TEXT, re.M)
+    return int(m.group(1)) if m else None
+
+
+def _uw_applied_dates(jobs):
+    """Every day an application went out, from the history.
+
+    The source is the `proposal_sent` entry in `history`, not `status_updated_at`:
+    that gets overwritten on the next change and the day would be gone. `applied_at`
+    is the fallback for records migrated before histories existed.
+    """
+    out = []
+    for j in jobs:
+        stamps = [h.get('at') for h in j.get('history', []) if h.get('status') == 'proposal_sent']
+        if not stamps and j.get('applied_at'):
+            stamps = [j['applied_at']]
+        for st in stamps:
+            try:
+                out.append(datetime.datetime.fromisoformat(st.replace('Z', '+00:00')).date())
+            except (ValueError, AttributeError):
+                continue
+    return out
+
+
+def _uw_streak(counts, goal, today, weekdays_only=True):
+    """Consecutive days the goal was met. The running day never breaks it: at nine in
+    the morning, zero applications is the normal state and not a relapse."""
+    streak, day = 0, today
+    if counts.get(day, 0) < goal:
+        day -= datetime.timedelta(days=1)
+    while True:
+        if weekdays_only and day.weekday() >= 5:
+            day -= datetime.timedelta(days=1)
+            continue
+        if counts.get(day, 0) < goal:
+            return streak
+        streak += 1
+        day -= datetime.timedelta(days=1)
+
+
+def _uw_tracker(jobs, open_jobs, today):
+    """Goal, progress, streak, the week, and what to do next.
+
+    Sits at the top of the tab rather than behind a view pill, because it is the
+    daily handle and anything behind a click does not get looked at.
+    """
+    goal = _uw_goal()
+    if not goal:
+        return ''
+    counts = {}
+    for d in _uw_applied_dates(jobs):
+        counts[d] = counts.get(d, 0) + 1
+    done = counts.get(today, 0)
+    week_start = today - datetime.timedelta(days=today.weekday())
+    week_done = sum(n for d, n in counts.items() if week_start <= d <= today)
+    streak = _uw_streak(counts, goal, today)
+    pct = min(round(done / goal * 100), 100)
+
+    # The bars show the SAME week as the counter beside them (Monday to Sunday of the
+    # current week), not a rolling seven days. Two definitions of "week" sitting next
+    # to each other is how a dashboard starts contradicting itself.
+    bars = []
+    for i in range(7):
+        d = week_start + datetime.timedelta(days=i)
+        n = counts.get(d, 0)
+        # A bar at 2% of 42px is 0.8px in the palest colour on the page, which is to
+        # say invisible. Anything above zero gets a floor, and every day gets a track
+        # so an empty day reads as empty rather than as missing.
+        h = max(min(round(n / goal * 100), 100), 12) if n else 0
+        cls = ' future' if d > today else (' hit' if n >= goal else ('' if n else ' none'))
+        fill = '' if d > today or not n else f'<span class="uw-daybar-fill" style="height:{h}%"></span>'
+        bars.append(f'<span class="uw-daybar{cls}" title="{d.isoformat()}: {n}">{fill}'
+                    f'<span class="uw-daybar-lbl">{esc(TXT["wd_short"][d.weekday()])}</span></span>')
+
+    # The goal is a day's work, not one job. So next to the single next job there is a
+    # sentence that hands over everything still missing as one list: one paste instead
+    # of five. The dashboard stays a pure view either way — it copies the sentence, the
+    # work happens in the chat.
+    todo = sorted(open_jobs, key=lambda j: -j.get('score', 0))[:max(goal - done, 0)]
+    if todo:
+        nxt = todo[0]
+        gen = T['say_gen'].format(jid=nxt.get('id', ''), title=nxt.get('title', ''))
+        listed = ' · '.join(f'{j.get("id", "")} "{j.get("title", "")}"' for j in todo)
+        batch = T['say_batch'].format(n=len(todo), list=listed)
+        next_html = (
+            f'<div class="uw-next"><span class="uw-next-lbl">{esc(T["next_up"])}</span>'
+            f'<span class="uw-next-title">{md(nxt.get("title", ""))}</span>'
+            f'<span class="uw-score strong">{nxt.get("score", 0)}</span>'
+            f'<button type="button" class="say-btn" data-say="{esc(gen)}">{esc(T["btn_generate"])}</button>'
+            f'<button type="button" class="say-btn uw-batch-btn" data-say="{esc(batch)}">'
+            f'{esc(T["btn_batch"].format(n=len(todo)))}</button></div>')
+    elif done >= goal:
+        next_html = f'<div class="uw-next"><span class="uw-next-lbl">{esc(T["goal_done"])}</span></div>'
+    else:
+        next_html = f'<div class="uw-next"><span class="uw-next-lbl">{esc(T["no_open"])}</span></div>'
+
+    return (
+        f'<div class="uw-tracker">'
+        f'<div class="uw-tracker-head">'
+        f'<span class="uw-tracker-title">{esc(T["today_lbl"])}</span>'
+        f'<span class="uw-tracker-count"><b>{done}</b> / {goal} {esc(T["proposals"])}</span>'
+        f'<span class="uw-tracker-meta">{esc(T["streak"].format(n=streak))} · '
+        f'{esc(T["week"].format(n=week_done))}</span>'
+        f'</div>'
+        f'<div class="uw-progress"><span class="uw-progress-fill" style="width:{pct}%"></span></div>'
+        f'<div class="uw-days">{"".join(bars)}</div>'
+        f'{next_html}'
+        f'</div>'
+    )
+
+
 def _uw_client(j):
     """The client column, from a record that comes in two shapes.
 
@@ -528,6 +673,56 @@ def _uw_client(j):
     return ' · '.join(bits)
 
 
+def _uw_detail(j):
+    """The fields that decide an application, in a panel behind the row.
+
+    They come from `find_jobs action=get`, one call per job, which is why the
+    screener stores them under `details` rather than the dashboard fetching them:
+    pulling them for a whole list is the request pattern Upwork flags as scraping.
+
+    A job screened before this existed simply has no `details`, and then the panel
+    says so instead of rendering a grid of dashes.
+    """
+    d = j.get('details') or {}
+    rows = []
+
+    def add(label, value, note=''):
+        if value in (None, '', 'Any', 0) and value is not False:
+            return
+        rows.append(f'<div class="uw-d-row"><dt>{esc(label)}</dt>'
+                    f'<dd>{esc(str(value))}'
+                    + (f' <span class="uw-d-note">{esc(note)}</span>' if note else '')
+                    + '</dd></div>')
+
+    add(T['d_connects'], d.get('connects_cost'))
+    if d.get('bid_avg'):
+        span = f"{d.get('bid_min', '?')} to {d.get('bid_max', '?')}"
+        add(T['d_bids'], d['bid_avg'], T['d_bids_range'].format(span=span))
+    if d.get('total_hired') is not None or d.get('invites_sent') is not None:
+        add(T['d_activity'],
+            T['d_activity_v'].format(inv=d.get('invites_sent', 0),
+                                     hired=d.get('total_hired', 0)))
+    bar = [x for x in (
+        f"JSS {d['min_jss']}%" if d.get('min_jss') else '',
+        f"earned {d['min_earnings']}" if d.get('min_earnings') not in (None, '', 'Any') else '',
+        f"{d['min_hours']}h" if d.get('min_hours') else '') if x]
+    add(T['d_bar'], ' · '.join(bar) if bar else T['d_bar_none'])
+    add(T['d_terms'], ' · '.join(x for x in (d.get('experience_level'), d.get('engagement')) if x))
+    where = ' · '.join(x for x in (d.get('client_city'), d.get('client_country')) if x)
+    add(T['d_where'], where, d.get('client_timezone') or '')
+    if d.get('screening_note'):
+        rows.append(f'<div class="uw-d-row wide"><dt>{esc(T["d_screening"])}</dt>'
+                    f'<dd class="uw-d-screen">{md(d["screening_note"])}</dd></div>')
+
+    body = ''.join(rows) or f'<p class="uw-d-empty">{esc(T["d_none"])}</p>'
+    desc = j.get('description') or ''
+    if desc:
+        body += (f'<details class="uw-d-desc"><summary>{esc(T["desc_summary"])}</summary>'
+                 f'<p>{md(desc[:4000])}</p></details>')
+    return (f'<div class="uw-detail" hidden><h3>{md(j.get("title", ""))}</h3>'
+            f'<dl class="uw-d-grid">{body}</dl></div>')
+
+
 def _uw_row(j, today_iso):
     score = j.get('score', 0)
     score_cls = ' strong' if score >= 70 else ''
@@ -545,8 +740,14 @@ def _uw_row(j, today_iso):
     return (
         f'<tr class="uw-row{" due" if is_due else ""}" data-uwstatus="{status}" data-uwdue="{"1" if is_due else "0"}">'
         f'<td><span class="uw-score{score_cls}">{score}</span></td>'
-        f'<td class="rt-td-name"><span class="rt-td-title"><a href="{esc(j.get("url", "#"))}" target="_blank" rel="noopener">{md(j.get("title", ""))}</a></span>'
-        f'<span class="rt-td-desc">{esc(j.get("rationale", ""))}</span>{desc_details}</td>'
+        # The title opens the detail panel rather than leaving the page: the fields
+        # that decide an application are already here, and Upwork does not return a
+        # working public job link anyway (the id is internal, not the ~ciphertext a
+        # real URL needs). So the click that feels like "show me this job" shows it.
+        f'<td class="rt-td-name"><span class="rt-td-title">'
+        f'<button type="button" class="uw-open">{md(j.get("title", ""))}</button></span>'
+        f'<span class="rt-td-desc">{esc(j.get("rationale", ""))}</span>'
+        f'{_uw_detail(j)}{desc_details}</td>'
         f'<td class="uw-client">{esc(client_txt)}</td>'
         f'<td class="uw-budget">{esc(budget_lbl)}</td>'
         f'<td class="uw-ago">{esc(ago)}</td>'
@@ -740,7 +941,8 @@ def parse_upwork():
     stats_html = _uw_funnel(active) or f'<p class="sub">{esc(T["stats_empty"])}</p>'
 
     return (
-        f'<div class="uw-viewbar">'
+        _uw_tracker(jobs, [j for j in jobs if j.get('status') in ('new', 'notified')], TODAY)
+        + f'<div class="uw-viewbar">'
         f'<button type="button" class="pill uw-viewpill active" data-uwview="list">{esc(T["view"]["list"])}</button>'
         f'<button type="button" class="pill uw-viewpill" data-uwview="board">{esc(T["view"]["board"])}</button>'
         f'<button type="button" class="pill uw-viewpill" data-uwview="stats">{esc(T["view"]["stats"])}</button>'

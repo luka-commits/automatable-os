@@ -252,6 +252,75 @@
     font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; border-radius: 6px;
     padding: 1px 5px; color: var(--brand-deep); background: var(--brand-soft); }
   .uw-score.strong { color: #fff; background: var(--brand); }
+  /* Job detail. The panel is rendered inside its row and hidden; opening clones it
+     into the dialog, so the markup has one source and the table stays the truth. */
+  .uw-open { font: inherit; color: var(--accent-deep); background: none; border: 0;
+    padding: 0; cursor: pointer; text-align: left; font-weight: 500; }
+  .uw-open:hover { text-decoration: underline; }
+  .uw-modal { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0;
+    max-width: 640px; width: calc(100% - 40px); background: var(--card);
+    box-shadow: var(--shadow-2); color: var(--text-2); position: relative; }
+  .uw-modal::backdrop { background: rgba(28, 23, 18, .38); }
+  .uw-modal-body { padding: 26px 28px 24px; }
+  .uw-modal-body h3 { font-family: var(--serif); font-weight: 400; font-size: 21px;
+    letter-spacing: -.015em; color: var(--text); margin: 0 0 16px; padding-right: 30px; }
+  .uw-modal-x { position: absolute; top: 12px; right: 14px; font-size: 22px; line-height: 1;
+    background: none; border: 0; color: var(--text-3); cursor: pointer; padding: 4px 8px; }
+  .uw-modal-x:hover { color: var(--text); }
+  .uw-d-grid { margin: 0; display: grid; gap: 0; }
+  .uw-d-row { display: grid; grid-template-columns: 150px 1fr; gap: 14px;
+    padding: 9px 0; border-top: 1px solid var(--border-soft); }
+  .uw-d-row:first-child { border-top: 0; }
+  .uw-d-row.wide { grid-template-columns: 1fr; gap: 4px; }
+  .uw-d-row dt { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-3); padding-top: 2px; }
+  .uw-d-row dd { margin: 0; font-size: 14px; color: var(--text); }
+  .uw-d-note { color: var(--text-3); font-size: 12.5px; }
+  .uw-d-screen { background: var(--amber-soft); border: 1px solid var(--amber-border);
+    border-radius: var(--radius-sm); padding: 9px 11px; font-size: 13.5px; }
+  .uw-d-empty { font-size: 13.5px; color: var(--text-3); font-style: italic; margin: 0; }
+  .uw-d-desc { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-soft); }
+  .uw-d-desc summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--accent-deep); }
+  .uw-d-desc p { margin-top: 9px; font-size: 13.5px; white-space: pre-wrap; color: var(--text-2); }
+
+  /* The daily tracker. Sits above the views because it is the daily handle, and
+     anything behind a click does not get looked at. */
+  .uw-tracker { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 18px 20px 16px; box-shadow: var(--shadow-1); margin-bottom: var(--gap); }
+  .uw-tracker-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .uw-tracker-title { font-family: var(--serif); font-size: 17px; color: var(--text);
+    letter-spacing: -.012em; }
+  .uw-tracker-count { font-size: 14px; color: var(--text-2); }
+  .uw-tracker-count b { font-family: var(--serif); font-size: 21px; color: var(--text);
+    letter-spacing: -.02em; }
+  .uw-tracker-meta { margin-left: auto; font-size: 12px; color: var(--text-3); }
+  .uw-progress { height: 6px; border-radius: 999px; background: var(--bg-band);
+    margin: 12px 0 14px; overflow: hidden; }
+  .uw-progress-fill { display: block; height: 100%; background: var(--accent);
+    border-radius: 999px; transition: width .3s var(--ease); }
+  .uw-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  /* Every day gets a track, so an empty day reads as empty and not as missing. A bar
+     at 2% of the height was 0.8px in the palest colour on the page, which is to say
+     it was not there at all. */
+  .uw-daybar { position: relative; height: 42px; border-radius: var(--radius-sm);
+    background: var(--bg-band); display: flex; align-items: flex-end; justify-content: center; }
+  /* The fill was --accent-soft on a --bg-band track: 1.01:1, which is not "faint",
+     it is the same colour. Measured, not eyeballed. Both states use a fill that
+     clears 3:1 against the track, and the difference between a partial day and a
+     met one is carried by height plus the darker tone, not by tint alone. */
+  .uw-daybar-fill { display: block; width: 100%; border-radius: var(--radius-sm);
+    background: var(--accent); min-height: 5px; }        /* 3.20:1 on the track */
+  .uw-daybar.hit .uw-daybar-fill { background: var(--accent-deep); }  /* 4.54:1 */
+  .uw-daybar.future { opacity: .45; }
+  .uw-daybar-lbl { position: absolute; bottom: -17px; left: 0; right: 0; text-align: center;
+    font-size: 10px; color: var(--text-3); }
+  .uw-next { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-top: 28px; padding-top: 12px; border-top: 1px solid var(--border-soft); font-size: 13px; }
+  .uw-next-lbl { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-3); }
+  .uw-next-title { color: var(--text); font-weight: 600; }
+  .uw-batch-btn { font-weight: 600; }
+
   .uw-project { font-size: 11.5px; color: var(--text-3); }
   .uw-project code { font-size: 11px; }
   /* A pipeline is a progression, so the badge reads as one: nothing has happened
@@ -352,6 +421,13 @@
   <div class="tabpane" id="pane-system" hidden>
 {{SYSTEM}}
   </div><!-- /pane-system -->
+
+  <!-- Native <dialog>: Escape, the focus trap and the top stacking layer come for
+       free, and none of them are worth reimplementing. -->
+  <dialog class="uw-modal" id="uw-modal">
+    <button type="button" class="uw-modal-x" id="uw-modal-x" aria-label="Close">&times;</button>
+    <div class="uw-modal-body" id="uw-modal-body"></div>
+  </dialog>
 </div>
 
 <script>
@@ -367,6 +443,26 @@
   // Task filters: one attribute per row, one active pill. Deliberately the same
   // shape as the Upwork filter below, so a change to how filtering feels is one
   // change and not two.
+  // Job detail. The panel already exists inside the row, so this clones rather than
+  // rebuilds: one source for the markup, and nothing to keep in sync.
+  (function () {
+    const dlg = document.getElementById('uw-modal');
+    const body = document.getElementById('uw-modal-body');
+    if (!dlg) return;
+    document.querySelectorAll('.uw-open').forEach(btn => btn.addEventListener('click', () => {
+      const panel = btn.closest('.rt-td-name').querySelector('.uw-detail');
+      if (!panel) return;
+      const clone = panel.cloneNode(true);
+      clone.hidden = false;
+      body.replaceChildren(clone);
+      dlg.showModal();
+    }));
+    document.getElementById('uw-modal-x').addEventListener('click', () => dlg.close());
+    // Clicking the backdrop closes it: the dialog element itself is the click target
+    // when the press lands outside the box.
+    dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  })();
+
   document.querySelectorAll('.t-filterpill').forEach(btn => btn.addEventListener('click', () => {
     const f = btn.dataset.tfilter;
     document.querySelectorAll('.task-list > li').forEach(li => {
