@@ -130,6 +130,8 @@ projects/
   README.md                        the layout, the lifecycle, how a won job becomes one
   _template/                       copied when a project is created
   <slug>/                          one folder per project. Yours, gitignored
+examples/pitch-page.html           a real generated pitch page, so the strongest artifact
+                                   this produces is one click away instead of described
 demo/                              an example pipeline, so a fresh clone shows something.
                                    The dashboard falls back to it while context/ is empty
                                    and says so in a banner. Setup deletes it

@@ -109,7 +109,7 @@ def main():
 
     path = pathlib.Path(args.draft).expanduser()
     if not path.is_file():
-        print(f"ABBRUCH: {path} existiert nicht.", file=sys.stderr)
+        print(f"ABORT: {path} does not exist.", file=sys.stderr)
         return 2
     text = path.read_text(encoding="utf-8")
 

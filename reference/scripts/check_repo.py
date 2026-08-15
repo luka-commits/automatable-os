@@ -157,13 +157,19 @@ def check_language():
     # while every document around it was English.
     targets += sorted((W / '.claude/hooks').glob('*.py'))
     targets += sorted((W / '.claude/hooks').glob('*.sh'))
+    # And the scripts skills carry with them. Third blind spot of the same shape:
+    # first only reference/scripts was scanned, then skills, then hooks, and each
+    # time the German was sitting in the place that had not been looked at yet.
+    targets += sorted(SKILLS.glob('*/scripts/*.py'))
+    targets += sorted(SKILLS.glob('*/scripts/*.js'))
     for p in targets:
         if p.name == 'check_repo.py':
             continue
         txt = p.read_text(encoding='utf-8')
         if BILINGUAL.search(txt):
             continue
-        name = (p.name if p.parent.name == 'scripts'
+        name = (f'{p.parent.parent.name}/scripts/{p.name}' if p.parent.name == 'scripts' and p.parent.parent.name != 'reference'
+                else p.name if p.parent.name == 'scripts'
                 else f'hooks/{p.name}' if p.parent.name == 'hooks'
                 else f'{p.parent.name}/{p.name}')
         hits = first = 0

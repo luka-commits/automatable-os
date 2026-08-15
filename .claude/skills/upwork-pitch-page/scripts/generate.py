@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fuellt das universelle Pitch-Seiten-Template mit Job-Daten, einem bereits
+"""Fills the universal pitch-page template with job data, an already
 exportierten Diagramm-Bild und den echten Upwork-Testimonials. Reiner
 Zusammenbau -- das Diagramm selbst (Figma MCP) und alle Texte (Claude, aus dem
 Job-Posting) entstehen davor im Chat, nicht hier.
@@ -47,7 +47,7 @@ REPORT_COVER_FILE = ASSETS / 'report-cover-example.jpg'
 VIDEOS_FILE = ASSETS / 'videos.json'
 DIAGRAM_JS_FILE = ASSETS / 'diagram.js'
 LOGO_DIR = ASSETS / 'logos'
-# Jeder erzeugte Graph landet hier. Eine Bibliothek, die von Hand gepflegt
+# Every generated graph lands here. A library maintained by hand gepflegt
 # werden muss, bleibt leer -- also fuellt sie sich als Nebenprodukt jedes Laufs.
 LIBRARY = pathlib.Path(__file__).resolve().parent.parent / 'library'
 # Source image for the hero dither. Do not swap it for another picture without
@@ -78,20 +78,20 @@ def slugify(title):
 
 def load_job(job_id):
     if not JOBS.is_file():
-        print(f'ABBRUCH: {JOBS} fehlt.', file=sys.stderr)
+        print(f'ABORT: {JOBS} is missing.', file=sys.stderr)
         sys.exit(1)
     jobs = json.loads(JOBS.read_text(encoding='utf-8'))
     for j in jobs:
         if j.get('id') == job_id:
             return j
-    print(f'ABBRUCH: job_id "{job_id}" nicht in {JOBS} gefunden.', file=sys.stderr)
+    print(f'ABORT: job_id "{job_id}" not found in {JOBS}.', file=sys.stderr)
     sys.exit(1)
 
 
 def img_data_uri(path_str, mime='image/png'):
     p = pathlib.Path(path_str)
     if not p.is_file():
-        print(f'ABBRUCH: Bild "{p}" existiert nicht.', file=sys.stderr)
+        print(f'ABORT: image "{p}" does not exist.', file=sys.stderr)
         sys.exit(1)
     b64 = base64.b64encode(p.read_bytes()).decode('ascii')
     return f'data:{mime};base64,{b64}', len(b64)
@@ -186,7 +186,7 @@ GRAPH_OWNERS = {'you', 'client', 'thirdparty'}
 
 
 def build_graph(spec):
-    """Beliebiger Graph statt fester Kette.
+    """An arbitrary graph rather than a fixed chain.
 
     Fuer echte Implementierungsplaene reicht "Ausloeser -> Schritte -> Ziel"
     nicht: die haben Verzweigungen, parallele Straenge und Phasen. Claude
@@ -204,34 +204,34 @@ def build_graph(spec):
     try:
         g = json.loads(text)
     except json.JSONDecodeError as e:
-        print(f'ABBRUCH: --graph ist kein gueltiges JSON: {e}', file=sys.stderr)
+        print(f'ABORT: --graph is not valid JSON: {e}', file=sys.stderr)
         sys.exit(1)
 
     nodes = g.get('nodes') or []
     if not nodes:
-        print('ABBRUCH: --graph enthaelt keine nodes.', file=sys.stderr)
+        print('ABORT: --graph contains no nodes.', file=sys.stderr)
         sys.exit(1)
     ids = set()
     for n in nodes:
         if not n.get('id') or not n.get('label'):
-            print(f'ABBRUCH: Knoten ohne id/label: {n}', file=sys.stderr)
+            print(f'ABORT: node without an id or label: {n}', file=sys.stderr)
             sys.exit(1)
         if n['id'] in ids:
-            print(f'ABBRUCH: doppelte Knoten-id "{n["id"]}".', file=sys.stderr)
+            print(f'ABORT: duplicate node id "{n["id"]}".', file=sys.stderr)
             sys.exit(1)
         ids.add(n['id'])
         k = n.setdefault('kind', 'step')
         if k not in GRAPH_KINDS:
-            print(f'ABBRUCH: unbekanntes kind "{k}". Erlaubt: {sorted(GRAPH_KINDS)}', file=sys.stderr)
+            print(f'ABORT: unknown kind "{k}". Allowed: {sorted(GRAPH_KINDS)}', file=sys.stderr)
             sys.exit(1)
         o = n.get('owner')
         if o is not None and o not in GRAPH_OWNERS:
-            print(f'ABBRUCH: unbekannter owner "{o}". Erlaubt: {sorted(GRAPH_OWNERS)}', file=sys.stderr)
+            print(f'ABORT: unknown owner "{o}". Allowed: {sorted(GRAPH_OWNERS)}', file=sys.stderr)
             sys.exit(1)
     for e in g.get('edges') or []:
         for side in ('from', 'to'):
             if e.get(side) not in ids:
-                print(f'ABBRUCH: Kante zeigt auf unbekannten Knoten "{e.get(side)}".', file=sys.stderr)
+                print(f'ABORT: edge points at unknown node "{e.get(side)}".', file=sys.stderr)
                 sys.exit(1)
 
     # Phasen: pruefen, dass jede Mitglieder-id existiert. Ein Tippfehler wuerde
@@ -239,11 +239,11 @@ def build_graph(spec):
     groups = g.get('groups') or []
     for grp in groups:
         if not grp.get('label'):
-            print(f'ABBRUCH: Phase ohne label: {grp}', file=sys.stderr)
+            print(f'ABORT: phase without a label: {grp}', file=sys.stderr)
             sys.exit(1)
         for nid in grp.get('nodes') or []:
             if nid not in ids:
-                print(f'ABBRUCH: Phase "{grp["label"]}" nennt unbekannten Knoten "{nid}".',
+                print(f'ABORT: phase "{grp["label"]}" names unknown node "{nid}".',
                       file=sys.stderr)
                 sys.exit(1)
 
@@ -254,14 +254,14 @@ def build_graph(spec):
 
 
 def build_diagram(source, steps, sink, services):
-    """Knotenliste + No-JS-Fallback. Das Layout macht ausschliesslich das
+    """Node list plus a no-JS fallback. Layout is done entirely by the
     Template -- hier entsteht nur die Liste, damit es nicht zwei Layout-
-    Implementierungen gibt, die auseinanderlaufen koennen."""
+    implementations that can drift apart."""
     if not 1 <= len(steps) <= 4:
-        print(f'ABBRUCH: 1 bis 4 --step erwartet, bekommen: {len(steps)}', file=sys.stderr)
+        print(f'ABORT: expected 1 to 4 --step, got {len(steps)}', file=sys.stderr)
         sys.exit(1)
     if len(services) > 2:
-        print(f'ABBRUCH: max. 2 --service, bekommen: {len(services)}', file=sys.stderr)
+        print(f'ABORT: at most 2 --service, got {len(services)}', file=sys.stderr)
         sys.exit(1)
 
     nodes = [{'id': 'n0', 'label': source, 'kind': 'source'}]
@@ -291,7 +291,7 @@ def build_diagram(source, steps, sink, services):
 
 
 def logos_json(nodes):
-    """Nur die Logos einbetten, die dieser Graph wirklich nennt.
+    """Embed only the logos this graph actually names.
 
     Alle 20 mitzuliefern kostet 84 KB auf jeder Seite, von denen zwei benutzt
     werden. Das <title> aus der Simple-Icons-Datei fliegt raus, sonst zeigt der
@@ -302,7 +302,7 @@ def logos_json(nodes):
     for slug in sorted(want):
         f = LOGO_DIR / f'{slug}.svg'
         if not f.is_file():
-            print(f'  Hinweis: kein Logo "{slug}" -- Knoten zeigt nur seine Form.', file=sys.stderr)
+            print(f'  Note: no logo for "{slug}", the node shows only its shape.', file=sys.stderr)
             continue
         svg = f.read_text(encoding='utf-8')
         inner = re.sub(r'^.*?<svg[^>]*>|</svg>\s*$', '', svg, flags=re.S)
@@ -312,9 +312,9 @@ def logos_json(nodes):
 
 
 def save_to_library(job, data):
-    """Jeden erzeugten Graph ablegen, damit der naechste Pitch nicht bei null
+    """Store every generated graph, so the next pitch does not start from
     anfaengt. Ein Index daneben, weil ein Ordner mit 40 JSON-Dateien nicht
-    durchsuchbar ist und deshalb nicht benutzt wuerde."""
+    searchable and would therefore never get used."""
     LIBRARY.mkdir(parents=True, exist_ok=True)
     slug = slugify(job.get('title', 'untitled'))
     entry = {
@@ -357,53 +357,53 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('job_id')
     ap.add_argument('--hook', required=True,
-                     help='die EINZIGE Headline der Seite. Muster: "What your <konkretes System> would '
-                          'look like" -- muss erkennbar auf DIESEN Job Bezug nehmen. Kein Subhead mehr, '
+                     help='the ONLY headline on the page. Pattern: "What your <specific system> would '
+                          'look like". Must clearly reference THIS job. No subhead any more, '
                           'no pill, no name label above it -- the quote carries itself.')
     ap.add_argument('--fit-point', action='append', required=True,
-                     help='ein Eignungsgrund, dreimal angeben')
+                     help='one reason you fit, give it three times')
     # Das Diagramm ist kein Bild mehr, sondern eine Knotenliste. Das Template
     # zeichnet daraus zur Laufzeit ein SVG -- scharf in jeder Groesse, folgt den
     # Theme-Tokens, und der Kunde kann darin zoomen und eigene Schritte
     # ergaenzen. Die Grammatik ist fest (Ausloeser -> Schritte -> Ziel, plus
     # Dienste darunter), damit nichts ueberlappen kann.
     ap.add_argument('--graph',
-                     help='kompletter Graph als JSON oder Pfad zu einer .json -- fuer alles mit '
-                          'Verzweigungen, parallelen Straengen oder Phasen. Schliesst '
+                     help='the whole graph as JSON, or a path to a .json file. For anything with '
+                          'branches, parallel strands or phases. Mutually exclusive with '
                           '--source/--step/--sink aus.')
-    ap.add_argument('--source', help='wo der Prozess startet, ein Knoten (einfache Kette)')
+    ap.add_argument('--source', help='where the process starts, one node (simple chain)')
     ap.add_argument('--step', action='append',
-                     help='ein Verarbeitungsschritt, 2 bis 4 mal angeben (einfache Kette)')
-    ap.add_argument('--sink', help='wo das Ergebnis landet, ein Knoten (einfache Kette)')
+                     help='one processing step, give it 2 to 4 times (simple chain)')
+    ap.add_argument('--sink', help='where the result lands, one node (simple chain)')
     ap.add_argument('--service', action='append', default=[],
-                     help='Nebendienst, optional mit @<index> an einen Schritt gehaengt, '
+                     help='a side service, optionally attached to a step with @<index>, '
                           'z.B. "Claude API@2". Max 2.')
     ap.add_argument('--loom-url', default='')
     ap.add_argument('--video-length', default='3 minute')
     ap.add_argument('--tool', action='append', required=True,
-                     help='ein Tool, das fuer diesen Job zum Einsatz kaeme, mehrfach angeben')
-    ap.add_argument('--timeline', required=True, help='eine kurze, ehrliche Zeitschaetzung fuer diesen Job')
+                     help='a tool this job would use, repeatable')
+    ap.add_argument('--timeline', required=True, help='a short, honest timeline for this job')
     ap.add_argument('--budget', required=True,
-                     help='eine kurze, ehrliche Budget-Einordnung fuer diesen Job (Rahmen, nicht auf den Dollar genau)')
+                     help='a short, honest budget framing for this job (a range, not a figure to the dollar)')
     ap.add_argument('--kickoff', action='append', required=True,
-                     help='was vom Kunden gebraucht wird um loszulegen, mehrfach angeben')
+                     help='what you need from the client to start, repeatable')
     ap.add_argument('--max-testimonials', type=int, default=0,
                      help='0 = alle aus testimonials.json verwenden (Default)')
     ap.add_argument('--hero-illustration', default='',
-                     help='Pfad zu einer generierten Uebersichts-Illustration (hand-drawn '
+                     help='path to a generated overview illustration (hand-drawn '
                           'whiteboard-Stil), gezeigt oberhalb des technischen Diagramms. '
-                          'Optional -- ohne diesen Flag faellt der Slot einfach weg, kein '
+                          'Optional. Without the flag the slot simply disappears, no '
                           'Platzhalter noetig.')
     ap.add_argument('--plan-image', action='append', default=[],
-                     help='Bild fuer die vier Kaesten der Scope-Sektion, in dieser '
-                          'Reihenfolge: Tools, Timeline, Budget, Kickoff. Genau 0 oder 4 '
-                          'angeben. WICHTIG: die Sektion hat dunklen Grund -- die Bilder '
-                          'muessen selbst dunkel sein, sonst knallt ein heller Kasten rein.')
+                     help='image for the four boxes of the scope section, in this '
+                          'in this order: tools, timeline, budget, kickoff. Exactly 0 or 4 '
+                          'IMPORTANT: this section sits on a dark ground, so the images '
+                          'have to be dark themselves, or a bright box punches a hole in it.')
     ap.add_argument('--live-artifact', action='append', default=[],
-                     help='etwas, das fuer diesen Job WIRKLICH schon gebaut wurde, als '
-                          '"Label|URL" -- ein n8n-Flow, ein Make-Szenario, eine deployte '
+                     help='something that has ACTUALLY been built for this job already, as '
+                          '"Label|URL": an n8n flow, a Make scenario, a deployed '
                           'Seite. Wiederholbar. Erscheint als eigener Streifen unter dem '
-                          'Board: das Board zeigt den Plan, der Link beweist ihn.')
+                          'board: the board shows the plan, the link proves it.')
     ap.add_argument('--lead-magnet-url', default='')
     ap.add_argument('--lead-magnet-teaser', default='')
     ap.add_argument('--lead-magnet-cta', default='Get it here')
@@ -412,13 +412,13 @@ def main():
     args = ap.parse_args()
 
     if len(args.fit_point) != 3:
-        print(f'ABBRUCH: genau 3 --fit-point erwartet, bekommen: {len(args.fit_point)}', file=sys.stderr)
+        print(f'ABORT: expected exactly 3 --fit-point, got {len(args.fit_point)}', file=sys.stderr)
         sys.exit(1)
     if not args.tool:
-        print('ABBRUCH: mindestens 1 --tool erwartet.', file=sys.stderr)
+        print('ABORT: expected at least 1 --tool.', file=sys.stderr)
         sys.exit(1)
     if not args.kickoff:
-        print('ABBRUCH: mindestens 1 --kickoff erwartet.', file=sys.stderr)
+        print('ABORT: expected at least 1 --kickoff.', file=sys.stderr)
         sys.exit(1)
 
     job = load_job(args.job_id)
@@ -429,7 +429,7 @@ def main():
         diagram_data, diagram_fallback = build_diagram(
             args.source, args.step, args.sink, args.service)
     else:
-        print('ABBRUCH: entweder --graph, oder --source + --step + --sink.', file=sys.stderr)
+        print('ABORT: either --graph, or --source + --step + --sink.', file=sys.stderr)
         sys.exit(1)
     report_cover_src = img_data_uri(str(REPORT_COVER_FILE), mime='image/jpeg')[0] if REPORT_COVER_FILE.is_file() else ''
     dither_src = img_data_uri(str(DITHER_FILE))[0] if DITHER_FILE.is_file() else ''
@@ -466,7 +466,7 @@ def main():
         for raw in args.live_artifact:
             label, sep, url = raw.partition('|')
             if not sep or not url.strip():
-                print(f'ABBRUCH: --live-artifact braucht "Label|URL", bekommen: {raw!r}',
+                print(f'ABORT: --live-artifact needs "Label|URL", got {raw!r}',
                       file=sys.stderr)
                 sys.exit(1)
             items.append(f'<li><a href="{url.strip()}" target="_blank" rel="noopener">'
@@ -478,8 +478,8 @@ def main():
         live_block = ''
 
     if args.plan_image and len(args.plan_image) != 4:
-        print(f'ABBRUCH: --plan-image genau 4 mal (Tools, Timeline, Budget, Kickoff) '
-              f'oder gar nicht, bekommen: {len(args.plan_image)}', file=sys.stderr)
+        print(f'ABORT: --plan-image exactly 4 times (tools, timeline, budget, kickoff) '
+              f'or not at all, got {len(args.plan_image)}', file=sys.stderr)
         sys.exit(1)
     plan_imgs = []
     for path in (args.plan_image or []):
@@ -497,14 +497,14 @@ def main():
             f'<span class="job">{t["job"]}</span></p></div>'
             for t in testimonials) + '\n        </div>'
     else:
-        testimonials_html = '<p class="testimonials-empty">Testimonials noch nicht hinterlegt.</p>'
+        testimonials_html = '<p class="testimonials-empty">No testimonials added yet.</p>'
 
     if not args.lead_magnet_url:
         args.lead_magnet_url = '#lead-magnet-fehlt-noch'
         if not args.lead_magnet_teaser:
-            args.lead_magnet_teaser = 'Lead-Magnet noch nicht hinterlegt.'
+            args.lead_magnet_teaser = 'No lead magnet configured yet.'
     elif not args.lead_magnet_teaser:
-        print('ABBRUCH: --lead-magnet-url gesetzt, aber --lead-magnet-teaser fehlt.', file=sys.stderr)
+        print('ABORT: --lead-magnet-url is set but --lead-magnet-teaser is missing.', file=sys.stderr)
         sys.exit(1)
 
     tpl = TEMPLATE.read_text(encoding='utf-8')
@@ -553,8 +553,8 @@ def main():
 
     lib_n = save_to_library(job, diagram_data)
     out_path.write_text(out_html, encoding='utf-8')
-    print(f'geschrieben: {out_path}  ({len(out_html)} Zeichen, '
-          f'{len(json.loads(diagram_data)["nodes"])} Diagramm-Knoten, {len(testimonials)} Testimonials, Bibliothek: {lib_n})')
+    print(f'written: {out_path}  ({len(out_html)} characters, '
+          f'{len(json.loads(diagram_data)["nodes"])} diagram nodes, {len(testimonials)} testimonials, library: {lib_n})')
 
 
 if __name__ == '__main__':

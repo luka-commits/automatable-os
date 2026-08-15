@@ -34,7 +34,7 @@ WANTED = [
 def fetch(slug):
     """Mit User-Agent. Ohne einen antwortet das CDN mit 403 auf Pythons
     Default-Kennung, waehrend dieselbe URL per curl 200 liefert -- ohne den
-    Header sieht das wie "Logo gibt es nicht" aus statt wie "abgewiesen"."""
+    Header sieht das wie "no logo for this one" aus statt wie "abgewiesen"."""
     url = f'https://cdn.simpleicons.org/{slug}'
     req = urllib.request.Request(url, headers={
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
@@ -72,8 +72,8 @@ def main():
 
     print(f'vorhanden: {len(have)}')
     if missing:
-        print(f'nicht verfuegbar ({len(missing)}): {", ".join(missing)}')
-        print('  -> diese Knoten zeigen ihr Formen-Symbol statt eines falschen Logos.')
+        print(f'not available ({len(missing)}): {", ".join(missing)}')
+        print('  -> these nodes show their shape icon rather than the wrong logo.')
 
 
 if __name__ == '__main__':
