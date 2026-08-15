@@ -37,6 +37,7 @@ LEAKS = [
     (r'flouence\.com', 'a personal domain'),
     (r'\bU0[A-Z0-9]{8,}\b', 'a Slack user id'),
     (r'\b1898663420131815612\b', 'a specific Upwork org id'),
+    (r'~0[0-9a-f]{17}', 'an Upwork profile id'),
     (r'projects/personal/', 'a path from another workspace'),
     (r'/Users/[a-z]+/', 'an absolute home directory'),
 ]
@@ -45,8 +46,11 @@ LEAKS = [
 LEAK_EXEMPT = re.compile(r'\[YOUR|your\.name@|example\.com|<your')
 
 # Files that legitimately contain what the leak patterns look for: this checker
-# defines them, and local tool caches are not shipped.
-LEAK_SKIP = ('reference/scripts/check_repo.py', '.impeccable/')
+# defines them, local tool caches are not shipped, and the example pitch page is
+# deliberately the author's own real page — a made-up one would not prove
+# anything, which is the whole reason it is in the repo.
+LEAK_SKIP = ('reference/scripts/check_repo.py', '.impeccable/',
+             'examples/pitch-page.html')
 
 # Paths a skill may reference that do not exist until something creates them.
 # A missing runtime file is the normal state of a fresh clone, not a defect —

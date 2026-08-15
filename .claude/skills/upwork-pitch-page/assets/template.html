@@ -201,11 +201,18 @@
      it should sit on the page like it belongs there, not like an attached
      image. Optional: the section just loses this block when no illustration
      was generated for the job. */
-  /* Der Eyecatcher direkt unter der Headline: er entscheidet in den ersten
-     Sekunden, ob ueberhaupt weitergelesen wird. Ohne Rahmen und ohne Karte --
-     das Bild bringt seinen eigenen cremefarbenen Grund mit und soll in die
-     Seite laufen, nicht als angeheftetes Foto danebenstehen. */
-  .hero-art { max-width: 1000px; margin: clamp(18px, 3vw, 34px) auto 0; padding: 0 20px; }
+  /* The eye-catcher straight under the headline: it decides in the first
+     seconds whether anything below gets read. No frame and no card, because the
+     image carries its own cream ground and should run into the page rather than
+     sit on it like a pinned photograph.
+     Held to the reading measure rather than the full width: a square
+     illustration at 1000px is a screenful on its own, and the video below it is
+     what the headline actually promises. */
+  .hero-art { max-width: 720px; margin: clamp(18px, 3vw, 34px) auto 0; padding: 0 20px; }
+  /* Not mix-blend-mode: multiply. Tried and measured — cream over cream only
+     darkens the rectangle instead of dissolving it. The edge goes away by
+     making the illustration's own ground match --bg exactly, which is the
+     generator's job, not the stylesheet's. */
   .hero-art img { display: block; width: 100%; height: auto; border-radius: 14px; }
 
   .artifact { margin: 0; border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
@@ -575,41 +582,7 @@
     </section>
   </div>
 
-  <section class="band band-plain band-tight band-tight-b">
-    <div class="inner">
-      <details class="cv">
-        <summary>More about my background</summary>
-        <div class="cv-body">
-          {{CV_STATS}}
-
-          <p class="cv-sub">What clients said after the job was done</p>
-          <div class="cv-traits">
-            <span>Collaborative</span>
-            <span>Committed to Quality</span>
-            <span>Clear Communicator</span>
-            <span>Accountable for Outcomes</span>
-            <span>Detail Oriented</span>
-            <span>Reliable</span>
-            <span>Solution Oriented</span>
-          </div>
-
-          <p class="cv-sub">Businesses I've built for</p>
-          <p class="cv-clients">DJing.ca · Osiris Infrastructure · MAGNUM Agency · RJG Consulting ·
-            CarefreeBnb · SEENN, plus 15+ local and service businesses on GoHighLevel, n8n, and Make,
-            from solo coaches to teams of 50.</p>
-
-          <p class="cv-sub">Background</p>
-          <ul class="cv-list">
-            <li><strong>MBA, Marketing &amp; AI</strong> at Ludwig-Maximilians-Universität München</li>
-            <li><strong>Sales &amp; Marketing</strong> at Roadsurfer</li>
-            <li><strong>Business Development</strong> at DasLab</li>
-            <li><strong>Research &amp; Project Management</strong> at Anders Consulting</li>
-          </ul>
-          <p class="cv-lang">German &amp; English (native/fluent), French (basic)</p>
-        </div>
-      </details>
-    </div>
-  </section>
+  {{CV_SECTION}}
 
   <section class="band band-plain" id="build">
     <div class="inner inner-board">
@@ -667,24 +640,7 @@
     </div>
   </section>
 
-  <section class="band band-plain band-tight">
-    <div class="inner">
-      <div class="yt-head" data-rise>
-        <svg class="yt-mark" viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path fill="#FF0000" d="M27.4 3.1A3.51 3.51 0 0 0 24.9.6C22.7 0 14 0 14 0S5.3 0 3.1.6A3.51 3.51 0 0 0 .6 3.1C0 5.3 0 10 0 10s0 4.7.6 6.9a3.51 3.51 0 0 0 2.5 2.5C5.3 20 14 20 14 20s8.7 0 10.9-.6a3.51 3.51 0 0 0 2.5-2.5C28 14.7 28 10 28 10s0-4.7-.6-6.9z"/>
-          <path fill="#ffffff" d="M11.2 14.29 18.5 10l-7.3-4.29z"/>
-        </svg>
-        <h2 class="serif section-title">I build these in public</h2>
-      </div>
-      <p class="yt-note" data-rise data-d="1">A few recent builds from my channel. Heads up: the videos are in German, the systems are not.</p>
-
-      <div class="yt-grid">
-        {{VIDEOS_BLOCK}}
-      </div>
-
-      {{YT_MORE}}
-    </div>
-  </section>
+  {{VIDEOS_SECTION}}
 
   <section class="band band-ink" id="plan">
     <div class="inner-wide">
@@ -789,16 +745,13 @@
     <div class="inner next">
       <h2 class="serif section-title" data-rise>The next step</h2>
       <p data-rise data-d="1">Let's get on a call through Upwork and go through the open questions together. Once we've agreed on the scope, I can start the same week.</p>
-      <a class="btn btn-on-ink" href="{{PROFILE_URL}}" target="_blank" rel="noopener" data-rise data-d="2">
-        Message me on Upwork <span class="arrow" aria-hidden="true">→</span>
-      </a>
+      {{CTA_LINK}}
     </div>
   </section>
 
   <footer class="foot">
     <p>Put together for this specific project.</p>
     <div class="foot-links">
-      <a href="{{PROFILE_URL}}" target="_blank" rel="noopener">Upwork profile</a>
       {{FOOTER_LINKS}}
     </div>
   </footer>

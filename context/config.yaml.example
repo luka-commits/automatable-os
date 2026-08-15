@@ -17,6 +17,18 @@ language: "en"
 # MCP connection — you shouldn't need to find it yourself.
 upwork_org_uid: ""
 
+# Your public Upwork profile. The pitch page's closing button points here, so
+# without it the page ends on the paragraph and no button — which is the right
+# failure, but a weaker page. Setup fills this in from your account.
+upwork_profile_url: ""
+
+# Optional, all three. They appear on a pitch page only if set: the portfolio
+# under the work samples, the channel under the videos, the website in the
+# footer. An unset one is left out rather than linked dead.
+portfolio_url: ""
+youtube_url: ""
+website_url: ""
+
 # Optional. Your own Slack user ID (for DM notifications on strong matches).
 # Leave empty to skip Slack entirely — the screener still logs every
 # candidate to the dashboard either way, Slack is just a push notification.
