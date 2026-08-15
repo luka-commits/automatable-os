@@ -63,8 +63,12 @@
   .inner { max-width: var(--measure); margin: 0 auto; }
   .inner-wide { max-width: var(--measure-wide); margin: 0 auto; }
 
+  /* line-height belongs on a display heading, not inherited from body copy.
+     Every section title happened to fit on one line, so the loose default only
+     surfaced the first time one wrapped and stood there with a body-sized gap
+     down its middle. */
   .section-title { font-size: clamp(25px, 3.4vw, 32px); font-weight: 400; margin: 0 0 8px;
-    letter-spacing: -.015em; text-wrap: balance; }
+    line-height: 1.18; letter-spacing: -.015em; text-wrap: balance; }
   .section-lede { font-size: 15.5px; color: var(--text-3); margin: 0 0 34px; max-width: 52ch; text-wrap: pretty; }
   .center { text-align: center; }
   .center .section-lede { margin-left: auto; margin-right: auto; }
@@ -373,6 +377,11 @@
 
   /* ---------------- Report showcase ---------------- */
   .showcase { display: grid; grid-template-columns: 290px 1fr; gap: 64px; align-items: center; }
+  /* No cover shipped, no empty column reserved for it. Centred rather than
+     stretched: the copy inside carries its own 42ch measure, so a full-width
+     column just parks it against the left edge with half the band empty. */
+  .showcase:not(:has(.cover-stage)) { grid-template-columns: minmax(0, 52ch);
+    justify-content: center; }
   @media (max-width: 760px) { .showcase { grid-template-columns: 1fr; gap: 44px; justify-items: center; text-align: center; } }
   .cover-stage { position: relative; perspective: 1400px; padding: 10px 0; }
   .cover-book { position: relative; transform-style: preserve-3d;
@@ -1755,22 +1764,11 @@
   <section class="band band-warm" id="proof">
     <div class="inner-wide">
       <div class="showcase">
-        <div class="cover-stage" data-cover>
-          <span class="cover-flag">Real example</span>
-          <div class="cover-book">
-            <span class="cover-sheet s2"></span>
-            <span class="cover-sheet s1"></span>
-            
-          </div>
-        </div>
+        
         <div class="showcase-copy">
           <h2 class="serif section-title" data-rise>Get your full online performance report</h2>
           <p data-rise data-d="1">A worked example of the report you would get: where the spend goes, which terms waste it, and what changes first.</p>
-          <ul class="report-list" data-rise data-d="2">
-            <li>Where you rank today, and who is taking the customers near you</li>
-            <li>What is costing you enquiries right now, in order of impact</li>
-            <li>The exact plan to close the gap, with what it takes</li>
-          </ul>
+          <ul class="report-list" data-rise data-d="2"><li>Where you rank today, and who is taking the customers near you</li><li>What is costing you enquiries right now, in order of impact</li><li>The exact plan to close the gap, with what it takes</li></ul>
           <a class="btn" href="https://example.com/sample-report" target="_blank" rel="noopener" data-rise data-d="3">
             See a sample report <span class="arrow" aria-hidden="true">→</span>
           </a>

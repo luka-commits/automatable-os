@@ -512,6 +512,10 @@ def main():
     ap.add_argument('--lead-magnet-url', default='')
     ap.add_argument('--lead-magnet-teaser', default='')
     ap.add_argument('--lead-magnet-cta', default='Get it here')
+    ap.add_argument('--lead-magnet-point', action='append', default=[],
+                    help='one line of what the reader actually gets. Repeatable; '
+                         'with none, the list is left out rather than promising '
+                         'something this lead magnet may not contain')
     ap.add_argument('--profile-url', default='',
                     help='your own Upwork profile, the target of the closing button. '
                          'Defaults to upwork_profile_url in context/config.yaml; '
@@ -540,12 +544,29 @@ def main():
         print('ABORT: either --graph, or --source + --step + --sink.', file=sys.stderr)
         sys.exit(1)
     report_cover_src = img_data_uri(str(REPORT_COVER_FILE), mime='image/jpeg')[0] if REPORT_COVER_FILE.is_file() else ''
-    # An <img src=""> is a broken image, not an empty one: the browser draws its
-    # own failure icon. With no cover the whole element is left out instead.
-    report_cover_img = (
+    # Not just the <img>: the whole stage. An <img src=""> is a broken image
+    # rather than an empty one, and dropping only the image still left the
+    # tilted book frame, its two page edges and a "Real example" badge floating
+    # in an empty 290px column — which looks like the page failed to load. With
+    # no cover, the copy takes the full width instead.
+    report_cover_stage = (
+        '<div class="cover-stage" data-cover>'
+        '<span class="cover-flag">Real example</span>'
+        '<div class="cover-book">'
+        '<span class="cover-sheet s2"></span><span class="cover-sheet s1"></span>'
         f'<img class="cover-face" src="{report_cover_src}" '
-        f'alt="Cover of a performance report built for another client">'
+        'alt="Cover of a performance report built for another client">'
+        '</div></div>'
         if report_cover_src else '')
+    # What the reader gets, in their words rather than one product's words. The
+    # three lines here used to be fixed text describing one particular report;
+    # every page built from this template promised exactly that, whatever the
+    # lead magnet actually was.
+    lead_magnet_points = (
+        '<ul class="report-list" data-rise data-d="2">'
+        + ''.join(f'<li>{p}</li>' for p in args.lead_magnet_point)
+        + '</ul>') if args.lead_magnet_point else ''
+
     dither_src = img_data_uri(str(DITHER_FILE))[0] if DITHER_FILE.is_file() else ''
 
     # The illustration sits ON the board, not above it: diagram.js places it to
@@ -660,7 +681,8 @@ def main():
         .replace('{{DIAGRAM_JS}}', DIAGRAM_JS_FILE.read_text(encoding='utf-8')
                  .replace('{{LOGOS_JSON}}', logos_json(json.loads(diagram_data)['nodes']))
                  .replace('{{ILLUSTRATION_SRC}}', illustration_src))
-        .replace('{{REPORT_COVER_IMG}}', report_cover_img)
+        .replace('{{REPORT_COVER_STAGE}}', report_cover_stage)
+        .replace('{{LEAD_MAGNET_POINTS}}', lead_magnet_points)
         .replace('{{LEAD_MAGNET_TEASER}}', args.lead_magnet_teaser)
         .replace('{{LEAD_MAGNET_URL}}', args.lead_magnet_url)
         .replace('{{LEAD_MAGNET_CTA}}', args.lead_magnet_cta)
