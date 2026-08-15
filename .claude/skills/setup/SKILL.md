@@ -520,8 +520,9 @@ the whole layer gone, the other wants more help than an existing user, not less.
 
 ## Step 8: Archive This Skill + Confirm
 
-1. Move `.claude/skills/setup/` to `.claude/skills-deprecated/setup/` (its job is done — archival pattern, not deletion).
-2. **Create their own repo** — only if the workspace is a Git clone (`git rev-parse --is-inside-work-tree`) AND `gh auth status` reports a login. If either is missing: skip silently, not a word about it (`/eod` then skips its backup as well).
+1. **Delete `demo/`.** `rm -rf demo/` — this one really is deleted, not archived, and it is the exception to the rule two sections up. Nothing in it is theirs: it is the example pipeline the dashboard fell back to while they had no data of their own, and by now they do. Leaving it means every future render still has a fallback sitting behind their files, which is one more thing that can surprise them later. Say it in half a sentence ("the example data is gone, what you see now is yours") and move on.
+2. Move `.claude/skills/setup/` to `.claude/skills-deprecated/setup/` (its job is done — archival pattern, not deletion).
+3. **Create their own repo** — only if the workspace is a Git clone (`git rev-parse --is-inside-work-tree`) AND `gh auth status` reports a login. If either is missing: skip silently, not a word about it (`/eod` then skips its backup as well).
 
    **Why this is not optional:** the cloned folder still points at the repo of whoever sent the package. Without this step, `/eod` pushes the user's work there every evening — or fails every evening. Both only surface after days.
 

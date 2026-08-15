@@ -13,6 +13,10 @@ into a project that a won job does.
 It's a template, not a hosted product. You clone it, run one setup skill, and it's yours: your own
 niche, your own data, your own repo.
 
+**It arrives populated.** A fresh clone renders a dashboard with an example pipeline in it, so you
+can see what the thing does before deciding to set it up. A banner says plainly that the data is
+not yours, and the setup deletes it as its last step.
+
 **Want the picture before the detail?** Two pages, both offline and both a double click:
 [`ONBOARDING.html`](ONBOARDING.html) is the first run: five phases, which tools get
 connected and why, and where the keys end up; [`SYSTEM.html`](SYSTEM.html) is every step of the day and why it is shaped that way.

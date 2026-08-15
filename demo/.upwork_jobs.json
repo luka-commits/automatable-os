@@ -1,0 +1,234 @@
+[
+  {
+    "id": "demo-1",
+    "title": "Google Ads specialist, audit and optimisation",
+    "status": "new",
+    "score": 84,
+    "client": {
+      "rating": 5.0,
+      "hires": 137,
+      "posted": 139,
+      "country": "Australia",
+      "verified": true
+    },
+    "budget": "$1,500 fixed",
+    "job_type": "fixed",
+    "found_at": "2026-08-15T07:00:00+00:00",
+    "posted_date": "2026-08-15T06:00:00+00:00",
+    "rationale": "Audit-shaped and scoped, and the client hires almost everything they post.",
+    "history": [
+      {
+        "status": "new",
+        "at": "2026-08-15T07:00:00+00:00"
+      }
+    ],
+    "details": {
+      "fetched_at": "2026-08-15T07:00:00+00:00",
+      "connects_cost": 14,
+      "bid_avg": 61.5,
+      "bid_min": 35,
+      "bid_max": 120,
+      "invites_sent": 2,
+      "total_hired": 0,
+      "min_jss": 90,
+      "min_earnings": "$1K+",
+      "min_hours": 0,
+      "engagement": "PART_TIME",
+      "experience_level": "INTERMEDIATE",
+      "client_country": "Australia",
+      "client_city": "Melbourne",
+      "client_timezone": "Australia/Melbourne",
+      "screening_note": "Tell us in one line which single change you would make first."
+    }
+  },
+  {
+    "id": "demo-2",
+    "title": "Digital analytics implementation specialist",
+    "status": "new",
+    "score": 71,
+    "client": {
+      "rating": 5.0,
+      "hires": 16,
+      "posted": 9,
+      "country": "Spain",
+      "verified": true
+    },
+    "budget": "hourly, platform default range",
+    "job_type": "hourly",
+    "found_at": "2026-08-15T08:00:00+00:00",
+    "posted_date": "2026-08-15T08:00:00+00:00",
+    "rationale": "Ongoing rather than one-off, which is worth more than the rate suggests.",
+    "history": [
+      {
+        "status": "new",
+        "at": "2026-08-15T08:00:00+00:00"
+      }
+    ]
+  },
+  {
+    "id": "demo-3",
+    "title": "Media manager for Google Ads and Meta campaigns",
+    "status": "proposal_sent",
+    "score": 66,
+    "client": {
+      "rating": 4.98,
+      "hires": 634,
+      "posted": 676,
+      "country": "United States",
+      "verified": true
+    },
+    "budget": "$10 fixed, likely a placeholder",
+    "job_type": "fixed",
+    "found_at": "2026-08-11T09:00:00+00:00",
+    "applied_at": "2026-08-11T14:00:00+00:00",
+    "next_follow_up": "2026-08-14",
+    "rationale": "Huge hire count, but the budget field reads like a placeholder. Worth one follow-up.",
+    "history": [
+      {
+        "status": "new",
+        "at": "2026-08-11T09:00:00+00:00"
+      },
+      {
+        "status": "proposal_sent",
+        "at": "2026-08-11T14:00:00+00:00"
+      }
+    ]
+  },
+  {
+    "id": "demo-4",
+    "title": "Rebuild reporting so the weekly numbers land in Slack",
+    "status": "interviewing",
+    "score": 79,
+    "client": {
+      "rating": 4.8,
+      "hires": 22,
+      "posted": 25,
+      "country": "Germany",
+      "verified": true
+    },
+    "budget": "$1,200 fixed",
+    "job_type": "fixed",
+    "found_at": "2026-08-09T09:00:00+00:00",
+    "applied_at": "2026-08-09T11:00:00+00:00",
+    "next_follow_up": "2026-08-17",
+    "rationale": "They named the tools, so the scope is real rather than a wish.",
+    "history": [
+      {
+        "status": "new",
+        "at": "2026-08-09T09:00:00+00:00"
+      },
+      {
+        "status": "proposal_sent",
+        "at": "2026-08-09T11:00:00+00:00"
+      },
+      {
+        "status": "interviewing",
+        "at": "2026-08-14T10:00:00+00:00"
+      }
+    ]
+  },
+  {
+    "id": "demo-5",
+    "title": "Conversion tracking across three landing pages",
+    "status": "offer_sent",
+    "score": 68,
+    "client": {
+      "rating": 5.0,
+      "hires": 4,
+      "posted": 4,
+      "country": "Netherlands",
+      "verified": true
+    },
+    "budget": "$800 fixed",
+    "job_type": "fixed",
+    "found_at": "2026-08-06T09:00:00+00:00",
+    "applied_at": "2026-08-06T10:00:00+00:00",
+    "rationale": "Small and clean. New client, but everything they posted they hired for.",
+    "history": [
+      {
+        "status": "new",
+        "at": "2026-08-06T09:00:00+00:00"
+      },
+      {
+        "status": "proposal_sent",
+        "at": "2026-08-06T10:00:00+00:00"
+      },
+      {
+        "status": "interviewing",
+        "at": "2026-08-10T09:00:00+00:00"
+      },
+      {
+        "status": "offer_sent",
+        "at": "2026-08-14T15:00:00+00:00"
+      }
+    ]
+  },
+  {
+    "id": "demo-6",
+    "title": "Audit a Google Ads account for a dental clinic group",
+    "status": "hired",
+    "score": 88,
+    "client": {
+      "rating": 4.9,
+      "hires": 31,
+      "posted": 38,
+      "country": "United Kingdom",
+      "verified": true
+    },
+    "budget": "$2,400 fixed",
+    "job_type": "fixed",
+    "project": "bright-smile-google-ads-audit",
+    "found_at": "2026-08-01T09:00:00+00:00",
+    "applied_at": "2026-08-01T09:00:00+00:00",
+    "rationale": "Six locations, one account. Exactly the shape of the last two wins.",
+    "history": [
+      {
+        "status": "new",
+        "at": "2026-08-01T09:00:00+00:00"
+      },
+      {
+        "status": "proposal_sent",
+        "at": "2026-08-01T09:00:00+00:00"
+      },
+      {
+        "status": "interviewing",
+        "at": "2026-08-04T08:00:00+00:00"
+      },
+      {
+        "status": "offer_sent",
+        "at": "2026-08-06T12:00:00+00:00"
+      },
+      {
+        "status": "hired",
+        "at": "2026-08-07T16:00:00+00:00"
+      }
+    ]
+  },
+  {
+    "id": "demo-7",
+    "title": "Pinterest marketing for a homeware brand",
+    "status": "ignored",
+    "score": 29,
+    "client": {
+      "rating": 5.0,
+      "hires": 4,
+      "posted": 5,
+      "country": "United Kingdom",
+      "verified": true
+    },
+    "budget": "$100 fixed",
+    "job_type": "fixed",
+    "found_at": "2026-08-15T09:00:00+00:00",
+    "rationale": "Organic social, not paid acquisition. In the results because the search term is broad.",
+    "history": [
+      {
+        "status": "new",
+        "at": "2026-08-15T09:00:00+00:00"
+      },
+      {
+        "status": "ignored",
+        "at": "2026-08-15T09:00:00+00:00"
+      }
+    ]
+  }
+]

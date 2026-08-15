@@ -130,6 +130,9 @@ projects/
   README.md                        the layout, the lifecycle, how a won job becomes one
   _template/                       copied when a project is created
   <slug>/                          one folder per project. Yours, gitignored
+demo/                              an example pipeline, so a fresh clone shows something.
+                                   The dashboard falls back to it while context/ is empty
+                                   and says so in a banner. Setup deletes it
 jobs/                              generated per-job artifacts (pitch pages, proposal drafts)
 ```
 

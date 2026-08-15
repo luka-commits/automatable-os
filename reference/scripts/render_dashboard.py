@@ -15,8 +15,29 @@ import re, html, json, pathlib, datetime, argparse, subprocess
 W = pathlib.Path(__file__).resolve().parents[2]
 TPL = W / 'context/today_template.html'
 OUT = W / 'context/today.html'
-CONFIG = W / 'context/config.yaml'
-UPWORK_JOBS = W / 'context/.upwork_jobs.json'
+
+# A fresh clone has none of the state files yet, and five empty tabs look broken
+# rather than new. So each one falls back to demo/, and the page says so in a
+# banner: a populated dashboard nobody can mistake for their own. The setup
+# deletes demo/ as its last step, and from then on there is no fallback left.
+DEMO = W / 'demo'
+DEMO_USED = set()
+
+
+def state(name):
+    """context/<name> if it exists, otherwise demo/<name>."""
+    real = W / 'context' / name
+    if real.exists():
+        return real
+    fallback = DEMO / name
+    if fallback.exists():
+        DEMO_USED.add(name)
+        return fallback
+    return real                       # let the caller handle the missing file
+
+
+CONFIG = state('config.yaml')
+UPWORK_JOBS = state('.upwork_jobs.json')
 
 ap = argparse.ArgumentParser()
 ap.add_argument('--date', help='YYYY-MM-DD, otherwise today')
@@ -61,7 +82,7 @@ def _cfg():
 CFG = _cfg()
 # The raw text as well, for the few settings read by pattern rather than by key.
 try:
-    CFG_TEXT = (W / 'context/config.yaml').read_text(encoding='utf-8')
+    CFG_TEXT = CONFIG.read_text(encoding='utf-8')
 except OSError:
     CFG_TEXT = ''
 LANG = CFG.get('language', 'en') if CFG.get('language') in ('de', 'en') else 'en'
@@ -84,6 +105,8 @@ TXT = {
               'q3': 'dringend + nicht wichtig', 'q4': 'nicht dringend + nicht wichtig'},
         wd_short=['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
         tab_today='Heute', tab_upwork='Upwork', title='Freelancer OS',
+        demo_title='Das sind Beispieldaten.',
+        demo_body='Deine eigenen gibt es noch nicht, also zeigt das Dashboard den Ordner demo/, damit du siehst wie es aussieht. Die Einrichtung loescht ihn, oder du selbst mit',
         tab_onboarding='Onboarding',
         onb_hint='Was der erste Durchlauf tut: die fuenf Phasen, welche Werkzeuge verbunden werden und warum, und wo die Schluessel landen.',
         onb_missing='ONBOARDING.html fehlt im Ordner. Die Kopie ist unvollstaendig.',
@@ -113,6 +136,8 @@ TXT = {
               'q3': 'urgent + not important', 'q4': 'not urgent + not important'},
         wd_short=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
         tab_today='Today', tab_upwork='Upwork', title='Freelancer OS',
+        demo_title='This is example data.',
+        demo_body='You have none of your own yet, so the dashboard is showing the demo/ folder to give you something to look at. The setup deletes it, or you can, with',
         tab_onboarding='Onboarding',
         onb_hint='What the first run does: the five phases, which tools get connected and why, and where the keys end up.',
         onb_missing='ONBOARDING.html is missing from the folder. The copy is incomplete.',
@@ -169,7 +194,7 @@ def parse_status():
     """Tasks live under '## Tasks (open)' / '## Tasks (offen)', grouped by a '### Project'
     heading. One task = '- [ ] **headline** (due DD.MM.) #category', optional indented
     context line below it. Same format documented in context/STATUS.md.example."""
-    p = W / 'context/STATUS.md'
+    p = state('STATUS.md')
     if not p.is_file():
         return []
     t = p.read_text(encoding='utf-8')
@@ -241,7 +266,7 @@ def parse_projects():
     Field labels are matched in both languages, because the workspace this file
     is shared with writes German ones.
     """
-    p = W / 'context/PROJECTS.md'
+    p = state('PROJECTS.md')
     if not p.is_file():
         return []
     out = []
@@ -830,7 +855,7 @@ def parse_briefing():
     empty shell. "Nothing here today" is noise that teaches you to skip the
     whole block.
     """
-    f = W / 'context/BRIEFING.md'
+    f = state('BRIEFING.md')
     if not f.is_file():
         return f'<p class="sub bf-none">{esc(TXT["no_briefing"])}</p>'
 
@@ -866,6 +891,19 @@ def parse_briefing():
             f'<span class="bf-count">{len(items)}</span></summary><ul>{lis}</ul></details>')
     parts.append('</div>')
     return ''.join(parts)
+
+
+def demo_banner():
+    """Says the dashboard is showing demo data, when it is.
+
+    Unmissable on purpose. The alternative is someone looking at a pipeline that
+    is not theirs and quietly concluding the tool invents jobs, which is a much
+    worse first impression than an empty page would have been.
+    """
+    if not DEMO_USED:
+        return ''
+    return (f'<div class="demo-banner"><b>{esc(TXT["demo_title"])}</b> '
+            f'{esc(TXT["demo_body"])} <code>rm -rf demo/</code></div>')
 
 
 def parse_page(filename, note_key, missing_key, title_key):
@@ -985,6 +1023,7 @@ vals = {
     'TOOLING_HINT': esc(TXT['tool_hint']),
     'TOOLING': parse_tooling(),
     'UPWORK_ITEMS': parse_upwork(),
+    'DEMO_BANNER': demo_banner(),
     'TAB_ONBOARDING': esc(TXT['tab_onboarding']),
     'ONBOARDING': parse_page('ONBOARDING.html', 'onb_hint', 'onb_missing', 'tab_onboarding'),
     'TAB_SYSTEM': esc(TXT['tab_system']),

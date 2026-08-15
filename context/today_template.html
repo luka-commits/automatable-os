@@ -139,6 +139,15 @@
   .invrow.none .invrow-num, .kpi.none .kpi-num { color: var(--text-3); }
   .invrow.none .invrow-lab { color: var(--text-2); }
 
+  /* Demo banner. Loud rather than subtle: someone mistaking these jobs for their
+     own concludes the tool invents work, which is a worse first impression than
+     an empty page would have been. */
+  .demo-banner { background: var(--amber-soft); border: 1px solid var(--amber-border);
+    border-radius: var(--radius); padding: 11px 15px; margin: 16px 0 0; font-size: 13px;
+    color: var(--text-2); }
+  .demo-banner b { color: var(--sev-amber); }
+  .demo-banner code { background: var(--card); }
+
   nav.tabs { display: flex; gap: 4px; margin: 18px 0 var(--gap); border-bottom: 1px solid var(--border); }
   /* The System tab embeds SYSTEM.html rather than restating it. One source, and
      the iframe keeps that page's CSS from colliding with the dashboard's. */
@@ -254,6 +263,8 @@
   .uw-score.strong { color: #fff; background: var(--brand); }
   /* Job detail. The panel is rendered inside its row and hidden; opening clones it
      into the dialog, so the markup has one source and the table stays the truth. */
+  .is-openable { cursor: pointer; }
+  .uw-row.is-openable:hover { background: var(--bg-band); }
   .uw-open { font: inherit; color: var(--accent-deep); background: none; border: 0;
     padding: 0; cursor: pointer; text-align: left; font-weight: 500; }
   .uw-open:hover { text-decoration: underline; }
@@ -369,6 +380,7 @@
   <div class="sub">{{DATE_LABEL}}{{NAME_SUFFIX}}</div>
 </header>
 <div class="wrap">
+{{DEMO_BANNER}}
   <nav class="tabs" id="tabs">
     <button class="tab" data-tab="today">{{TAB_TODAY}}</button>
     <button class="tab" data-tab="projects">{{TAB_PROJECTS}}</button>
@@ -456,14 +468,25 @@
     const dlg = document.getElementById('uw-modal');
     const body = document.getElementById('uw-modal-body');
     if (!dlg) return;
-    document.querySelectorAll('.uw-open').forEach(btn => btn.addEventListener('click', () => {
-      const panel = btn.closest('.rt-td-name').querySelector('.uw-detail');
+    function open(scope) {
+      const panel = scope && scope.querySelector('.uw-detail');
       if (!panel) return;
       const clone = panel.cloneNode(true);
       clone.hidden = false;
       body.replaceChildren(clone);
       dlg.showModal();
-    }));
+    }
+    // The whole row opens it, not only the title. A row that highlights on hover
+    // and does nothing when you click it is the more annoying of the two options.
+    document.querySelectorAll('.uw-row, .uw-card').forEach(el => {
+      el.classList.add('is-openable');
+      el.addEventListener('click', e => {
+        // Anything with its own job stays its own job: the say-buttons copy a
+        // sentence, and swallowing that click would break the actual workflow.
+        if (e.target.closest('button, a, summary, details')) return;
+        open(el);
+      });
+    });
     document.getElementById('uw-modal-x').addEventListener('click', () => dlg.close());
     // Clicking the backdrop closes it: the dialog element itself is the click target
     // when the press lands outside the box.
