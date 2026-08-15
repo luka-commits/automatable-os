@@ -41,6 +41,12 @@ deliver, and stops calling itself an Upwork tool.
 - **`check_repo.py`** - eight mechanical checks that gate a release
 
 ### Changed
+- **The prompt-injection wall and the no-deleting rule moved into `CLAUDE.md`.** They lived
+  in four skills, which meant they applied when you happened to be inside one of those four.
+  CLAUDE.md is loaded every session; a skill is loaded when it is called
+- **The task discipline is written down.** The dashboard sorts by Eisenhower quadrant, the
+  quadrant comes from a `#category` tag and a due date, and nothing had told Claude to write
+  either. A task without a tag lands silently in the least important quadrant
 - **The whole thing is optional, including Upwork.** Say you do not use it and the
   acquisition layer stands down: no connector, no nagging, no half-empty tab
 - The setup asks "do you work on Upwork, **or would you like to start**". Two answers lost
