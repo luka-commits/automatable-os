@@ -18,6 +18,13 @@ capability that leaves your setup alone, patch means a fix.
   path and the label over it can say what the thing actually is. A mock-up under a "Real
   example" badge is a lie on a page whose whole argument is that nothing on it is invented
 
+- **The pitch page's three richer content formats**, brought over from a private fork so the
+  shipped template is the good one rather than a simplified copy. `--fit-point
+  "number|label|context"` sets the number large instead of burying it mid-sentence,
+  `--timeline "period|what;;period|what"` becomes numbered milestones instead of one
+  paragraph, and `--budget` lifts its first sentence out as the promise. All three fall back
+  to a plain sentence, so nothing that worked before breaks
+
 ### Fixed
 - **The pitch page no longer puts the author's background on your page.** The "More about my
   background" panel was literal text in the template: one degree, four employers, six client

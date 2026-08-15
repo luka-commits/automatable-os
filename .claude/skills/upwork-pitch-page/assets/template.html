@@ -165,6 +165,20 @@
     transition: transform .2s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease); }
   .fit-list .icon { width: 34px; height: 34px; flex: none; }
   .fit-list .icon circle { fill: var(--accent); }
+
+  /* The number carries the proof, so it is set like it. Written as flowing text
+     inside a sentence it was no faster to grasp than the rest: three paragraphs
+     of unequal length and visibly ragged cards. Number large and serif like the
+     hero headline, label under it, one line of context. Same structure per card,
+     so the same feel. Pass a fit point as "number|label|context" to get this;
+     a plain sentence still renders as before. */
+  .fit-list li:has(.fit-num) { gap: 0; justify-content: flex-start; }
+  .fit-num { font-family: var(--serif);
+    font-size: clamp(38px, 4.6vw, 52px); line-height: 1; color: var(--accent-deep);
+    letter-spacing: -.02em; font-weight: 400; }
+  .fit-label { margin-top: 10px; font-size: 15px; font-weight: 600; color: var(--text);
+    line-height: 1.35; }
+  .fit-ctx { margin-top: 8px; font-size: 13.5px; color: var(--text-2); line-height: 1.5; }
   @media (max-width: 680px) { .fit-list { grid-template-columns: 1fr; gap: 12px; }
     .fit-list li { flex-direction: row; align-items: flex-start; gap: 14px; padding: 20px; }
     .fit-list .icon { width: 28px; height: 28px; } }
@@ -368,6 +382,24 @@
   .plan-glyph { width: 40px; height: 40px; display: block; margin: 0 0 18px; color: var(--accent-on-ink); }
   .plan-label { font-size: 15.5px; font-weight: 600; color: var(--on-ink); margin: 0 0 12px; }
   .plan-body { font-size: 14.5px; color: var(--on-ink-2); line-height: 1.68; margin: 0; text-wrap: pretty; }
+
+  /* Milestones as a sequence rather than a paragraph. Four steps in one block is
+     four steps nobody separates; numbered, with the period in front, they read.
+     Pass --timeline as "period|what;;period|what" to get this; a plain sentence
+     stays a plain sentence. */
+  .milestones { list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: 16px; }
+  .milestones li { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px;
+    align-items: baseline; position: relative; padding-left: 2px; }
+  .ms-num { grid-row: span 2; font-family: var(--serif); font-size: 21px; font-weight: 400;
+    line-height: 1; color: var(--accent-on-ink); opacity: .85; }
+  .ms-when { font-size: 12px; font-weight: 600; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--accent-on-ink); }
+  .ms-what { font-size: 14.5px; color: var(--on-ink-2); line-height: 1.6; text-wrap: pretty; }
+
+  /* The first sentence of the budget is the promise, and it sat mid-paragraph. */
+  .plan-lead { font-size: 15.5px; color: var(--on-ink); line-height: 1.5;
+    margin: 0 0 10px; text-wrap: pretty; }
   .scope-list { list-style: none; margin: 0; padding: 0; }
   .scope-list li { font-size: 14.5px; color: var(--on-ink-2); line-height: 1.6; margin: 0 0 10px;
     padding-left: 20px; position: relative; }
@@ -696,7 +728,7 @@
           </svg>
           {{PLAN_IMG_TIMELINE}}
           <p class="plan-label">Timeline</p>
-          <p class="plan-body">{{TIMELINE}}</p>
+          {{TIMELINE_BLOCK}}
         </div>
 
         <div class="plan-item">
@@ -707,7 +739,7 @@
           </svg>
           {{PLAN_IMG_BUDGET}}
           <p class="plan-label">Budget</p>
-          <p class="plan-body">{{BUDGET}}</p>
+          {{BUDGET_BLOCK}}
         </div>
 
         <div class="plan-item">

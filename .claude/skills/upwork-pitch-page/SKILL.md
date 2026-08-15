@@ -284,12 +284,12 @@ The video is the user's own, recorded after seeing the diagram and narrated over
 ```
 python3 .claude/skills/upwork-pitch-page/scripts/generate.py <job_id> \
   --hook "Your <their system>, explained in under 3 minutes" \
-  --fit-point "..." --fit-point "..." --fit-point "..." \
+  --fit-point "number|label|context" (x3) \
   --graph /path/to/plan.json \
   --hero-illustration "<path or omit>" \
   --loom-url "<url or omit>" --video-length "3 minute" \
   --tool "..." --tool "..." \
-  --timeline "..." \
+  --timeline "period|what;;period|what" \
   --budget "..." \
   --kickoff "..." --kickoff "..." \
   --lead-magnet-url "<url or omit>" --lead-magnet-title "..." \
@@ -302,6 +302,14 @@ python3 .claude/skills/upwork-pitch-page/scripts/generate.py <job_id> \
   --background "role|institution" --languages "..." \
   --video-note "..."
 ```
+
+**Two flags take a richer format, and both fall back to a plain sentence.**
+
+- `--fit-point "30+|Multi-location accounts audited|Six clinics on one budget is the shape I see most"` sets the number large and serif, the label under it, one line of context. Written as three flowing sentences instead, the number sits buried mid-paragraph and the three cards come out visibly ragged, which is what they did until 15.08.2026.
+- `--timeline "Days 1-5|Full audit;;Day 6|Fix list agreed;;Days 7-10|Changes go live"` becomes numbered milestones with the period in front. Four steps in one paragraph is four steps nobody pulls apart.
+- `--budget` needs no format: the first sentence is lifted out as the promise, the rest follows as body. Write the promise first and the terms second.
+
+Neither is required. A `--fit-point` with no `|` renders exactly as it always did, so nothing that worked before breaks.
 
 **The last four lines all come out of `context/experience.md`, verbatim.** That file is
 written in the shape these flags expect (see its own header), so read it, pass the lines

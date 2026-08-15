@@ -1,39 +1,42 @@
 #!/usr/bin/env python3
-"""Fills the universal pitch-page template with job data, an already
-exportierten Diagramm-Bild und den echten Upwork-Testimonials. Reiner
-Zusammenbau -- das Diagramm selbst (Figma MCP) und alle Texte (Claude, aus dem
-Job-Posting) entstehen davor im Chat, nicht hier.
+"""Fills the pitch-page template for one job. Assembly only.
 
-Page order:
-Headline -> Video (voll breit) -> 3 Eignungspunkte darunter (custom Icon statt
-1/2/3) -> Social Proof (echte Testimonial-Texte) -> ausklappbarer CV -> Was ich
-bauen wuerde (Diagramm) -> Wie es ablaufen wuerde (Tools/Timeline/Budget/
-Kickoff-Bedarf, 4 Spalten mit Icons) -> "See what we can do" (Lead-Magnet mit
-Cover-Screenshot eines echten Beispiel-Reports) -> Footer-Links. Kein Foto mehr
-(deliberately removed). Testimonials, report cover and lead magnet are
-echte Assets -- nie erfinden. Fehlt der Lead-Magnet, bleibt die Sektion ehrlich
-platzhaltert statt mit erfundenem Inhalt aufgefuellt zu werden.
+The diagram, the copy and the illustrations are decided before this runs; this
+turns them into one self-contained HTML file with everything embedded.
+
+Page order: headline, hero illustration, the walkthrough video full width,
+three fit points, testimonials, the collapsible background panel, the editable
+plan diagram, the four-part scope block, the lead magnet, and the closing ask.
+
+**Nothing on the page is invented, and nothing about a particular person is
+written into the template.** Every section that describes *you* is passed in and
+disappears when it is not: the background panel, the portrait, the videos, the
+report cover, the profile links. That is not politeness, it is correctness — the
+template is shared, so a fact hardcoded in it becomes a claim on a stranger's
+client-facing page.
+
+Two flags accept a richer format and fall back to a plain sentence:
+
+    --fit-point "30+|Accounts audited|Multi-location, one shared budget"
+    --timeline  "Week 1|Findings;;Week 2|Fixes agreed;;Week 3|Handover"
 
 Usage:
     python3 generate.py <job_id> \
-        --hook "..." --subhead "..." \
-        --fit-point "Grund 1" --fit-point "Grund 2" --fit-point "Grund 3" \
-        --diagram-png /pfad/zum/export.png \
-        --loom-url "https://loom.com/share/..." \
-        --tool "GoHighLevel" --tool "n8n" \
-        --timeline "..." \
-        --budget "..." \
-        --kickoff "..." --kickoff "..." \
-        [--lead-magnet-url "https://..." --lead-magnet-teaser "..." --lead-magnet-cta "..."] \
-        [--video-length "3 minute"] \
-        [--max-testimonials 8] \
-        [--out /pfad/zur/ausgabe.html]
+        --hook "..." \
+        --fit-point "..." --fit-point "..." --fit-point "..." \
+        --graph plan.json \
+        --tool "..." --timeline "..." --budget "..." --kickoff "..." \
+        [--photo face.jpg] [--hero-illustration hero.jpg] [--plan-image x4] \
+        [--stat "value|label"] [--trait "..."] [--client "..."] \
+        [--background "role|institution"] [--languages "..."] \
+        [--lead-magnet-url ... --lead-magnet-title ... --lead-magnet-point ...] \
+        [--out path.html]
 
-Ohne --out wird der Dateiname aus dem Job-Titel abgeleitet und nach
-jobs/<YYYY-MM-DD>_<slug>.html geschrieben.
+Without --out the filename comes from the job title:
+jobs/<YYYY-MM-DD>_<slug>.html
 
-Exit 1 bei fehlendem Job, ungueltigem PNG-Pfad oder leeren Pflichtfeldern -- ein
-stilles Halb-Ergebnis waere schlimmer als ein Abbruch mit Grund.
+Exits 1 on a missing job, an image path that does not resolve, or an invalid
+graph. A silent half-result would be worse than stopping with a reason.
 """
 import argparse, base64, datetime, json, pathlib, re, sys
 
@@ -627,9 +630,44 @@ def main():
     if not args.loom_url:
         args.loom_url = '#no-walkthrough-yet'
 
-    fit_html = '\n        '.join(
-        f'<li>{FIT_ICON}<span>{p}</span></li>'
-        for p in args.fit_point)
+    # Three proof points, and the number is the argument, not the sentence around
+    # it. Written as flowing text the number sat buried mid-paragraph and the
+    # three cards came out visibly ragged. "number|label|context" sets the number
+    # large so all three cards share one structure; anything without the
+    # separator still renders as it always did, so existing calls do not break.
+    def fit_item(p):
+        parts = [t.strip() for t in p.split('|')]
+        if len(parts) >= 3:
+            number, label, context = parts[0], parts[1], ' '.join(parts[2:])
+            return (f'<li><span class="fit-num">{number}</span>'
+                    f'<span class="fit-label">{label}</span>'
+                    f'<span class="fit-ctx">{context}</span></li>')
+        return f'<li>{FIT_ICON}<span>{p}</span></li>'
+
+    fit_html = '\n        '.join(fit_item(p) for p in args.fit_point)
+
+    # The timeline is the most structured content on the page and had the least
+    # structure: four milestones in one paragraph that nobody pulls apart.
+    # "period|what;;period|what" becomes numbered rows; a plain sentence stays a
+    # plain sentence.
+    if '|' in args.timeline:
+        steps = [s.strip() for s in args.timeline.split(';;') if s.strip()]
+        rows = []
+        for i, s in enumerate(steps, 1):
+            when, _, what = s.partition('|')
+            rows.append(f'<li><span class="ms-num">{i:02d}</span>'
+                        f'<span class="ms-when">{when.strip()}</span>'
+                        f'<span class="ms-what">{what.strip()}</span></li>')
+        timeline_html = f'<ol class="milestones">{"".join(rows)}</ol>'
+    else:
+        timeline_html = f'<p class="plan-body">{args.timeline}</p>'
+
+    # In the budget the first sentence carries the promise. It sat mid-paragraph
+    # and went under; now it stands as a line above.
+    head, _, rest = args.budget.partition('. ')
+    budget_html = (f'<p class="plan-lead">{head.strip()}.</p>'
+                   f'<p class="plan-body">{rest.strip()}</p>') if rest else \
+                  f'<p class="plan-body">{args.budget}</p>'
 
     tools_html = '\n            '.join(f'<li>{t}</li>' for t in args.tool)
     kickoff_html = '\n            '.join(f'<li>{k}</li>' for k in args.kickoff)
@@ -702,8 +740,8 @@ def main():
         .replace('{{VIDEO_LENGTH}}', args.video_length)
         .replace('{{FIT_POINTS}}', fit_html)
         .replace('{{TOOLS}}', tools_html)
-        .replace('{{TIMELINE}}', args.timeline)
-        .replace('{{BUDGET}}', args.budget)
+        .replace('{{TIMELINE_BLOCK}}', timeline_html)
+        .replace('{{BUDGET_BLOCK}}', budget_html)
         .replace('{{KICKOFF_ITEMS}}', kickoff_html)
         .replace('{{DITHER_SRC}}', dither_src)
         .replace('{{HERO_ART}}', hero_art)
