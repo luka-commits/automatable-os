@@ -451,6 +451,12 @@
 
   /* ---------------- Next step ---------------- */
   .next { text-align: center; }
+  /* A face above the ask. The page has argued for itself for two screens by
+     here; the last thing before "message me" should be the person they would
+     be messaging, not another headline. */
+  .next-photo { width: 92px; height: 92px; border-radius: 50%; object-fit: cover;
+    display: block; margin: 0 auto 22px; border: 1px solid rgba(243,239,230,.22);
+    box-shadow: 0 10px 30px rgba(0,0,0,.35); }
   .next .section-title { color: var(--on-ink); }
   .next p { font-size: 16.5px; color: var(--on-ink-2); line-height: 1.62; max-width: 46ch;
     margin: 0 auto 32px; text-wrap: pretty; }
@@ -746,6 +752,7 @@
 
   <section class="band band-ink" id="next">
     <div class="inner next">
+      {{NEXT_PHOTO}}
       <h2 class="serif section-title" data-rise>The next step</h2>
       <p data-rise data-d="1">Let's get on a call through Upwork and go through the open questions together. Once we've agreed on the scope, I can start the same week.</p>
       {{CTA_LINK}}

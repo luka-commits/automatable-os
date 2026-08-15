@@ -251,7 +251,9 @@ The same holds for the hero, and it is `**Draw the benefit, not the mechanism**`
 8. **"See what we can do"** — the lead magnet, shown book-launch style: a real cover screenshot (`assets/report-cover-example.jpg`, page one of a real deliverable, rendered via `pdftoppm` and compressed to JPEG) tilted with a drop shadow next to the pitch copy and CTA (`--lead-magnet-url`, `--lead-magnet-teaser`, `--lead-magnet-cta`, `--lead-magnet-point` for what the reader gets), with a "Real example" badge so it is clear the report belongs to another client rather than being mocked up for this page. Same honesty rule as testimonials: a real asset or nothing, never invented copy.
 
    **Both halves disappear cleanly when they have nothing to show, and both had to be taught to.** With no cover file the `<img>` was left out but its tilted book frame, two page edges and badge stayed, so a fresh clone rendered a "Real example" label floating in an empty column — which reads as a page that failed to load, not as a page without a cover. Now the whole stage goes and the copy takes the full width. The three bullets were fixed text describing one particular report ("Where you rank today, and who is taking the customers near you"), promised by every page anyone generated whatever their lead magnet actually was; they are `--lead-magnet-point` now and the list is left out when none are passed. Do not put a claim back into the template because it happens to be true for the report you have in front of you today.
-9. **Footer links** — the Upwork profile plus whatever of `youtube_url` and `website_url` is set in `context/config.yaml`. They do not change per job, but they do change per person, so they are read rather than written into the template. An unset one is left out; the closing "Message me on Upwork" button disappears entirely without `upwork_profile_url`, because an empty `href` reloads the page instead of doing nothing.
+9. **The next step** — a round portrait (`--photo`, any crop, it is masked to a circle), then the ask, then the button. The face goes above the heading rather than beside it: the page has argued for itself for two screens by this point, and the last thing before "message me" should be the person they would be messaging. Omit the flag and the section is exactly as it was, so nobody is forced to put their face on a client page.
+
+10. **Footer links** — the Upwork profile plus whatever of `youtube_url` and `website_url` is set in `context/config.yaml`. They do not change per job, but they do change per person, so they are read rather than written into the template. An unset one is left out; the closing "Message me on Upwork" button disappears entirely without `upwork_profile_url`, because an empty `href` reloads the page instead of doing nothing.
 
 **Visual language, 14.08.2026:** matched to a single reference site rather than a generic dark-hero SaaS template — warm cream ground, serif display headline, terracotta accent. Don't drift back toward a stock dark-hero-plus-white-cards look; that was the first draft and got replaced for a reason.
 
@@ -292,6 +294,8 @@ python3 .claude/skills/upwork-pitch-page/scripts/generate.py <job_id> \
   --kickoff "..." --kickoff "..." \
   --lead-magnet-url "<url or omit>" --lead-magnet-teaser "..." --lead-magnet-cta "..." \
   --lead-magnet-point "..." --lead-magnet-point "..." \
+  --report-cover "<path or omit>" --cover-badge "Real example" \
+  --photo "<path to your face, or omit>" \
   --stat "value|label" --trait "..." \
   --client "..." --client-note "..." \
   --background "role|institution" --languages "..." \

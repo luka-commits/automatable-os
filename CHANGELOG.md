@@ -9,6 +9,14 @@ capability that leaves your setup alone, patch means a fix.
 
 ## [Unreleased]
 
+### Added
+- **A portrait above the closing ask on the pitch page** (`--photo`). The page argues for
+  itself for two screens; the last thing before "message me" is now the person they would be
+  messaging. Leave the flag off and the section is unchanged
+- **`--report-cover` and `--cover-badge`**, so the lead-magnet cover is not locked to one
+  path and the label over it can say what the thing actually is. A mock-up under a "Real
+  example" badge is a lie on a page whose whole argument is that nothing on it is invented
+
 ### Fixed
 - **The pitch page no longer puts the author's background on your page.** The "More about my
   background" panel was literal text in the template: one degree, four employers, six client

@@ -512,6 +512,10 @@ def main():
     ap.add_argument('--lead-magnet-url', default='')
     ap.add_argument('--lead-magnet-teaser', default='')
     ap.add_argument('--lead-magnet-cta', default='Get it here')
+    ap.add_argument('--photo', default='',
+                    help='your own face, shown as a round portrait above the closing '
+                         'ask. Any crop works, it is cropped to a circle. Omit and the '
+                         'section is exactly as it was')
     ap.add_argument('--report-cover', default='',
                     help='page one of the deliverable, as a JPEG. Defaults to '
                          'assets/report-cover-example.jpg; with no file, the whole '
@@ -551,6 +555,15 @@ def main():
     else:
         print('ABORT: either --graph, or --source + --step + --sink.', file=sys.stderr)
         sys.exit(1)
+    photo_file = pathlib.Path(args.photo) if args.photo else None
+    next_photo = ''
+    if photo_file and photo_file.is_file():
+        next_photo = (f'<img class="next-photo" src="{img_data_uri(str(photo_file))[0]}" '
+                      f'alt="Portrait" data-rise>')
+    elif args.photo:
+        print(f'Note: --photo {args.photo} not found, so the closing section has no '
+              'portrait.', file=sys.stderr)
+
     cover_file = pathlib.Path(args.report_cover) if args.report_cover else REPORT_COVER_FILE
     report_cover_src = img_data_uri(str(cover_file), mime='image/jpeg')[0] if cover_file.is_file() else ''
     # Not just the <img>: the whole stage. An <img src=""> is a broken image
@@ -695,6 +708,7 @@ def main():
         .replace('{{LEAD_MAGNET_TEASER}}', args.lead_magnet_teaser)
         .replace('{{LEAD_MAGNET_URL}}', args.lead_magnet_url)
         .replace('{{LEAD_MAGNET_CTA}}', args.lead_magnet_cta)
+        .replace('{{NEXT_PHOTO}}', next_photo)
         .replace('{{CTA_LINK}}', cta_link))
 
     if args.out:
