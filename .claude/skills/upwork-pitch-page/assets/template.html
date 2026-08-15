@@ -475,7 +475,12 @@
      cremefarbenes Bild wuerde hier als heller Klotz reinknallen und den einen
      dunklen Moment der Seite zerstoeren. Ohne Bild bleibt das SVG-Glyph. */
   .plan-img { margin: -22px -22px 16px; border-radius: 15px 15px 0 0; overflow: hidden; }
-  .plan-img img { display: block; width: 100%; height: 132px; object-fit: cover; }
+  /* 16:9, because that is the shape the illustrations are generated in. A fixed
+     132px strip meant cover kept a middle band and threw away the rest: the
+     lamp-lit desk lost its desk, the agreement lost its page. Matching the slot
+     to the source crops nothing. */
+  .plan-img img { display: block; width: 100%; aspect-ratio: 16 / 9; height: auto;
+                  object-fit: cover; }
   .plan-item:has(.plan-img) .plan-glyph { display: none; }
   .cover-book:hover { transform: rotateY(-6deg) rotateX(1deg) rotateZ(0deg) translateY(-6px);
     filter: drop-shadow(0 40px 56px rgba(28,23,18,.40)); }
