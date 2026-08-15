@@ -211,6 +211,30 @@ def check_paths():
     return findings
 
 
+# Assets a script names but that are not in the repo. Two are personal and left
+# out on purpose, so this is an allowlist rather than a hard rule.
+ASSET_OPTIONAL = ('report-cover-example.jpg', 'videos.json')
+
+
+def check_assets():
+    """A file a skill's own script points at, that is not there.
+
+    check_paths() reads backticked paths out of SKILL.md, which misses everything
+    a script names in a constant. That is how a generator ended up referencing a
+    cover image no clone has, with nothing to say so.
+    """
+    findings = []
+    for p in SKILLS.glob('*/scripts/*.py'):
+        base = p.parent.parent / 'assets'
+        for m in re.finditer(r"ASSETS / '([^']+)'", p.read_text(encoding='utf-8')):
+            name = m.group(1)
+            if name in ASSET_OPTIONAL or (base / name).exists():
+                continue
+            findings.append(f'{p.parent.parent.name}/scripts/{p.name} points at '
+                            f'assets/{name}, which is not in the repo')
+    return findings
+
+
 def check_subcommands():
     """`skill calls script cmd` — does that cmd exist?"""
     findings = []
@@ -330,6 +354,7 @@ CHECKS = [
     ('skill frontmatter', check_frontmatter),
     ('template placeholders', check_placeholders),
     ('css variables', check_css_vars),
+    ('skill assets', check_assets),
 ]
 
 

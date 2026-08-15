@@ -43,12 +43,20 @@ ASSETS = pathlib.Path(__file__).resolve().parent.parent / 'assets'
 CONTEXT = W / 'context'
 TEMPLATE = ASSETS / 'template.html'
 TESTIMONIALS_FILE = CONTEXT / 'testimonials.json'
+# Two assets that are deliberately NOT in this repo, because both are personal:
+# the report cover is page one of a real client deliverable, and videos.json lists
+# somebody's own YouTube videos. Their absence is the correct state for a clone,
+# not a defect, and the sections that use them simply do not render.
+#
+# To use them: drop your own report cover in as a JPEG, and write videos.json as
+# [{"id": "<youtube id>", "title": "..."}]. Both are optional either way.
 REPORT_COVER_FILE = ASSETS / 'report-cover-example.jpg'
 VIDEOS_FILE = ASSETS / 'videos.json'
+
 DIAGRAM_JS_FILE = ASSETS / 'diagram.js'
 LOGO_DIR = ASSETS / 'logos'
-# Every generated graph lands here. A library maintained by hand gepflegt
-# werden muss, bleibt leer -- also fuellt sie sich als Nebenprodukt jedes Laufs.
+# Every generated graph lands here. A library that has to be maintained by hand
+# stays empty, so this one fills itself as a by-product of every run.
 LIBRARY = pathlib.Path(__file__).resolve().parent.parent / 'library'
 # Source image for the hero dither. Do not swap it for another picture without
 # retuning the constants in the template -- they are set against this drawing.
@@ -178,8 +186,8 @@ def stars_html(rating):
     return '★' * full + '☆' * (5 - full)
 
 
-# Muss mit shapeFor() in diagram.js zusammenpassen -- eine unbekannte Art
-# wuerde dort still als normaler Kasten landen, hier bricht sie laut ab.
+# Has to match shapeFor() in diagram.js: an unknown kind would quietly become an
+# ordinary box there, whereas here it aborts loudly.
 GRAPH_KINDS = {'source', 'step', 'sink', 'service', 'decision', 'note',
                'datastore', 'milestone', 'actor'}
 GRAPH_OWNERS = {'you', 'client', 'thirdparty'}
@@ -234,8 +242,8 @@ def build_graph(spec):
                 print(f'ABORT: edge points at unknown node "{e.get(side)}".', file=sys.stderr)
                 sys.exit(1)
 
-    # Phasen: pruefen, dass jede Mitglieder-id existiert. Ein Tippfehler wuerde
-    # sonst still einen leeren oder halben Rahmen zeichnen.
+    # Phases: check every member id exists. A typo would otherwise draw an empty
+    # or half-finished frame without saying anything.
     groups = g.get('groups') or []
     for grp in groups:
         if not grp.get('label'):
@@ -279,8 +287,8 @@ def build_diagram(source, steps, sink, services):
         svc.append({'id': f's{i}', 'label': label.strip(), 'kind': 'service',
                     'at': max(0, min(at_i, len(nodes) - 1))})
 
-    # Eine einzige Knotenliste. Die Engine unterscheidet ueber `kind`; eine
-    # zweite Liste danebenzustellen hiess, dass die Dienste nie ankamen.
+    # One node list. The engine tells them apart by `kind`; putting a second list
+    # beside it meant the services never arrived.
     data = json.dumps({'nodes': nodes + svc}, ensure_ascii=False)
     fallback = '\n            '.join(
         f'<li>{n["label"]}</li>' for n in nodes)
@@ -331,7 +339,7 @@ def save_to_library(job, data):
 
 
 def videos_html():
-    """Echte YouTube-Videos aus assets/videos.json, Thumbnails eingebettet.
+    """Real YouTube videos from assets/videos.json, thumbnails embedded.
 
     IDs und Titel sind ueber die offizielle oEmbed-API verifiziert, nicht geraten.
     Fehlt die Datei oder ein Thumbnail, faellt der ganze Block weg statt einen
@@ -362,11 +370,10 @@ def main():
                           'no pill, no name label above it -- the quote carries itself.')
     ap.add_argument('--fit-point', action='append', required=True,
                      help='one reason you fit, give it three times')
-    # Das Diagramm ist kein Bild mehr, sondern eine Knotenliste. Das Template
-    # zeichnet daraus zur Laufzeit ein SVG -- scharf in jeder Groesse, folgt den
-    # Theme-Tokens, und der Kunde kann darin zoomen und eigene Schritte
-    # ergaenzen. Die Grammatik ist fest (Ausloeser -> Schritte -> Ziel, plus
-    # Dienste darunter), damit nichts ueberlappen kann.
+    # The diagram is no longer an image, it is a node list. The template draws an
+    # SVG from it at runtime: sharp at any size, following the theme tokens, and
+    # the client can zoom in and add steps of their own. The grammar is fixed
+    # (trigger -> steps -> sink, services underneath) so nothing can overlap.
     ap.add_argument('--graph',
                      help='the whole graph as JSON, or a path to a .json file. For anything with '
                           'branches, parallel strands or phases. Mutually exclusive with '
@@ -432,25 +439,31 @@ def main():
         print('ABORT: either --graph, or --source + --step + --sink.', file=sys.stderr)
         sys.exit(1)
     report_cover_src = img_data_uri(str(REPORT_COVER_FILE), mime='image/jpeg')[0] if REPORT_COVER_FILE.is_file() else ''
+    # An <img src=""> is a broken image, not an empty one: the browser draws its
+    # own failure icon. With no cover the whole element is left out instead.
+    report_cover_img = (
+        f'<img class="cover-face" src="{report_cover_src}" '
+        f'alt="Cover of a performance report built for another client">'
+        if report_cover_src else '')
     dither_src = img_data_uri(str(DITHER_FILE))[0] if DITHER_FILE.is_file() else ''
 
-    # Die Illustration liegt AUF dem Board, nicht darueber: sie wird in
-    # diagram.js eingesetzt und dort links neben dem Flow gezeichnet, damit sie
-    # mitzoomt, mitpannt und mitexportiert.
+    # The illustration sits ON the board, not above it: diagram.js places it to
+    # the left of the flow, so it pans, zooms and exports along with everything
+    # else rather than being an attached picture.
     if args.hero_illustration:
         mime = 'image/jpeg' if args.hero_illustration.lower().endswith(('.jpg', '.jpeg')) else 'image/png'
         illustration_src = img_data_uri(args.hero_illustration, mime=mime)[0]
-        # Dasselbe Bild zweimal: gross als Eyecatcher unter der Headline, klein
-        # als "the short version" auf dem Board. Zwei Rollen desselben Motivs,
-        # wie Plakat und Miniatur -- deshalb als JPEG einbetten, sonst zahlt
-        # die Seite den Umweg doppelt.
+        # The same image twice: large under the headline as the eye-catcher, small
+        # on the board as "the short version". Two roles for one motif, poster and
+        # thumbnail, which is why it is embedded as JPEG: otherwise the page pays
+        # for the detour twice.
         hero_art = f'<div class="hero-art" data-rise data-d="1"><img src="{illustration_src}" alt=""></div>'
     else:
         illustration_src = ''
         hero_art = ''
 
     if not args.loom_url:
-        args.loom_url = '#loom-link-fehlt-noch'
+        args.loom_url = '#no-walkthrough-yet'
 
     fit_html = '\n        '.join(
         f'<li>{FIT_ICON}<span>{p}</span></li>'
@@ -459,8 +472,8 @@ def main():
     tools_html = '\n            '.join(f'<li>{t}</li>' for t in args.tool)
     kickoff_html = '\n            '.join(f'<li>{k}</li>' for k in args.kickoff)
 
-    # "Gebaut heisst verlinkt": ein Flow, den es wirklich gibt, muss anklickbar
-    # sein, sonst ist er fuer den Kunden dasselbe wie ein gezeichneter.
+    # "Built means linked": a flow that genuinely exists has to be clickable, or
+    # to the client it is the same as a drawn one.
     if args.live_artifact:
         items = []
         for raw in args.live_artifact:
@@ -500,7 +513,7 @@ def main():
         testimonials_html = '<p class="testimonials-empty">No testimonials added yet.</p>'
 
     if not args.lead_magnet_url:
-        args.lead_magnet_url = '#lead-magnet-fehlt-noch'
+        args.lead_magnet_url = '#no-lead-magnet-yet'
         if not args.lead_magnet_teaser:
             args.lead_magnet_teaser = 'No lead magnet configured yet.'
     elif not args.lead_magnet_teaser:
@@ -538,6 +551,7 @@ def main():
                  .replace('{{LOGOS_JSON}}', logos_json(json.loads(diagram_data)['nodes']))
                  .replace('{{ILLUSTRATION_SRC}}', illustration_src))
         .replace('{{REPORT_COVER_SRC}}', report_cover_src)
+        .replace('{{REPORT_COVER_IMG}}', report_cover_img)
         .replace('{{LEAD_MAGNET_TEASER}}', args.lead_magnet_teaser)
         .replace('{{LEAD_MAGNET_URL}}', args.lead_magnet_url)
         .replace('{{LEAD_MAGNET_CTA}}', args.lead_magnet_cta)

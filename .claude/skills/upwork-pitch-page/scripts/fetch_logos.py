@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Holt echte Marken-SVGs einmal nach assets/logos/, damit die Seite sie
+"""Fetches real brand SVGs once into assets/logos/, so the page can embed them
 eingebettet ausliefern kann -- eine Pitch-Page darf keine externen Requests
 machen, also kann sie nicht zur Laufzeit an ein CDN.
 
@@ -32,9 +32,9 @@ WANTED = [
 
 
 def fetch(slug):
-    """Mit User-Agent. Ohne einen antwortet das CDN mit 403 auf Pythons
+    """With a user agent. Without one the CDN answers 403 to Python's
     Default-Kennung, waehrend dieselbe URL per curl 200 liefert -- ohne den
-    Header sieht das wie "no logo for this one" aus statt wie "abgewiesen"."""
+    header that reads as "no logo for this one" rather than as "refused"."""
     url = f'https://cdn.simpleicons.org/{slug}'
     req = urllib.request.Request(url, headers={
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '

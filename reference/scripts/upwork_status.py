@@ -231,7 +231,13 @@ COUNTER_OF = {
     'offer_sent': 'offers', 'hired': 'won', 'rejected': 'lost',
 }
 COUNTERS = ('found', 'applied', 'replied', 'offers', 'won', 'lost')
-EXPORT_KEYS = {'schema', 'generated_at', 'reported_through', 'history_recorded', 'days'}
+EXPORT_KEYS = {'schema', 'generated_at', 'reported_through', 'history_recorded', 'days', 'open'}
+
+# A snapshot of what is still sitting in the pipeline, as counts per status.
+# The daily counters say what happened; they cannot say what is waiting, so
+# without this a roadmap can only ever say "screen what you have" instead of
+# "15 unscreened". Still counts only, so the privacy fence is unchanged.
+OPEN_STATUSES = ('new', 'notified', 'proposal_sent', 'interviewing', 'offer_sent')
 
 
 def cmd_export(args):
@@ -251,9 +257,16 @@ def cmd_export(args):
                 continue
             days.setdefault(day, dict.fromkeys(COUNTERS, 0))[counter] += 1
 
+    open_now = {s: 0 for s in OPEN_STATUSES}
+    for j in jobs:
+        st = j.get('status', 'new')
+        if st in open_now:
+            open_now[st] += 1
+
     payload = {
         'schema': 1,
         'generated_at': now_iso(),
+        'open': open_now,
         # Everything up to this date is known: a day missing from `days` is a
         # real zero, a day after it is "no data yet". Without this the app
         # cannot tell an idle day from a day the OS simply never ran.
