@@ -125,7 +125,7 @@ context/
   settings.json                    which hooks run when
 reference/
   *.md                             the handbooks, listed in the table below
-  scripts/                         the eight scripts, listed in the table below
+  scripts/                         the 8 scripts, listed in the table below
 projects/
   README.md                        the layout, the lifecycle, how a won job becomes one
   _template/                       copied when a project is created
@@ -166,7 +166,7 @@ skill links here instead of restating it.
 | [`reference/scripts/inventory.js`](reference/scripts/inventory.js) | What this machine actually has: CLIs, plugins, connections |
 | [`reference/scripts/lib-workspace.js`](reference/scripts/lib-workspace.js) | Shared readers for the two above |
 | [`reference/scripts/new_project.py`](reference/scripts/new_project.py) | A won job becomes a project: folder, `PROJECTS.md` block, first task, artifacts |
-| [`reference/scripts/check_repo.py`](reference/scripts/check_repo.py) | Seven checks that gate a release. Run it before publishing |
+| [`reference/scripts/check_repo.py`](reference/scripts/check_repo.py) | 8 checks that gate a release. Run it before publishing |
 
 **The `.example` rule, and why it is the load-bearing one:** every file above that becomes
 *yours* is in `.gitignore` and ships as `<name>.example` instead. That is what makes
