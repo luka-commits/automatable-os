@@ -160,7 +160,7 @@ skill links here instead of restating it.
 | Script | What it does |
 |---|---|
 | [`reference/scripts/render_dashboard.py`](reference/scripts/render_dashboard.py) | Builds `context/today.html`. Fully derived, safe to re-run any time |
-| [`reference/scripts/upwork_status.py`](reference/scripts/upwork_status.py) | The small CRM: stages, history, `applied_at`, `prune` |
+| [`reference/scripts/upwork_status.py`](reference/scripts/upwork_status.py) | The small CRM: stages, history, `applied_at`, `prune`. `export` prints your funnel as JSON, locally, and sends it nowhere |
 | [`reference/scripts/workspace-audit.js`](reference/scripts/workspace-audit.js) | Measures the folder for `audit`; writes `context/audit.json` |
 | [`reference/scripts/adopt-plan.js`](reference/scripts/adopt-plan.js) | Plans a rebuild for `adopt`. Reads only, moves nothing |
 | [`reference/scripts/inventory.js`](reference/scripts/inventory.js) | What this machine actually has: CLIs, plugins, connections |
