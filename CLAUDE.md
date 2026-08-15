@@ -1,4 +1,4 @@
-# CLAUDE.md — Freelancer OS
+# CLAUDE.md — Automatable OS
 
 Working instructions for Claude Code **in this repo**. This file is self-contained — nothing it
 says lives anywhere else, so it works the moment someone clones this repo, before they've read
@@ -52,7 +52,7 @@ gets abandoned at account three, and the person never finds out whether it was a
 ## First thing to do in a fresh clone
 
 If `context/config.yaml` doesn't exist yet, this repo hasn't been set up. Run the
-`setup-freelancer-os` skill (say "set up freelancer os") before anything else — every other
+`setup-automatable-os` skill (say "set up automatable os") before anything else — every other
 skill here reads files that setup produces.
 
 ## Before anything else: what Upwork allows
@@ -327,7 +327,7 @@ flow that exists but isn't clickable is, to the client, the same as a drawn one.
 
 | Skill | What it does | Needs |
 |---|---|---|
-| `setup-freelancer-os` | First run: connection, reads your account, asks the rest | Upwork connector |
+| `setup-automatable-os` | First run: connection, reads your account, asks the rest | Upwork connector |
 | `morning` / `eod` | Opens and closes the day | nothing; richer with mail + calendar |
 | `ingest` | Files a document, transcript or note into the right project | nothing |
 | `upwork-profile` | Audits your profile, or walks you through creating one | Upwork connector |

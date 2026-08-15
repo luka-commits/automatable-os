@@ -34,6 +34,26 @@ daily_proposal_goal: 5
 # Example: "gohighlevel, n8n, make, zapier"
 tools: ""
 
+# Your own standing on Upwork. The setup skill reads these off your account, so
+# you do not type them. They are here because client minimums (min JSS, minimum
+# earnings, minimum hours) are checked against exactly these three numbers — the
+# dashboard can only tell you "you are under their bar" if it knows where you
+# stand. Leave them out and that judgement is simply omitted rather than guessed.
+job_success: 88
+lifetime_earnings: 24150
+hours_worked: 310
+hourly_rate: 55
+jobs_completed: 19
+reviews: 17
+
+# Connects are the real budget ceiling: a proposal costs between 7 and 22 of
+# them, so the balance decides how many you get to send this month.
+connects_balance: 142
+
+# Free-text warnings shown on the "where you stand" card. Leave empty and
+# nothing is shown — an absent note means "no note", never "all clear".
+timezone_warning: "Profile is set to America/New_York while you work from Europe. Clients read availability off this."
+
 # API keys are NOT stored here and never in this repo. They live in
 # ~/.config/credentials.env with chmod 600, one KEY=value per line, and every
 # skill reads them from there. .gitignore already blocks credentials.env, .env

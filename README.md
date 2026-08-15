@@ -1,4 +1,4 @@
-# Freelancer OS
+# Automatable OS
 
 An operating system for freelance work, built for Claude Code. It opens and closes your day,
 searches Upwork and scores every result against **your own** niche, turns a qualified job into a
@@ -119,14 +119,14 @@ your machine sleeps, and a dead link in an application is worse than no link.
 ## Quickstart
 
 ```bash
-git clone https://github.com/luka-commits/freelancer-os.git
-cd freelancer-os
+git clone https://github.com/luka-commits/automatable-os.git
+cd automatable-os
 claude
 ```
 
 **You do not have to type anything to start.** A session-start hook notices the setup has
 not run and begins it on your first message. If you would rather drive it yourself, say
-`set up freelancer os`.
+`set up automatable os`.
 
 The setup asks for your language and name, then — only if you say you work on Upwork — connects
 your account and *reads* it before asking anything: your profile, your past contracts, and the

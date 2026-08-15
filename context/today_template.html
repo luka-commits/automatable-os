@@ -238,7 +238,10 @@
   .uw-filterpill.active { background: var(--brand-soft); color: var(--brand-deep); font-weight: 600;
     border-color: color-mix(in srgb, var(--brand) 35%, transparent); }
   .uw-task-btn { color: var(--brand-deep); border-color: color-mix(in srgb, #B0143C 35%, transparent); }
-  .uw-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--gap); align-items: start; }
+  /* 250px rather than 280: the board has four stages, and at a typical 1440px
+   window the content column is ~1156px — at 280px the fourth stage wrapped
+   under the first, which is the one thing a pipeline board must not do. */
+.uw-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--gap); align-items: start; }
   .uw-col { display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--border);
     border-radius: 12px; box-shadow: var(--shadow-1); overflow: hidden; }
   .uw-col-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
@@ -372,6 +375,84 @@
   .uw-funnel-pct { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
   .uw-funnel-note { margin: 2px 0 14px; font-size: 10.5px; color: var(--text-3); }
   @media (max-width: 640px) { .uw-funnel-row { grid-template-columns: 90px 1fr 28px; } .uw-funnel-pct { display: none; } }
+
+/* ── Upwork tab: rules carried over with the screener block ── */
+.uw-desc-src { margin-top: 4px; font-size: 10px; font-family: ui-monospace, monospace; color: var(--text-3); opacity: .6; }
+.uw-status.notified { color: var(--brand-deep); border-color: var(--brand); }
+.uw-closed { margin-top: var(--gap); }
+.uw-closed summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--text-2); padding: 6px 2px; }
+.uw-closed-list { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.uw-closed-list li { font-size: 12px; color: var(--text-2); display: flex; align-items: center; gap: 7px; }
+.uw-langbar { display: flex; justify-content: flex-end; gap: 4px; margin: -4px 0 8px; }
+.uw-langpill { padding: 3px 10px; font-size: 11px; }
+.uw-langpill.active { background: var(--brand-soft); color: var(--brand-deep); font-weight: 600; border-color: color-mix(in srgb, var(--brand) 35%, transparent); }
+.uw-tracker-stand { margin-left: auto; font-size: 12px; color: var(--text-2); }
+.uw-daybar.none .uw-daybar-fill { background: color-mix(in srgb, var(--brand) 20%, var(--border)); }
+.uw-daybar.future .uw-daybar-lbl { opacity: .5; }
+.uw-tiles { display: flex; flex-wrap: wrap; margin: 0 0 20px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.uw-tile { flex: 1 1 190px; padding: 12px 16px; display: flex; flex-direction: column; gap: 1px; border-left: 1px solid var(--border); }
+.uw-tile:first-child { border-left: 0; }
+.uw-tile-lbl { font-size: 12px; color: var(--text-2); }
+.uw-tile-val { font-size: 24px; font-weight: 700; line-height: 1.25; color: var(--brand-deep); font-variant-numeric: tabular-nums; }
+.uw-tile-val.empty { font-size: 20px; font-weight: 400; color: var(--text-3); }
+.uw-tile-hint { font-size: 12px; color: var(--text-2); }
+#pane-upwork .uw-batch-btn { margin-left: auto; background: var(--brand); color: #fff; font-weight: 600; border-color: var(--brand); }
+#pane-upwork .uw-batch-btn:hover { background: var(--brand-deep); border-color: var(--brand-deep); }
+#pane-upwork .uw-batch-btn.done { background: var(--brand-deep); border-color: var(--brand-deep); }
+.uw-score-legend { font-size: 12px; color: var(--text-2); margin: -4px 0 10px; }
+.uw-me { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px 12px; margin: 0 0 14px; background: var(--card); }
+.uw-me-head { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+.uw-me-sub { font-weight: 400; color: var(--text-2); margin-left: 8px; font-size: 12px; }
+.uw-me-stats { display: flex; flex-wrap: wrap; gap: 8px 26px; }
+.uw-me-stat { display: flex; flex-direction: column; gap: 1px; }
+.uw-me-val { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.uw-me-lbl { font-size: 11.5px; color: var(--text-2); }
+.uw-me-notes { margin: 12px 0 0; padding: 10px 0 0 18px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-2); line-height: 1.5; }
+.uw-me-notes li + li { margin-top: 5px; }
+.uw-comp-n { font-variant-numeric: tabular-nums; font-size: 13px; }
+.uw-comp-n.low { color: var(--ok, #1a7f4b); font-weight: 600; }
+.uw-comp-n.high { color: var(--text-2); }
+.uw-comp-inv { display: block; font-size: 11px; color: var(--text-2); margin-top: 2px; }
+.uw-due-inline { display: block; margin-top: 4px; }
+.uw-excluded { font-size: 12px; color: var(--text-2); margin: 10px 0 0; }
+.uw-clienthist, .uw-questions { margin: 6px 0 0; padding-left: 18px; font-size: 12.5px; color: var(--text-2); line-height: 1.6; }
+.uw-clienthist { list-style: none; padding-left: 0; }
+.uw-clienthist li { display: flex; justify-content: space-between; gap: 12px; }
+.uw-hist-fb { color: var(--text-2); flex: none; font-variant-numeric: tabular-nums; }
+.uw-stagechip, .uw-duechip { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.uw-stagechip.closed { background: var(--bg); color: var(--text-2); }
+.uw-duechip.over { background: var(--red-soft); color: var(--red-deep); }
+.uw-duechip.soon { background: var(--amber-soft, #FDF0E3); color: var(--amber-deep, #8A3A06); }
+.uw-due-none { color: var(--text-3); }
+.uw-stage-cell, .uw-due-cell { white-space: nowrap; }
+/* nowrap, because the flag sits at the end of a title that wraps: without it
+   "full time" breaks across two lines and lands on top of the title's own
+   second line. */
+.uw-flag { display: inline-block; margin-left: 7px; padding: 1px 7px; border-radius: 999px; font-size: 10.5px; font-weight: 600; vertical-align: middle; white-space: nowrap; }
+.uw-flag.gone { background: var(--bg); color: var(--text-2); }
+.uw-flag.bar { background: var(--red-soft); color: var(--red-deep); }
+.uw-flag.soft { background: var(--amber-soft, #FDF0E3); color: var(--amber-deep, #8A3A06); }
+.uw-connects { display: block; font-size: 11.5px; color: var(--text-2); margin-top: 2px; }
+.uw-lage { margin: 4px 0 0; display: flex; flex-direction: column; gap: 4px; }
+.uw-lage-row { display: flex; gap: 10px; font-size: 13.5px; }
+.uw-lage dt { color: var(--text-2); min-width: 132px; flex: none; }
+.uw-lage dd { margin: 0; }
+.uw-nodata { font-size: 13px; color: var(--text-2); }
+.uw-screening { margin: 10px 0 0; padding: 9px 11px; border-radius: 8px; font-size: 13px; background: var(--amber-soft, #FDF0E3); color: var(--amber-deep, #8A3A06); }
+.uw-card, .uw-row { cursor: pointer; }
+.uw-modal-close { position: absolute; top: 12px; right: 12px; border: 0; background: transparent; font-size: 15px; line-height: 1; cursor: pointer; color: var(--text-3); padding: 6px; border-radius: 6px; }
+.uw-modal-close:hover { color: var(--text); background: var(--bg); }
+.uw-detail-head { display: flex; align-items: flex-start; gap: 10px; margin: 0 26px 6px 0; }
+.uw-detail-head h3 { margin: 0; font-size: 18px; line-height: 1.3; }
+.uw-detail-meta { margin: 0 0 14px; font-size: 12.5px; color: var(--text-2); }
+.uw-modal-body h4 { margin: 16px 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-2); }
+.uw-modal-body p { margin: 0; font-size: 14px; line-height: 1.55; }
+.uw-hist { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.uw-hist li { display: flex; gap: 10px; font-size: 13px; }
+.uw-hist-when { color: var(--text-2); font-variant-numeric: tabular-nums; min-width: 78px; }
+.uw-modal .uw-actions { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 6px; }
+.uw-viewbar .uw-viewpill { border: 0; border-left: 1px solid var(--border); border-radius: 0; padding: 6px 14px; }
+.uw-viewbar .uw-viewpill:first-child { border-left: 0; }
 </style>
 </head>
 <body>
@@ -424,7 +505,7 @@
   </div><!-- /pane-projects -->
 
   <div class="tabpane" id="pane-upwork" hidden>
-    <p class="hint">Pipeline: Outreach → In contact → Offer sent → Won. Card/row buttons only copy a chat sentence — pasting it and sending it is what actually moves the job, or run <code>python3 reference/scripts/upwork_status.py set &lt;id&gt; &lt;status&gt;</code> yourself.</p>
+    <p class="hint">{{UPWORK_HINT}}</p>
     {{UPWORK_ITEMS}}
   </div><!-- /pane-upwork -->
 

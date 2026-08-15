@@ -55,3 +55,4 @@ __pycache__/
 *.pyc
 context/audit.json
 context/.mcp_cache.json
+.playwright-cli/

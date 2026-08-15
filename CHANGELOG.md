@@ -25,7 +25,39 @@ capability that leaves your setup alone, patch means a fix.
   paragraph, and `--budget` lifts its first sentence out as the promise. All three fall back
   to a plain sentence, so nothing that worked before breaks
 
+- **The Upwork tab now shows what the screener actually collects.** It had drifted into a
+  flat table while the screener kept writing a much richer record: the competition on a job,
+  the connects it costs, the client's own hiring history, the mandatory screening questions,
+  and where you stand against their minimum Job Success. All of that was in the file and none
+  of it was on screen. The tab now carries the daily tracker, a "where you stand" card, a
+  stage board, a real-cohort funnel and three pipeline numbers, and a click on any row opens
+  the full picture for that job
+- **`summary` and `description_file` in the job record.** The screener wrote the full posting
+  inline, which made the job file half description text (measured: 40 of 83 KB at 19 jobs)
+  and left the list with nothing short to show. The full text now lives in
+  `context/upwork-jobs/<id>.md` and the record carries a two-or-three-sentence summary
+- **Your Upwork standing in `config.yaml`** — Job Success, earnings, hours, connects. Client
+  minimums are checked against exactly these, so without them the dashboard cannot tell you
+  that a proposal would never be shown. Setup reads them off your account; leave them empty
+  and the judgement is omitted rather than guessed
+- **`demo/` now shows the whole tab rather than a corner of it.** The example pipeline had
+  seven jobs carrying six fields each, so most of the interface rendered empty on a fresh
+  clone and looked broken rather than unfilled
+
 ### Fixed
+- **Money was formatted German in the English dashboard**: `$24.150` and `$55,00` where an
+  English reader expects `$24,150` and `$55.00`. The two conventions swap the same two
+  characters, so this does not read as a typo, it reads as a different number — `$24.150` is
+  twenty-four dollars. Separators follow the configured language now
+- **The pipeline hint above the Upwork tab stayed English** with `language: "de"` set
+- **A client's timezone was printed as if it were a second city** — "Austin, United States ·
+  Chicago", because the last segment of `America/Chicago` was taken as a place name. The zone
+  keeps its full form now, so it reads as a timezone
+- **The fourth stage column wrapped under the first** at a normal window width, which is the
+  one thing a pipeline board must not do
+- **The "where you stand" card had no border**: it referenced a `--line` colour token that was
+  never defined, and an undefined `var()` without a fallback voids the whole declaration
+  silently
 - **The pitch page no longer puts the author's background on your page.** The "More about my
   background" panel was literal text in the template: one degree, four employers, six client
   names, seven trait tags, plus a hardcoded Upwork profile id behind the closing button. Every
@@ -42,7 +74,17 @@ capability that leaves your setup alone, patch means a fix.
 - **Scope tiles are 16:9** rather than a fixed 132px strip that kept a middle band and threw
   the rest away
 
+### Changed
+- **The system is called Automatable OS**, and the repo is `luka-commits/automatable-os`. The
+  community app's setup step had been handing out that clone URL for a repo that did not exist
+  under that name, so the very first command of the very first run failed with "repository not
+  found". GitHub redirects the old URL, so an existing clone keeps working
+- **`setup-freelancer-os` is now `setup-automatable-os`** — say "set up automatable os"
+
 ### Action needed
+- **If you cloned before this**, point the remote at the new name once:
+  `git remote set-url origin https://github.com/luka-commits/automatable-os.git`. The redirect
+  means you do not have to, but the old name will keep showing up in `git remote -v` until you do
 - **If you generate pitch pages, pass the new flags** or the background panel will be missing
   from your next one. They come straight out of `context/experience.md`: `--stat`, `--trait`,
   `--client`, `--client-note`, `--background`, `--languages`, and `--lead-magnet-point` for
@@ -128,7 +170,7 @@ First public version.
   diagram and a slot for your own walkthrough video
 - `upwork-proposal` - the submitted cover-letter text, built from a video transcript when
   you have one
-- `setup-freelancer-os` - run once; writes the config every other skill reads
+- `setup-automatable-os` - run once; writes the config every other skill reads
 - A two-tab dashboard (Today / Upwork) rendered to a single static HTML file, with a
   sortable list, a pipeline board, and a funnel
 - `upwork_status.py` - the small CRM that moves a job between pipeline stages

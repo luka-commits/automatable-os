@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pushes your daily counters to the Freelancer OS community dashboard.
+"""Pushes your daily counters to the Automatable OS community dashboard.
 
 Opt-in. Without FOS_COMMUNITY_TOKEN set it does nothing and says so, which is
 also what makes it safe to call from /morning and /eod unconditionally.

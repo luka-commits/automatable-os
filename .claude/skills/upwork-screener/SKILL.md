@@ -142,7 +142,7 @@ is manual in the rationale so a proposal can pitch exactly that.
 
 ## Step 3: Log every candidate
 
-Read `~/dev/context/.upwork_jobs.json` (a JSON array; treat a missing or empty file as `[]`). For every job scored **≥ 50 total** that passed the niche-fit gate and isn't already present by `id`:
+Read `context/.upwork_jobs.json` (a JSON array; treat a missing or empty file as `[]`). For every job scored **≥ 50 total** that passed the niche-fit gate and isn't already present by `id`:
 
 **Fetch the full description** — `find_jobs` search only returns a truncated `description_snippet`, not the real thing. Call `find_jobs` (action=`get`, org_uid from `context/config.yaml`, the job id) for each qualifying candidate to get the complete description text before writing the record — this is a bounded, already-filtered set (only the ones that clear scoring), not every raw search result, so the extra calls are cheap.
 
@@ -157,7 +157,8 @@ Then append a record:
   "url": "https://www.upwork.com/nx/search/jobs/?q=<url-encoded exact title>",
   "found_at": "<ISO 8601 UTC timestamp — when the screener found it>",
   "posted_date": "<the job's own created_date from the API, verbatim>",
-  "description": "<full job description text from find_jobs action=get>",
+  "summary": "<two or three sentences, see below — this is what the list shows>",
+  "description_file": "context/upwork-jobs/<id>.md",
   "score": 92,
   "niche_fit": 35, "client_trust": 28, "deal_quality": 19, "recency": 10,
   "rationale": "<one sentence — why this score, not what's already visible in the Client/Budget/Posted columns>",
@@ -173,6 +174,12 @@ Then append a record:
 
 **Rationale doesn't repeat the columns next to it.** The dashboard shows Client (rating/hire ratio), Budget and Posted as their own columns, and the rationale is read right beside them, so restating "$500 fixed, client 4.9★" there is wasted space the reader has to skip. Use the sentence for what those columns can't show: what the score is actually betting on, or against — the specific scope risk, the overlap that earned the niche-fit bonus, the giveaway that dropped it, whatever a proposal would need to lead with.
 
+**The full description does not go in this file.** Write it to `context/upwork-jobs/<id>.md` and put the path in `description_file`; the record itself carries a **`summary`** of two or three sentences instead. Measured on a real run: full texts were 40 of the file's 83 KB, nearly half, at only 19 jobs — and scanning a list needs the title, the score and a sentence of context, not 5,000 characters of posting. The full text is still needed, but only once a job is actually being applied to, and then only that one. `upwork-proposal` and `upwork-pitch-page` read the file it points at; everything else reads the summary.
+
+**What belongs in a summary:** what the client wants built, the one thing that makes this job distinctive (a hire ratio, a deadline, an unusual constraint, a screening requirement). What does not: anything already visible in its own column, **and anything the rationale is about to say.** The dashboard prints the two under separate headings — "Description" and "Why this job" — so a summary that ends on the same judgement the rationale makes shows the reader the same sentence twice.
+
+**Leave `summary` out and the list falls back to the rationale.** Nothing breaks, but the detail view then has the same line under both headings, so the field is worth writing.
+
 **Budget keeps the client's own framing, not just the number.** When the posting says more than a bare figure — a bonus structure ("$400/mo + up to $130/mo performance bonus"), a milestone framing ("$100 first milestone, more after"), a rate that looks like a placeholder — fold that into the `budget` string itself rather than reducing it to the number alone. The Budget column renders whatever's in the field verbatim, so this is the only place that context survives.
 
 **On the URL — verified the hard way.** `find_jobs` never returns a working public job link; the `id` it returns is an internal numeric ID, not the `~<ciphertext>` a real `upwork.com/jobs/~...` URL needs (confirmed: constructing one from the numeric id and calling `find_jobs get` on it fails with "resource not found"). There's no ciphertext field anywhere in the API response to build a direct link from. The reliable fallback is Upwork's own public search page with the exact job title as the query — it won't always be the single top result, but it gets the user to the job without a broken link. If Upwork's API ever starts returning a real ciphertext, switch back to a direct link; until then, don't reintroduce the `~<id>` pattern.
@@ -183,7 +190,7 @@ Never touch or re-score a job `id` already in the file — it's owned by whateve
 
 Trim the file to the most recent 500 records by `found_at` after appending, so it doesn't grow forever — but never trim a record whose `status` is anything other than `new` or `notified` (an active pipeline entry — `proposal_sent`, `interviewing`, etc. — never gets silently dropped just because it's old).
 
-Write the file back with `Write` (this is inside `~/dev/context/`, in scope for the edit tools).
+Write the file back with `Write` (it sits inside this repo's `context/`, in scope for the edit tools).
 
 ## Step 3b: Pull the application picture for the best open jobs
 
@@ -195,7 +202,7 @@ field yet.** Not the whole list, not again every run. Fetching a hundred of them
 exactly the pattern Upwork reads as scraping
 ([`reference/upwork-regeln.md`](../../../reference/upwork-regeln.md)).
 
-Je Job schreibst du in den Datensatz:
+Per job, write into the record:
 
 ```json
 "details": {

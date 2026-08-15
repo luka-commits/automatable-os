@@ -9,7 +9,7 @@ files.
 
 ## When something is broken
 
-Open an issue: <https://github.com/luka-commits/freelancer-os/issues>. Include the version
+Open an issue: <https://github.com/luka-commits/automatable-os/issues>. Include the version
 above, what you ran, and what happened instead. There is no support address and no contact
 person to chase; the tracker is the whole route, and an issue with the version number in it
 is usually enough to tell whether it is already fixed.

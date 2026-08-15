@@ -479,7 +479,7 @@ been meaning to start answer no, because at that moment it is the true answer to
 asked. They then get the layer switched off and never hear about it again, which is the one
 outcome nobody wanted.
 
-**If yes** → hand straight over to the `setup-freelancer-os` skill. Do not make them find it
+**If yes** → hand straight over to the `setup-automatable-os` skill. Do not make them find it
 themselves and do not describe it and stop; call it. It verifies the connector, reads what
 their account already knows, and writes `expertise.md` and `experience.md`. Say one sentence
 about what happens next so the handover does not feel like a cut.
@@ -494,7 +494,7 @@ your dashboard stays empty, and nothing else here needs it."_ Then:
 
 **If they want to start** ("no, but I'd like to", "I'm thinking about it", an account with
 nothing in it yet) → **this is a third answer, not a soft no**, and it is a different path.
-`setup-freelancer-os` normally reads their account to learn the niche: profile, past
+`setup-automatable-os` normally reads their account to learn the niche: profile, past
 contracts, the full text of sent proposals. A new account has none of that, so there is
 nothing to read and the reading step would come back empty and confusing.
 
@@ -502,7 +502,7 @@ So say what is actually true, in one sentence: _"Then we do it the other way rou
 I read your account to learn what you do. There is nothing there yet, so you tell me, and
 then the first thing we build is the profile."_ Then:
 
-- Run `setup-freelancer-os` anyway, but expect its fallback interview rather than the reading
+- Run `setup-automatable-os` anyway, but expect its fallback interview rather than the reading
   path. It says so itself when the connector returns an empty account.
 - Go to `upwork-profile` **in the same run**, on its "no profile yet" path. For someone
   starting out this is not an audit, it is the first piece of work: without a profile they

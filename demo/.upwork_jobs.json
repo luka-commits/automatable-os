@@ -2,8 +2,14 @@
   {
     "id": "demo-1",
     "title": "Google Ads specialist, audit and optimisation",
+    "url": "https://www.upwork.com/nx/search/jobs/?q=Google%20Ads%20specialist%20audit%20and%20optimisation",
     "status": "new",
+    "status_updated_at": "2026-08-15T07:00:00+00:00",
     "score": 84,
+    "niche_fit": 32,
+    "client_trust": 26,
+    "deal_quality": 17,
+    "recency": 9,
     "client": {
       "rating": 5.0,
       "hires": 137,
@@ -14,23 +20,25 @@
     "budget": "$1,500 fixed",
     "job_type": "fixed",
     "found_at": "2026-08-15T07:00:00+00:00",
+    "found_via": ["Google Ads", "audit"],
     "posted_date": "2026-08-15T06:00:00+00:00",
+    "summary": "A six-figure ad account that has run unattended for a year. They want a written audit plus a call that says plainly what is wasting money, before anyone touches a setting. Two screening questions, one of them about accounts above $50k a month.",
     "rationale": "Audit-shaped and scoped, and the client hires almost everything they post.",
     "history": [
-      {
-        "status": "new",
-        "at": "2026-08-15T07:00:00+00:00"
-      }
+      { "status": "new", "at": "2026-08-15T07:00:00+00:00" }
     ],
     "details": {
       "fetched_at": "2026-08-15T07:00:00+00:00",
       "connects_cost": 14,
+      "contract_type": "FIXED",
       "bid_avg": 61.5,
       "bid_min": 35,
       "bid_max": 120,
+      "proposals": 7,
       "invites_sent": 2,
       "total_hired": 0,
-      "min_jss": 90,
+      "total_offered": 0,
+      "min_jss": 80,
       "min_earnings": "$1K+",
       "min_hours": 0,
       "engagement": "PART_TIME",
@@ -38,14 +46,29 @@
       "client_country": "Australia",
       "client_city": "Melbourne",
       "client_timezone": "Australia/Melbourne",
-      "screening_note": "Tell us in one line which single change you would make first."
+      "screening_note": "Tell us in one line which single change you would make first.",
+      "screening_questions": [
+        "Which single change would you make first, and why that one?",
+        "Have you worked on an account spending over $50k a month?"
+      ],
+      "client_history": [
+        { "title": "Google Ads management, ongoing", "feedback": 5.0 },
+        { "title": "Landing page conversion rebuild", "feedback": 4.9 },
+        { "title": "GA4 migration and event tracking", "feedback": 5.0 }
+      ]
     }
   },
   {
     "id": "demo-2",
     "title": "Digital analytics implementation specialist",
+    "url": "https://www.upwork.com/nx/search/jobs/?q=Digital%20analytics%20implementation%20specialist",
     "status": "new",
+    "status_updated_at": "2026-08-15T08:00:00+00:00",
     "score": 71,
+    "niche_fit": 26,
+    "client_trust": 22,
+    "deal_quality": 15,
+    "recency": 8,
     "client": {
       "rating": 5.0,
       "hires": 16,
@@ -56,20 +79,45 @@
     "budget": "hourly, platform default range",
     "job_type": "hourly",
     "found_at": "2026-08-15T08:00:00+00:00",
+    "found_via": ["analytics"],
     "posted_date": "2026-08-15T08:00:00+00:00",
+    "summary": "Ecommerce brand wants server-side tracking set up properly after two previous contractors failed at it. Hourly and open-ended rather than a fixed deliverable.",
     "rationale": "Ongoing rather than one-off, which is worth more than the rate suggests.",
     "history": [
-      {
-        "status": "new",
-        "at": "2026-08-15T08:00:00+00:00"
-      }
-    ]
+      { "status": "new", "at": "2026-08-15T08:00:00+00:00" }
+    ],
+    "details": {
+      "fetched_at": "2026-08-15T08:10:00+00:00",
+      "connects_cost": 9,
+      "contract_type": "HOURLY",
+      "bid_avg": 42.0,
+      "bid_min": 25,
+      "bid_max": 85,
+      "proposals": 3,
+      "invites_sent": 0,
+      "total_hired": 0,
+      "total_offered": 0,
+      "min_jss": 0,
+      "min_earnings": "Any",
+      "min_hours": 0,
+      "engagement": "AS_NEEDED",
+      "experience_level": "EXPERT",
+      "client_country": "Spain",
+      "client_city": "Barcelona",
+      "client_timezone": "Europe/Madrid"
+    }
   },
   {
     "id": "demo-3",
     "title": "Media manager for Google Ads and Meta campaigns",
+    "url": "https://www.upwork.com/nx/search/jobs/?q=Media%20manager%20for%20Google%20Ads%20and%20Meta%20campaigns",
     "status": "proposal_sent",
+    "status_updated_at": "2026-08-11T14:00:00+00:00",
     "score": 66,
+    "niche_fit": 24,
+    "client_trust": 28,
+    "deal_quality": 8,
+    "recency": 6,
     "client": {
       "rating": 4.98,
       "hires": 634,
@@ -80,25 +128,53 @@
     "budget": "$10 fixed, likely a placeholder",
     "job_type": "fixed",
     "found_at": "2026-08-11T09:00:00+00:00",
+    "found_via": ["Google Ads", "media buying"],
+    "posted_date": "2026-08-11T08:00:00+00:00",
     "applied_at": "2026-08-11T14:00:00+00:00",
     "next_follow_up": "2026-08-14",
+    "summary": "An agency subcontracting media buying across Google and Meta, posting new roles constantly. Full-time engagement, intermediate level, and they have invited 11 people already.",
     "rationale": "Huge hire count, but the budget field reads like a placeholder. Worth one follow-up.",
     "history": [
-      {
-        "status": "new",
-        "at": "2026-08-11T09:00:00+00:00"
-      },
-      {
-        "status": "proposal_sent",
-        "at": "2026-08-11T14:00:00+00:00"
-      }
-    ]
+      { "status": "new", "at": "2026-08-11T09:00:00+00:00" },
+      { "status": "proposal_sent", "at": "2026-08-11T14:00:00+00:00" }
+    ],
+    "details": {
+      "fetched_at": "2026-08-11T09:05:00+00:00",
+      "connects_cost": 8,
+      "contract_type": "FIXED",
+      "bid_avg": 18.4,
+      "bid_min": 10,
+      "bid_max": 60,
+      "proposals": 34,
+      "invites_sent": 11,
+      "total_hired": 0,
+      "total_offered": 0,
+      "min_jss": 0,
+      "min_earnings": "Any",
+      "min_hours": 0,
+      "engagement": "FULL_TIME",
+      "experience_level": "INTERMEDIATE",
+      "client_country": "United States",
+      "client_city": "Austin",
+      "client_timezone": "America/Chicago",
+      "client_history": [
+        { "title": "Meta ads buyer, ongoing retainer", "feedback": 4.9 },
+        { "title": "Google Ads account manager", "feedback": 5.0 },
+        { "title": "Creative testing sprint", "feedback": 4.8 }
+      ]
+    }
   },
   {
     "id": "demo-4",
     "title": "Rebuild reporting so the weekly numbers land in Slack",
+    "url": "https://www.upwork.com/nx/search/jobs/?q=Rebuild%20reporting%20weekly%20numbers%20Slack",
     "status": "interviewing",
+    "status_updated_at": "2026-08-14T10:00:00+00:00",
     "score": 79,
+    "niche_fit": 30,
+    "client_trust": 23,
+    "deal_quality": 18,
+    "recency": 8,
     "client": {
       "rating": 4.8,
       "hires": 22,
@@ -109,29 +185,52 @@
     "budget": "$1,200 fixed",
     "job_type": "fixed",
     "found_at": "2026-08-09T09:00:00+00:00",
+    "found_via": ["automation", "reporting"],
+    "posted_date": "2026-08-09T07:30:00+00:00",
     "applied_at": "2026-08-09T11:00:00+00:00",
     "next_follow_up": "2026-08-17",
+    "summary": "Every Monday someone assembles the week's performance numbers by hand in a spreadsheet and pastes them into Slack. They want that to happen without a person in the middle, and they named the exact stack it has to read from.",
     "rationale": "They named the tools, so the scope is real rather than a wish.",
     "history": [
-      {
-        "status": "new",
-        "at": "2026-08-09T09:00:00+00:00"
-      },
-      {
-        "status": "proposal_sent",
-        "at": "2026-08-09T11:00:00+00:00"
-      },
-      {
-        "status": "interviewing",
-        "at": "2026-08-14T10:00:00+00:00"
-      }
-    ]
+      { "status": "new", "at": "2026-08-09T09:00:00+00:00" },
+      { "status": "proposal_sent", "at": "2026-08-09T11:00:00+00:00" },
+      { "status": "interviewing", "at": "2026-08-14T10:00:00+00:00" }
+    ],
+    "details": {
+      "fetched_at": "2026-08-09T09:20:00+00:00",
+      "connects_cost": 12,
+      "contract_type": "FIXED",
+      "bid_avg": 54.0,
+      "bid_min": 30,
+      "bid_max": 95,
+      "proposals": 9,
+      "invites_sent": 1,
+      "total_hired": 0,
+      "total_offered": 0,
+      "min_jss": 75,
+      "min_earnings": "$1K+",
+      "min_hours": 100,
+      "engagement": "PART_TIME",
+      "experience_level": "INTERMEDIATE",
+      "client_country": "Germany",
+      "client_city": "Hamburg",
+      "client_timezone": "Europe/Berlin",
+      "screening_questions": [
+        "Which reporting tools have you connected to Slack before?"
+      ]
+    }
   },
   {
     "id": "demo-5",
     "title": "Conversion tracking across three landing pages",
+    "url": "https://www.upwork.com/nx/search/jobs/?q=Conversion%20tracking%20across%20three%20landing%20pages",
     "status": "offer_sent",
+    "status_updated_at": "2026-08-14T15:00:00+00:00",
     "score": 68,
+    "niche_fit": 25,
+    "client_trust": 20,
+    "deal_quality": 16,
+    "recency": 7,
     "client": {
       "rating": 5.0,
       "hires": 4,
@@ -142,32 +241,49 @@
     "budget": "$800 fixed",
     "job_type": "fixed",
     "found_at": "2026-08-06T09:00:00+00:00",
+    "found_via": ["conversion tracking"],
+    "posted_date": "2026-08-06T08:00:00+00:00",
     "applied_at": "2026-08-06T10:00:00+00:00",
+    "summary": "Three landing pages, no reliable conversion tracking on any of them, and a product launch four weeks out. Fixed scope, no screening questions.",
     "rationale": "Small and clean. New client, but everything they posted they hired for.",
     "history": [
-      {
-        "status": "new",
-        "at": "2026-08-06T09:00:00+00:00"
-      },
-      {
-        "status": "proposal_sent",
-        "at": "2026-08-06T10:00:00+00:00"
-      },
-      {
-        "status": "interviewing",
-        "at": "2026-08-10T09:00:00+00:00"
-      },
-      {
-        "status": "offer_sent",
-        "at": "2026-08-14T15:00:00+00:00"
-      }
-    ]
+      { "status": "new", "at": "2026-08-06T09:00:00+00:00" },
+      { "status": "proposal_sent", "at": "2026-08-06T10:00:00+00:00" },
+      { "status": "interviewing", "at": "2026-08-10T09:00:00+00:00" },
+      { "status": "offer_sent", "at": "2026-08-14T15:00:00+00:00" }
+    ],
+    "details": {
+      "fetched_at": "2026-08-06T09:15:00+00:00",
+      "connects_cost": 10,
+      "contract_type": "FIXED",
+      "bid_avg": 47.2,
+      "bid_min": 28,
+      "bid_max": 90,
+      "proposals": 12,
+      "invites_sent": 0,
+      "total_hired": 0,
+      "total_offered": 1,
+      "min_jss": 0,
+      "min_earnings": "Any",
+      "min_hours": 0,
+      "engagement": "AS_NEEDED",
+      "experience_level": "INTERMEDIATE",
+      "client_country": "Netherlands",
+      "client_city": "Utrecht",
+      "client_timezone": "Europe/Amsterdam"
+    }
   },
   {
     "id": "demo-6",
     "title": "Audit a Google Ads account for a dental clinic group",
+    "url": "https://www.upwork.com/nx/search/jobs/?q=Audit%20Google%20Ads%20account%20dental%20clinic%20group",
     "status": "hired",
+    "status_updated_at": "2026-08-07T16:00:00+00:00",
     "score": 88,
+    "niche_fit": 35,
+    "client_trust": 25,
+    "deal_quality": 20,
+    "recency": 8,
     "client": {
       "rating": 4.9,
       "hires": 31,
@@ -179,36 +295,263 @@
     "job_type": "fixed",
     "project": "bright-smile-google-ads-audit",
     "found_at": "2026-08-01T09:00:00+00:00",
+    "found_via": ["Google Ads", "audit"],
+    "posted_date": "2026-08-01T08:00:00+00:00",
     "applied_at": "2026-08-01T09:00:00+00:00",
+    "summary": "Six clinic locations running out of a single ad account, no split by location, and a cost per booking nobody in the group can explain. They want the audit first and the rebuild quoted separately.",
     "rationale": "Six locations, one account. Exactly the shape of the last two wins.",
     "history": [
-      {
-        "status": "new",
-        "at": "2026-08-01T09:00:00+00:00"
-      },
-      {
-        "status": "proposal_sent",
-        "at": "2026-08-01T09:00:00+00:00"
-      },
-      {
-        "status": "interviewing",
-        "at": "2026-08-04T08:00:00+00:00"
-      },
-      {
-        "status": "offer_sent",
-        "at": "2026-08-06T12:00:00+00:00"
-      },
-      {
-        "status": "hired",
-        "at": "2026-08-07T16:00:00+00:00"
-      }
-    ]
+      { "status": "new", "at": "2026-08-01T09:00:00+00:00" },
+      { "status": "proposal_sent", "at": "2026-08-01T09:00:00+00:00" },
+      { "status": "interviewing", "at": "2026-08-04T08:00:00+00:00" },
+      { "status": "offer_sent", "at": "2026-08-06T12:00:00+00:00" },
+      { "status": "hired", "at": "2026-08-07T16:00:00+00:00" }
+    ],
+    "details": {
+      "fetched_at": "2026-08-01T09:10:00+00:00",
+      "connects_cost": 16,
+      "contract_type": "FIXED",
+      "bid_avg": 72.0,
+      "bid_min": 40,
+      "bid_max": 150,
+      "proposals": 6,
+      "invites_sent": 3,
+      "total_hired": 1,
+      "total_offered": 1,
+      "min_jss": 80,
+      "min_earnings": "$1K+",
+      "min_hours": 0,
+      "engagement": "PART_TIME",
+      "experience_level": "EXPERT",
+      "client_country": "United Kingdom",
+      "client_city": "Leeds",
+      "client_timezone": "Europe/London"
+    }
   },
   {
     "id": "demo-7",
+    "title": "SEO content plan for a B2B software company",
+    "url": "https://www.upwork.com/nx/search/jobs/?q=SEO%20content%20plan%20B2B%20software",
+    "status": "proposal_sent",
+    "status_updated_at": "2026-08-12T16:30:00+00:00",
+    "score": 74,
+    "niche_fit": 28,
+    "client_trust": 21,
+    "deal_quality": 17,
+    "recency": 8,
+    "client": {
+      "rating": 4.95,
+      "hires": 58,
+      "posted": 64,
+      "country": "Canada",
+      "verified": true
+    },
+    "budget": "$1,800 fixed",
+    "job_type": "fixed",
+    "found_at": "2026-08-12T10:00:00+00:00",
+    "found_via": ["SEO"],
+    "posted_date": "2026-08-12T09:00:00+00:00",
+    "applied_at": "2026-08-12T16:30:00+00:00",
+    "next_follow_up": "2026-08-16",
+    "summary": "They rank for their own brand name and nothing else, and want a twelve-month plan rather than someone writing articles. Decision maker is the founder, which usually means a short chain to yes.",
+    "rationale": "Strategy rather than production work, and the founder is the one deciding.",
+    "history": [
+      { "status": "new", "at": "2026-08-12T10:00:00+00:00" },
+      { "status": "proposal_sent", "at": "2026-08-12T16:30:00+00:00" }
+    ],
+    "details": {
+      "fetched_at": "2026-08-12T10:15:00+00:00",
+      "connects_cost": 13,
+      "contract_type": "FIXED",
+      "bid_avg": 58.9,
+      "bid_min": 32,
+      "bid_max": 110,
+      "proposals": 18,
+      "invites_sent": 2,
+      "total_hired": 0,
+      "total_offered": 0,
+      "min_jss": 80,
+      "min_earnings": "$1K+",
+      "min_hours": 0,
+      "engagement": "PART_TIME",
+      "experience_level": "EXPERT",
+      "client_country": "Canada",
+      "client_city": "Toronto",
+      "client_timezone": "America/Toronto",
+      "screening_questions": [
+        "Link one content plan you have written that shipped.",
+        "How do you decide what not to write about?"
+      ]
+    }
+  },
+  {
+    "id": "demo-8",
+    "title": "Automate lead handover between forms and the CRM",
+    "url": "https://www.upwork.com/nx/search/jobs/?q=Automate%20lead%20handover%20forms%20CRM",
+    "status": "rejected",
+    "status_updated_at": "2026-08-13T09:00:00+00:00",
+    "score": 72,
+    "niche_fit": 27,
+    "client_trust": 22,
+    "deal_quality": 16,
+    "recency": 7,
+    "client": {
+      "rating": 4.7,
+      "hires": 12,
+      "posted": 19,
+      "country": "United States",
+      "verified": true
+    },
+    "budget": "$950 fixed",
+    "job_type": "fixed",
+    "found_at": "2026-08-04T11:00:00+00:00",
+    "found_via": ["automation"],
+    "posted_date": "2026-08-04T10:00:00+00:00",
+    "applied_at": "2026-08-04T13:00:00+00:00",
+    "summary": "Form submissions were being retyped into the CRM by hand. Clear scope, fair budget. They went with someone who had built on their exact CRM before.",
+    "rationale": "Lost to a specialist in their CRM. The proposal was fine, the overlap was not.",
+    "history": [
+      { "status": "new", "at": "2026-08-04T11:00:00+00:00" },
+      { "status": "proposal_sent", "at": "2026-08-04T13:00:00+00:00" },
+      { "status": "interviewing", "at": "2026-08-08T14:00:00+00:00" },
+      { "status": "rejected", "at": "2026-08-13T09:00:00+00:00" }
+    ],
+    "details": {
+      "fetched_at": "2026-08-04T11:10:00+00:00",
+      "connects_cost": 11,
+      "contract_type": "FIXED",
+      "bid_avg": 44.5,
+      "bid_min": 25,
+      "bid_max": 88,
+      "proposals": 21,
+      "invites_sent": 0,
+      "total_hired": 1,
+      "total_offered": 1,
+      "min_jss": 0,
+      "min_earnings": "Any",
+      "min_hours": 0,
+      "engagement": "AS_NEEDED",
+      "experience_level": "INTERMEDIATE",
+      "client_country": "United States",
+      "client_city": "Denver",
+      "client_timezone": "America/Denver"
+    }
+  },
+  {
+    "id": "demo-9",
+    "title": "Senior performance marketer, long-term retainer",
+    "url": "https://www.upwork.com/nx/search/jobs/?q=Senior%20performance%20marketer%20retainer",
+    "status": "archived",
+    "status_updated_at": "2026-08-14T08:00:00+00:00",
+    "score": 81,
+    "niche_fit": 31,
+    "client_trust": 27,
+    "deal_quality": 15,
+    "recency": 8,
+    "qualified": false,
+    "qualification_gap": "Requires 95% Job Success, you are at 88%.",
+    "notes": "Archived before applying: the minimum Job Success is above yours, so the proposal would never be shown.",
+    "client": {
+      "rating": 4.99,
+      "hires": 210,
+      "posted": 214,
+      "country": "United States",
+      "verified": true
+    },
+    "budget": "$4,000/mo retainer",
+    "job_type": "hourly",
+    "found_at": "2026-08-14T08:00:00+00:00",
+    "found_via": ["Google Ads", "performance marketing"],
+    "posted_date": "2026-08-14T07:00:00+00:00",
+    "summary": "A retainer with a serious budget and a client who hires nearly everything they post. Filtered out on their minimum Job Success score, not on fit.",
+    "rationale": "Strong on every axis except the one that decides whether the proposal is even shown.",
+    "history": [
+      { "status": "new", "at": "2026-08-14T08:00:00+00:00" },
+      { "status": "archived", "at": "2026-08-14T08:00:00+00:00" }
+    ],
+    "details": {
+      "fetched_at": "2026-08-14T08:05:00+00:00",
+      "connects_cost": 20,
+      "contract_type": "HOURLY",
+      "bid_avg": 68.0,
+      "bid_min": 45,
+      "bid_max": 130,
+      "proposals": 14,
+      "invites_sent": 6,
+      "total_hired": 0,
+      "total_offered": 0,
+      "min_jss": 95,
+      "min_earnings": "$10K+",
+      "min_hours": 500,
+      "engagement": "FULL_TIME",
+      "experience_level": "EXPERT",
+      "client_country": "United States",
+      "client_city": "San Francisco",
+      "client_timezone": "America/Los_Angeles"
+    }
+  },
+  {
+    "id": "demo-10",
+    "title": "Shopify store speed and Core Web Vitals fixes",
+    "url": "https://www.upwork.com/nx/search/jobs/?q=Shopify%20speed%20Core%20Web%20Vitals",
+    "status": "archived",
+    "status_updated_at": "2026-08-13T12:00:00+00:00",
+    "score": 63,
+    "niche_fit": 20,
+    "client_trust": 24,
+    "deal_quality": 14,
+    "recency": 5,
+    "notes": "Archived: already filled. totalHired came back 1 on the re-check.",
+    "client": {
+      "rating": 4.85,
+      "hires": 44,
+      "posted": 51,
+      "country": "United Kingdom",
+      "verified": true
+    },
+    "budget": "$600 fixed",
+    "job_type": "fixed",
+    "found_at": "2026-08-11T15:00:00+00:00",
+    "found_via": ["SEO"],
+    "posted_date": "2026-08-11T14:00:00+00:00",
+    "summary": "Front-end performance work on a Shopify theme. Someone was hired two days after it was posted, before a proposal went out.",
+    "rationale": "Adjacent rather than core, and it was taken before it was worth a proposal.",
+    "history": [
+      { "status": "new", "at": "2026-08-11T15:00:00+00:00" },
+      { "status": "archived", "at": "2026-08-13T12:00:00+00:00" }
+    ],
+    "details": {
+      "fetched_at": "2026-08-13T12:00:00+00:00",
+      "connects_cost": 8,
+      "contract_type": "FIXED",
+      "bid_avg": 33.0,
+      "bid_min": 15,
+      "bid_max": 70,
+      "proposals": 27,
+      "invites_sent": 1,
+      "total_hired": 1,
+      "total_offered": 1,
+      "min_jss": 0,
+      "min_earnings": "Any",
+      "min_hours": 0,
+      "engagement": "AS_NEEDED",
+      "experience_level": "INTERMEDIATE",
+      "client_country": "United Kingdom",
+      "client_city": "Bristol",
+      "client_timezone": "Europe/London"
+    }
+  },
+  {
+    "id": "demo-11",
     "title": "Pinterest marketing for a homeware brand",
+    "url": "https://www.upwork.com/nx/search/jobs/?q=Pinterest%20marketing%20homeware%20brand",
     "status": "ignored",
+    "status_updated_at": "2026-08-15T09:00:00+00:00",
     "score": 29,
+    "niche_fit": 6,
+    "client_trust": 15,
+    "deal_quality": 4,
+    "recency": 9,
     "client": {
       "rating": 5.0,
       "hires": 4,
@@ -219,16 +562,13 @@
     "budget": "$100 fixed",
     "job_type": "fixed",
     "found_at": "2026-08-15T09:00:00+00:00",
+    "found_via": ["marketing"],
+    "posted_date": "2026-08-15T08:30:00+00:00",
+    "summary": "Pin design and a posting schedule for a homeware shop, $100 for the month.",
     "rationale": "Organic social, not paid acquisition. In the results because the search term is broad.",
     "history": [
-      {
-        "status": "new",
-        "at": "2026-08-15T09:00:00+00:00"
-      },
-      {
-        "status": "ignored",
-        "at": "2026-08-15T09:00:00+00:00"
-      }
+      { "status": "new", "at": "2026-08-15T09:00:00+00:00" },
+      { "status": "ignored", "at": "2026-08-15T09:00:00+00:00" }
     ]
   }
 ]

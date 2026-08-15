@@ -65,7 +65,7 @@ Not an interrogation. The system reads first, then puts what it found in front o
 Two questions instead of twelve, and both are ones only the person can answer. Everything else
 is confirmed or corrected, which takes seconds and produces better files than a blank form.
 
-This is what `setup-freelancer-os` does in its Step 2, before a single question. When the
+This is what `setup-automatable-os` does in its Step 2, before a single question. When the
 connector never answers, it falls back to asking — and says so, rather than running the
 interview silently as though it were the plan.
 
@@ -76,7 +76,7 @@ writes `context/`, creates the project folders, then archives itself so it never
 
 ### 2. Upwork is connected
 
-`setup-freelancer-os` — verifies the Upwork connector answers, fetches your `org_uid`, and
+`setup-automatable-os` — verifies the Upwork connector answers, fetches your `org_uid`, and
 writes it to `context/config.yaml`. **If the connector is missing, this is where it stops**,
 because nothing downstream works without it and a half-connected setup is worse than an
 honest failure.
@@ -116,7 +116,7 @@ API cannot make.
 
 ### 4. The system knows what you do
 
-Back in `setup-freelancer-os`: the niche interview fills `context/expertise.md` (search
+Back in `setup-automatable-os`: the niche interview fills `context/expertise.md` (search
 tracks, what a strong match looks like, at least one real false-positive trap) and
 `context/experience.md` (track record, notable projects, anything a client said about you).
 

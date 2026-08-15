@@ -72,7 +72,7 @@ def check():
             'Upwork is not set up yet',
             'the screener, the proposals and the pitch pages all read '
             'context/expertise.md and none of them can run without it',
-            'say "set up freelancer os"'))
+            'say "set up automatable os"'))
 
     if not has_remote():
         open_items.append(('No backup repo',
