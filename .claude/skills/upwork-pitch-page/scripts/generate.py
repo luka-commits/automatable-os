@@ -512,6 +512,14 @@ def main():
     ap.add_argument('--lead-magnet-url', default='')
     ap.add_argument('--lead-magnet-teaser', default='')
     ap.add_argument('--lead-magnet-cta', default='Get it here')
+    ap.add_argument('--report-cover', default='',
+                    help='page one of the deliverable, as a JPEG. Defaults to '
+                         'assets/report-cover-example.jpg; with no file, the whole '
+                         'cover block is left out')
+    ap.add_argument('--cover-badge', default='Real example',
+                    help='the label on the cover. Change it if the cover is not one: '
+                         'a mock-up under a "Real example" badge is a lie on a page '
+                         'whose whole argument is that nothing on it is invented')
     ap.add_argument('--lead-magnet-point', action='append', default=[],
                     help='one line of what the reader actually gets. Repeatable; '
                          'with none, the list is left out rather than promising '
@@ -543,7 +551,8 @@ def main():
     else:
         print('ABORT: either --graph, or --source + --step + --sink.', file=sys.stderr)
         sys.exit(1)
-    report_cover_src = img_data_uri(str(REPORT_COVER_FILE), mime='image/jpeg')[0] if REPORT_COVER_FILE.is_file() else ''
+    cover_file = pathlib.Path(args.report_cover) if args.report_cover else REPORT_COVER_FILE
+    report_cover_src = img_data_uri(str(cover_file), mime='image/jpeg')[0] if cover_file.is_file() else ''
     # Not just the <img>: the whole stage. An <img src=""> is a broken image
     # rather than an empty one, and dropping only the image still left the
     # tilted book frame, its two page edges and a "Real example" badge floating
@@ -551,7 +560,7 @@ def main():
     # no cover, the copy takes the full width instead.
     report_cover_stage = (
         '<div class="cover-stage" data-cover>'
-        '<span class="cover-flag">Real example</span>'
+        f'<span class="cover-flag">{args.cover_badge}</span>'
         '<div class="cover-book">'
         '<span class="cover-sheet s2"></span><span class="cover-sheet s1"></span>'
         f'<img class="cover-face" src="{report_cover_src}" '
