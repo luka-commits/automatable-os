@@ -73,6 +73,19 @@ YT_PLAY = (
 # Same mark, once as the play pin on a thumbnail and once as the section's icon.
 YT_MARK = YT_PLAY.replace('<svg ', '<svg class="yt-mark" ', 1)
 
+# Stands in for the portrait until someone passes --photo. Drawn rather than
+# shipped as a file so it follows the theme tokens and costs no bytes, and left
+# deliberately plain: it is a slot that reads as empty, not a stock face
+# pretending to be the freelancer. Anyone who sends the page without replacing
+# it has sent a page with no photo, which is the honest outcome.
+PORTRAIT_PLACEHOLDER = (
+    '<span class="next-photo next-photo-empty" role="img" '
+    'aria-label="No portrait added yet" data-rise>'
+    '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
+    '<circle cx="24" cy="18" r="7.5"/>'
+    '<path d="M9.5 40c1.6-8 7.7-12 14.5-12s12.9 4 14.5 12z"/>'
+    '</svg></span>')
+
 FIT_ICON = (
     '<svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">'
     '<circle cx="12" cy="12" r="12"/>'
@@ -556,13 +569,15 @@ def main():
         print('ABORT: either --graph, or --source + --step + --sink.', file=sys.stderr)
         sys.exit(1)
     photo_file = pathlib.Path(args.photo) if args.photo else None
-    next_photo = ''
     if photo_file and photo_file.is_file():
         next_photo = (f'<img class="next-photo" src="{img_data_uri(str(photo_file))[0]}" '
                       f'alt="Portrait" data-rise>')
-    elif args.photo:
-        print(f'Note: --photo {args.photo} not found, so the closing section has no '
-              'portrait.', file=sys.stderr)
+    else:
+        if args.photo:
+            print(f'Note: --photo {args.photo} not found.', file=sys.stderr)
+        print('Note: no portrait, so the closing section shows a placeholder. Pass '
+              '--photo to replace it before you send this.', file=sys.stderr)
+        next_photo = PORTRAIT_PLACEHOLDER
 
     cover_file = pathlib.Path(args.report_cover) if args.report_cover else REPORT_COVER_FILE
     report_cover_src = img_data_uri(str(cover_file), mime='image/jpeg')[0] if cover_file.is_file() else ''
