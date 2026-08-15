@@ -518,6 +518,39 @@ repeated.
 started yet" get the same answer from a yes/no question and need opposite things: one wants
 the whole layer gone, the other wants more help than an existing user, not less.
 
+## Step 7.6: The community dashboard (only if they were given a token)
+
+Skip this entirely unless the person arrived from a community that runs the shared dashboard.
+Someone using this package on their own has nothing to connect to, and asking would only
+raise a question they cannot answer.
+
+**Ask it as what it is, which is data leaving the machine:**
+
+> _"Your community runs a shared dashboard that shows everyone's progress. It works by
+> sending counters from here: how many jobs you found, applied to, heard back from and won,
+> per day. No job titles, no client names, no text of any kind. Do you want to switch it on?
+> You will have been given a token."_
+
+**Say the trade in the same breath, not afterwards.** This is the only thing in the package
+that sends anything anywhere besides their own backup repo, and
+`WHAT-THIS-SYSTEM-DOES.md` promises exactly that. A person who says yes should know what they
+agreed to; a person who says no should not have to ask what they avoided.
+
+**If yes** → write both values into their credentials file, `FOS_COMMUNITY_TOKEN` and
+`FOS_COMMUNITY_URL`, then run it once so they see it work:
+
+```bash
+python3 reference/scripts/community_sync.py --dry-run   # shows the exact bytes, sends nothing
+python3 reference/scripts/community_sync.py             # sends the first day
+```
+
+Run the dry run **first and show them the output**. It is the difference between being told
+what leaves and seeing it.
+
+**If no, or no token** → nothing to do. Without either variable the script exits saying it is
+off, so there is no state to write and nothing to switch off later. Say one sentence and move
+on: _"Then nothing leaves this machine except your own backup."_
+
 ## Step 8: Archive This Skill + Confirm
 
 1. **Delete `demo/`.** `rm -rf demo/` — this one really is deleted, not archived, and it is the exception to the rule two sections up. Nothing in it is theirs: it is the example pipeline the dashboard fell back to while they had no data of their own, and by now they do. Leaving it means every future render still has a fallback sitting behind their files, which is one more thing that can surprise them later. Say it in half a sentence ("the example data is gone, what you see now is yours") and move on.
