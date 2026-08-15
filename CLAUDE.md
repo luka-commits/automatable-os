@@ -199,6 +199,69 @@ will fill in, add both halves in the same commit, or the next update publishes t
    the API cannot carry out. When a user asks for an automation, check the writing half exists
    before designing around it.
 
+## Keeping the state files true
+
+`STATUS.md` and `PROJECTS.md` are only worth anything if they match reality, and they only
+match reality if **you** write to them as things happen in the chat. Nobody maintains a task
+list on purpose; they maintain it as a side effect or not at all.
+
+### What happens in the chat, and where it lands
+
+| What was said | Where it goes |
+|---|---|
+| A project's situation changed | `PROJECTS.md`, its **Status** line — replaced, not appended |
+| A new to-do, and it survives the filter below | `STATUS.md` under that project: headline plus one indented context line |
+| Something is blocked | `PROJECTS.md` as **Blocker**; if it is a person, also a task with `(waiting on X)` |
+| A decision, or a thing learned the hard way | `JOURNAL.md`, today's entry, one line |
+| A task is done | `STATUS.md` → "Recently Done", newest first, capped at about six |
+| A job reached `hired` | Not a task. Run `upwork-won`; the project it creates brings its own first task |
+
+**Nothing to run afterwards.** Re-render with `python3 reference/scripts/render_dashboard.py`
+and the dashboard follows. It reads the files; it never holds state of its own.
+
+### Not every to-do is a task
+
+The list has to stay readable at a glance, not be complete. Before writing one, in order:
+
+1. **Under fifteen minutes, and you can do it yourself?** Do it. Writing the task down costs
+   more than the task.
+2. **Just so they know, no action?** `JOURNAL.md`, not `STATUS.md`. "Pushed cleanly, no
+   conflict" is not a to-do.
+3. **A step in a chain that will run in one sitting anyway?** It belongs in the one task's
+   context line, not as its own bullet.
+4. **Same kind of work, same context, different object?** One task naming them together.
+
+**Rule of thumb: about three tasks per project.** More than that is a project plan, and a
+project plan belongs in the project folder or in the context line, not in the list. A real
+one grew to 379 lines because tasks quietly turned into deployment logs with commit hashes.
+
+### Lengths, because the list is read every morning
+
+- A `STATUS.md` task: **headline plus at most two lines of context** — what to do, where it
+  is, what blocks it. The evidence and the backstory belong in the project or in the chat.
+- A `PROJECTS.md` status line: **at most three sentences**, and it is a state, not a
+  chronicle. What stood there before is history, so it goes to the journal.
+- A `JOURNAL.md` entry: three to five short bullets a day, one line each.
+
+The test: can they read the task in five seconds and know what to do? If you catch yourself
+thinking "this needs the context that…", that is the line to cut.
+
+### The categories are not decoration
+
+Every task ends in `#deep-work`, `#quick-win`, `#comms`, `#prep` or `#admin`, and a due date
+is written `(due YYYY-MM-DD)`. Together they decide the quadrant the dashboard sorts by:
+
+- **Urgent** = a due date within seven days, or overdue. No date means not urgent.
+- **Important** = `#deep-work`, `#admin` or `#prep`. `#quick-win` and `#comms` are not.
+- Order: Q1 urgent and important → Q2 important → Q3 urgent → Q4 neither.
+
+Leave the tag off and the task silently lands in the least important quadrant. Write a date
+in any other format and the dashboard marks it amber rather than pretending there is no
+deadline — but it still does not count as urgent, so use the ISO form.
+
+**The classification is a heuristic, not a truth.** If a placement looks wrong to the user,
+fix the category in `STATUS.md` rather than arguing for the rule.
+
 ## Building the thing instead of drawing it
 
 The pitch page visualises a plan. For some jobs the stronger move is to actually build it and link
