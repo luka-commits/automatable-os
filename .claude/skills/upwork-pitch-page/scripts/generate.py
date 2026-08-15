@@ -525,6 +525,9 @@ def main():
     ap.add_argument('--lead-magnet-url', default='')
     ap.add_argument('--lead-magnet-teaser', default='')
     ap.add_argument('--lead-magnet-cta', default='Get it here')
+    ap.add_argument('--lead-magnet-title', default='See a real example of what you would get',
+                    help='the heading over the lead magnet. The default is true of any '
+                         'lead magnet; name yours instead when you have one')
     ap.add_argument('--photo', default='',
                     help='your own face, shown as a round portrait above the closing '
                          'ask. Any crop works, it is cropped to a circle. Omit and the '
@@ -720,6 +723,7 @@ def main():
                  .replace('{{ILLUSTRATION_SRC}}', illustration_src))
         .replace('{{REPORT_COVER_STAGE}}', report_cover_stage)
         .replace('{{LEAD_MAGNET_POINTS}}', lead_magnet_points)
+        .replace('{{LEAD_MAGNET_TITLE}}', args.lead_magnet_title)
         .replace('{{LEAD_MAGNET_TEASER}}', args.lead_magnet_teaser)
         .replace('{{LEAD_MAGNET_URL}}', args.lead_magnet_url)
         .replace('{{LEAD_MAGNET_CTA}}', args.lead_magnet_cta)

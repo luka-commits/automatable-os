@@ -28,8 +28,10 @@ capability that leaves your setup alone, patch means a fix.
   cover on disk, the tilted frame and a "Real example" badge stayed behind in an empty column;
   with no videos, a heading sat over an empty grid; with no profile url, the closing button
   became an `href=""` that reloads the page
-- **The lead magnet's three bullets** described one particular report and were promised by
-  every page regardless of what the lead magnet was. `--lead-magnet-point` now
+- **The lead magnet's heading and its three bullets** described one particular report and
+  were promised by every page regardless of what the lead magnet was.
+  `--lead-magnet-title` and `--lead-magnet-point` now; the heading falls back to a line
+  that is true of any lead magnet rather than naming a product you may not have
 - **Scope tiles are 16:9** rather than a fixed 132px strip that kept a middle band and threw
   the rest away
 

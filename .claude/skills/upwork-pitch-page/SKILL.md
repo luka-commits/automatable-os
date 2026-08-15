@@ -292,7 +292,8 @@ python3 .claude/skills/upwork-pitch-page/scripts/generate.py <job_id> \
   --timeline "..." \
   --budget "..." \
   --kickoff "..." --kickoff "..." \
-  --lead-magnet-url "<url or omit>" --lead-magnet-teaser "..." --lead-magnet-cta "..." \
+  --lead-magnet-url "<url or omit>" --lead-magnet-title "..." \
+  --lead-magnet-teaser "..." --lead-magnet-cta "..." \
   --lead-magnet-point "..." --lead-magnet-point "..." \
   --report-cover "<path or omit>" --cover-badge "Real example" \
   --photo "<path to your face, or omit>" \
