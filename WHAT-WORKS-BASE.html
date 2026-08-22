@@ -146,11 +146,15 @@
   details > p{margin-top:12px;font-size:14.5px;max-width:68ch}
   details > p + p{margin-top:9px}
 
-  .live iframe{
-    display:block; width:100%; height:560px; margin-top:12px;
-    border:1px solid var(--border-strong); border-radius:12px; background:var(--card);
+  /* A picture that always renders beats a frame that sometimes does: Chrome treats
+     every local file as its own origin, so an embedded one can come up blank. The
+     link next to it goes to the real, clickable copy. */
+  .shot{margin:18px 0 0;padding:0}
+  .shot img{
+    display:block; width:100%; height:auto;
+    border:1px solid var(--border-strong); border-radius:12px;
   }
-  .live-note{font-size:13.5px;color:var(--text-3);margin-top:12px;max-width:64ch}
+  .shot figcaption{font-size:13.5px;color:var(--text-3);margin-top:11px;max-width:64ch}
 
   .rows{margin-top:6px}
   /* Plugins carry their origin instead of a status: where a thing comes from is
@@ -876,14 +880,13 @@
         has, that last one gets read off the machine on every render, so it can't quietly go stale.</p>
         <p>It never writes anything. Buttons copy a ready sentence for you to paste into the
         chat, so the work happens in Claude with its normal safeguards.</p>
-        <details class="live" id="demo">
-          <summary>Open the example dashboard</summary>
-          <p class="live-note">A frozen copy with made-up data, so it always shows the same
-          thing. Click around: tabs, filters and the copy buttons all work.
-          <a href="examples/dashboard.html" target="_blank">Open it in its own tab</a> if the
-          frame below stays empty, which some browsers do with local files.</p>
-          <iframe src="examples/dashboard.html" title="Example dashboard" loading="lazy"></iframe>
-        </details>
+        <figure class="shot" id="demo">
+          <img src="examples/dashboard.png" alt="The Today tab of the dashboard, showing a
+          briefing paragraph, a waiting-on list and the open to-dos underneath" loading="lazy">
+          <figcaption>Made-up data, so this is what a fresh clone looks like before it is yours.
+          <a href="examples/dashboard.html" target="_blank">Open the real one</a> to click
+          through the tabs and filters.</figcaption>
+        </figure>
       </div>
     </div>
     <div class="get">

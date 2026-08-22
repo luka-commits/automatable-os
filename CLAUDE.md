@@ -183,10 +183,15 @@ projects/
   <slug>/                          one folder per project. Yours, gitignored
 examples/pitch-page.html           a real generated pitch page, so the strongest artifact
                                    this produces is one click away instead of described
-examples/dashboard.html            a frozen render of the demo dashboard, embedded in
-                                   WHAT-WORKS-BASE.html. Machine-specific panes are
-                                   scrubbed; re-freeze it with care, `check_repo.py`
-                                   catches home paths but not every client name
+examples/dashboard.html            a frozen render of the demo dashboard, linked from
+                                   WHAT-WORKS-BASE.html so it can be clicked through.
+                                   Machine-specific panes are scrubbed; re-freeze with
+                                   freeze_example.py, never `cp`
+examples/dashboard.png             a screenshot of the same thing, shown inline on that
+                                   page. An <iframe> was tried first and dropped: Chrome
+                                   treats every local file as its own origin, so an
+                                   embedded one can come up blank on someone's machine
+                                   while rendering fine in a headless test
 demo/                              an example pipeline, so a fresh clone shows something.
                                    The dashboard falls back to it while context/ is empty
                                    and says so in a banner. Setup deletes it
