@@ -178,8 +178,12 @@ def profile_links(profile_url):
 def cv_stats_html():
     """The track-record row under "More about my background".
 
-    Numbers come from `context/config.yaml` under `upwork.profile`, which the
-    screener refreshes from the account on every run. Nothing is invented and
+    Numbers come from the flat keys in `context/config.yaml` (`lifetime_earnings`,
+    `jobs_completed`, `hours_worked`, `job_success`), which the screener refreshes
+    from the account on every run. The reader below is deliberately indentation
+    tolerant, so a nested block would also be found: that is a courtesy, not an
+    invitation to create one. Two copies of the same number is how a stale figure
+    survives an update. Nothing is invented and
     nothing is hardcoded: a freelancer with no earnings yet gets no stats row
     rather than a row of zeros, because an empty block reads as new while a
     zero reads as failed.
@@ -283,16 +287,15 @@ GRAPH_OWNERS = {'you', 'client', 'thirdparty'}
 def build_graph(spec):
     """An arbitrary graph rather than a fixed chain.
 
-    Fuer echte Implementierungsplaene reicht "Ausloeser -> Schritte -> Ziel"
-    nicht: die haben Verzweigungen, parallele Straenge und Phasen. Claude
-    schreibt deshalb die Struktur als JSON, nicht als SVG -- gleiche
-    Ausdrucksstaerke, aber pruefbar, und das Layout kann nicht kaputtgehen,
-    weil es die Engine macht und nicht der Text.
+    Real implementation plans need more than "trigger -> steps -> goal": they
+    have branches, parallel strands and phases. Claude therefore writes the
+    structure as JSON rather than as SVG. Same expressive range, but checkable,
+    and the layout cannot break because the engine produces it, not the text.
 
     Form:
       {"nodes":[{"id":"a","label":"...","kind":"source"}, ...],
        "edges":[{"from":"a","to":"b","label":"if qualified","dashed":true}, ...]}
-    Ohne x/y ordnet die Engine automatisch an.
+    Without x/y the engine lays the graph out on its own.
     """
     p = pathlib.Path(spec)
     text = p.read_text(encoding='utf-8') if p.is_file() else spec
@@ -350,7 +353,7 @@ def build_graph(spec):
 
 def build_diagram(source, steps, sink, services):
     """Node list plus a no-JS fallback. Layout is done entirely by the
-    Template -- hier entsteht nur die Liste, damit es nicht zwei Layout-
+    template; only the list is built here, so there are never two layout
     implementations that can drift apart."""
     if not 1 <= len(steps) <= 4:
         print(f'ABORT: expected 1 to 4 --step, got {len(steps)}', file=sys.stderr)
@@ -388,9 +391,9 @@ def build_diagram(source, steps, sink, services):
 def logos_json(nodes):
     """Embed only the logos this graph actually names.
 
-    Alle 20 mitzuliefern kostet 84 KB auf jeder Seite, von denen zwei benutzt
-    werden. Das <title> aus der Simple-Icons-Datei fliegt raus, sonst zeigt der
-    Browser beim Hovern ueber dem Knoten einen Tooltip mit dem Markennamen.
+    Shipping all 20 costs 84 KB on every page, of which two get used. The
+    <title> from the Simple Icons file is stripped, otherwise the browser shows
+    a tooltip with the brand name when hovering over the node.
     """
     want = {n.get('logo') for n in nodes if n.get('logo')}
     out = {}
@@ -408,7 +411,7 @@ def logos_json(nodes):
 
 def save_to_library(job, data):
     """Store every generated graph, so the next pitch does not start from
-    anfaengt. Ein Index daneben, weil ein Ordner mit 40 JSON-Dateien nicht
+    scratch. An index next to it, because a folder with 40 JSON files is not
     searchable and would therefore never get used."""
     LIBRARY.mkdir(parents=True, exist_ok=True)
     slug = slugify(job.get('title', 'untitled'))

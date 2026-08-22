@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Upwork add-on: the setup, and what runs after it</title>
+<style>
+  /* Tokens from reference/design.md. Same values as the dashboard and the pitch pages. */
+  :root{
+    --accent:#c1663e; --accent-deep:#a24f2e; --accent-soft:#f3e4db;
+    --bg:#f3efe6; --bg-band:#ece5d7; --card:#fbf9f4;
+    --ink:#1c1712; --on-ink:#f3efe6;
+    --text:#262019; --text-2:#5c5347; --text-3:#6f6656;
+    --border:#e2d9c8; --border-strong:#cfc2ab; --border-soft:#eae3d3;
+    --amber:#B54708; --amber-soft:#f7ecd9; --amber-border:#e3caa0;
+    --serif:Georgia,"Iowan Old Style","Times New Roman",ui-serif,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text-2);
+    font:16px/1.6 var(--sans);
+    padding:0 clamp(20px,5vw,40px) clamp(72px,10vw,120px);
+  }
+  .wrap{max-width:1020px;margin:0 auto}
+  h1,h2,h3{color:var(--text);margin:0;text-wrap:balance;font-weight:400}
+  h1,h2{font-family:var(--serif)}
+  h1{font-size:clamp(34px,6vw,62px);line-height:1.03;letter-spacing:-.028em}
+  h2{font-size:clamp(24px,3.4vw,38px);letter-spacing:-.02em;line-height:1.1}
+  h3{font-family:var(--sans);font-size:16px;letter-spacing:-.005em;font-weight:600}
+  p{margin:0;max-width:64ch;text-wrap:pretty}
+  code{
+    font:12.5px/1.5 var(--mono); background:var(--accent-soft); color:var(--accent-deep);
+    padding:.14em .44em; border-radius:6px; white-space:nowrap;
+  }
+  a{color:var(--accent-deep);text-underline-offset:3px}
+
+  header{padding:clamp(60px,10vw,116px) 0 0}
+  /* The measure belongs to the heading, not to the header: putting it on the
+     container squeezed the lede and the meta row into the same narrow column. */
+  header h1{max-width:16ch}
+  header p{max-width:52ch}
+  .lede{font-size:clamp(18px,2.1vw,21px);line-height:1.5;margin-top:22px}
+  .lede strong{color:var(--text);font-weight:600}
+  header .meta{
+    margin-top:26px;font-size:14px;color:var(--text-3);
+    display:flex;gap:22px;flex-wrap:wrap;
+  }
+  header .meta b{color:var(--text);font-weight:600}
+
+  section{padding:clamp(56px,8vw,104px) 0 0}
+  .sec-head{max-width:58ch}
+  .sec-head h2 + p{color:var(--text-3);font-size:15.5px;margin-top:11px}
+
+  /* ---------------------------------------------------------- setup timeline */
+  .phases{margin-top:clamp(30px,4vw,46px)}
+  .phase{
+    display:grid; grid-template-columns:44px minmax(0,1fr) minmax(0,320px);
+    gap:clamp(14px,2.5vw,34px); position:relative;
+    padding:0 0 clamp(30px,4vw,42px);
+  }
+  .phase::before{
+    content:""; position:absolute; left:15px; top:26px; bottom:-4px; width:2px;
+    background:var(--border-strong);
+  }
+  .phase:last-child::before{display:none}
+  .ring{
+    width:32px;height:32px;border-radius:50%;background:var(--card);
+    border:2.5px solid var(--accent); display:grid;place-items:center;
+    font-family:var(--serif); font-size:16px; color:var(--accent-deep);
+    position:relative; z-index:1;
+  }
+  .phase-body h3{font-size:clamp(17px,2vw,21px);font-family:var(--serif);font-weight:400;
+                 letter-spacing:-.012em;line-height:1.25;margin-bottom:8px}
+  .phase-body p{font-size:15px}
+  .phase-body p + p{margin-top:9px;font-size:14.5px;color:var(--text-3)}
+  .skill{
+    display:inline-block; font:11.5px/1 var(--mono); color:var(--accent-deep);
+    background:var(--accent-soft); padding:5px 8px; border-radius:5px;
+    margin-bottom:10px; letter-spacing:.01em;
+  }
+  .leaves{
+    background:var(--card); border:1px solid var(--border); border-radius:11px;
+    padding:15px 17px; align-self:start;
+  }
+  .leaves-h{
+    font-size:11px; letter-spacing:.07em; text-transform:uppercase;
+    color:var(--text-3); margin-bottom:10px;
+  }
+  .leaves ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+  .leaves li{font:12.5px/1.45 var(--mono);color:var(--text-2)}
+  .leaves li span{font-family:var(--sans);font-size:13px;color:var(--text-3)}
+  .leaves.stop{background:var(--amber-soft);border-color:var(--amber-border)}
+  .leaves.stop .leaves-h{color:#5b4a30}
+  .leaves.stop li span{color:#5b4a30}
+  @media(max-width:760px){
+    .phase{grid-template-columns:32px minmax(0,1fr)}
+    .leaves{grid-column:2;margin-top:14px}
+  }
+
+  /* three answers */
+  .answers{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:clamp(14px,2vw,20px);margin-top:16px}
+  .answer{border-top:2px solid var(--accent);padding-top:11px}
+  .answer:nth-child(2){border-top-color:var(--accent-soft)}
+  .answer:nth-child(3){border-top-color:var(--border-strong)}
+  .answer b{display:block;color:var(--text);font-size:14.5px;margin-bottom:4px}
+  .answer p{font-size:13.5px;color:var(--text-3)}
+
+  .note{
+    background:var(--amber-soft); border:1px solid var(--amber-border);
+    border-radius:12px; padding:17px 19px; margin-top:26px; font-size:14.5px; color:#5b4a30;
+  }
+  .note strong{color:#402f18}
+  .note code{background:#efdfc4;color:#5b4a30}
+
+  /* ---------------------------------------------------------- pipeline */
+  .flow{margin-top:clamp(28px,4vw,42px)}
+  .flow svg{display:block;width:100%;height:auto;overflow:visible}
+  .steps{margin-top:clamp(26px,4vw,38px);border-top:1px solid var(--border)}
+  .step{
+    display:grid; grid-template-columns:34px minmax(0,1fr); gap:clamp(14px,2.5vw,26px);
+    padding:clamp(20px,3vw,26px) 0; border-bottom:1px solid var(--border);
+  }
+  .step-n{font-family:var(--serif);font-size:26px;color:var(--accent);line-height:1;padding-top:2px}
+  .step h3{margin-bottom:7px;font-size:16.5px}
+  .step p{font-size:15px}
+  .step p + p{margin-top:9px;color:var(--text-3);font-size:14.5px}
+
+  /* Depth without length: the page stays scannable and the reasoning is one click
+     away. Native <details>, so it works offline, prints open, and needs no script. */
+  details{
+    margin-top:16px; border-top:1px solid var(--border-soft); padding-top:14px;
+  }
+  summary{
+    cursor:pointer; list-style:none; font-size:14px; color:var(--accent-deep);
+    display:flex; align-items:center; gap:8px; width:fit-content;
+  }
+  summary::-webkit-details-marker{display:none}
+  summary::before{
+    content:"+"; font:14px/1 var(--mono); color:var(--accent);
+    border:1px solid var(--accent-soft); background:var(--accent-soft);
+    width:19px; height:19px; border-radius:5px; display:grid; place-items:center;
+  }
+  details[open] summary::before{content:"–"}
+  summary:hover{color:var(--text)}
+  details > p{margin-top:12px;font-size:14.5px;max-width:68ch}
+  details > p + p{margin-top:9px}
+
+  /* ---------------------------------------------------------- views */
+  table{width:100%;border-collapse:collapse;margin-top:clamp(24px,3vw,32px);font-size:14.5px}
+  th,td{text-align:left;padding:13px 16px 13px 0;border-bottom:1px solid var(--border-soft);vertical-align:top}
+  th{color:var(--text-3);font-weight:600;font-size:12px;letter-spacing:.06em;
+     text-transform:uppercase;border-bottom:1px solid var(--border-strong)}
+  td:first-child{color:var(--text);font-weight:600;white-space:nowrap;padding-right:28px}
+
+  /* ---------------------------------------------------------- limits */
+  .never{
+    background:var(--ink); color:var(--on-ink); border-radius:18px;
+    padding:clamp(30px,5vw,50px) clamp(24px,4vw,44px); margin-top:clamp(28px,4vw,40px);
+  }
+  .never h2{color:var(--on-ink)}
+  .never > p{color:#a89e8e;font-size:15.5px;margin-top:11px}
+  .never dl{margin:clamp(24px,3vw,34px) 0 0}
+  .never dt{
+    color:var(--on-ink); font-weight:600; font-size:15.5px;
+    padding-top:16px; border-top:1px solid rgba(243,239,230,.14);
+  }
+  .never dd{margin:5px 0 16px;color:#c9c0b3;font-size:14.5px;max-width:66ch}
+  .never dt:first-of-type{border-top:0;padding-top:0}
+  .tag{
+    font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; font-weight:700;
+    color:var(--accent); margin-left:9px; white-space:nowrap;
+  }
+
+  /* ---------------------------------------------------------- layers */
+  .stack{margin-top:clamp(28px,4vw,40px)}
+  .stack svg{display:block;width:100%;height:auto;overflow:visible}
+
+  footer{
+    margin-top:clamp(64px,9vw,104px); padding-top:28px; border-top:1px solid var(--border);
+    font-size:14px; color:var(--text-3);
+  }
+  footer a{margin-right:20px;white-space:nowrap}
+
+  /* Motion enhances a state that is already visible. Nothing starts at opacity 0
+     or with the line undrawn: in a headless renderer or an inactive tab the
+     animation never fires, and a reveal that owns visibility ships a blank page. */
+  .draw{animation:draw 1.5s var(--ease) .3s}
+  @keyframes draw{
+    from{stroke-dasharray:var(--len);stroke-dashoffset:var(--len)}
+    to{stroke-dasharray:var(--len);stroke-dashoffset:0}
+  }
+  @media(max-width:640px){
+    .flow,.stack{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .flow svg,.stack svg{min-width:540px}
+  }
+  @media (prefers-reduced-motion: reduce){ .draw{animation:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>It reads your account before it asks you anything.</h1>
+  <p class="lede">The add-on that turns Upwork from a place you check into
+  <strong>a pipeline that runs</strong>. Below is what its setup does, and what happens every
+  day once it is on.</p>
+  <div class="meta">
+    <span><b>5 steps</b> inside one phase of the base setup</span>
+    <span><b>3 questions</b>, not twelve</span>
+    <span><b>Nothing sent</b> without your yes</span>
+  </div>
+</header>
+
+<section>
+  <div class="sec-head">
+    <h2>What happens during its setup</h2>
+    <p>It slots into the base setup after the equipment round. The principle: read first, then
+    ask only what reading cannot answer.</p>
+  </div>
+
+  <div class="phases">
+    <div class="phase">
+      <div class="ring">1</div>
+      <div class="phase-body">
+        <span class="skill">setup-automatable-os</span>
+        <h3>The connector is verified first</h3>
+        <p>Before a single question it checks that the Upwork connector answers and fetches your
+        account id. <strong>If the connector is missing, this is where it stops</strong>, because
+        nothing downstream works without it and a half-connected setup is worse than an honest
+        failure.</p>
+        <p>Connect it in the Claude app under Customize → Connectors, then restart the session.
+        A connection made mid-session is invisible to that session, and that one step is behind
+        most of the "it says it isn't connected" reports.</p>
+        <details>
+          <summary>The button is greyed out, or the free slot is used up</summary>
+          <p>Then add the server from the session you're already in, which doesn't touch the
+          free plan's one-connector limit:</p>
+          <p><code>claude mcp add --transport http upwork https://mcp.upwork.com/mcp -s user</code></p>
+          <p>Then <code>/mcp</code>, pick upwork, choose Authenticate. On a Team or Enterprise
+          account an owner has to release the connector once under Organization Settings, and
+          until that happens no route works. Claude can run the command for you.</p>
+        </details>
+      </div>
+      <div class="leaves stop">
+        <div class="leaves-h">Stops here if missing</div>
+        <ul>
+          <li><span>no silent half-setup</span></li>
+          <li><span>it tells you which step is missing</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="ring">2</div>
+      <div class="phase-body">
+        <h3>One question, three answers</h3>
+        <p>Not a yes or no. A plain yes/no loses the third person, who answers no truthfully and
+        then never hears about it again.</p>
+        <div class="answers">
+          <div class="answer">
+            <b>I work on Upwork</b>
+            <p>The account gets read. Everything below follows.</p>
+          </div>
+          <div class="answer">
+            <b>I want to start</b>
+            <p>Nothing to read yet, so the profile becomes the first thing you build.</p>
+          </div>
+          <div class="answer">
+            <b>I do not</b>
+            <p>The layer switches off for good. No tab, no skills, no nagging.</p>
+          </div>
+        </div>
+      </div>
+      <div class="leaves">
+        <div class="leaves-h">Leaves behind</div>
+        <ul>
+          <li>upwork_enabled: true</li>
+          <li><span>or false, and it never asks again</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="ring">3</div>
+      <div class="phase-body">
+        <h3>Your account is read, not surveyed</h3>
+        <p>Your profile, every past contract, the postings behind your wins, and
+        <strong>the full text of every proposal you have already sent</strong>.</p>
+        <p>Those proposals are the most valuable input here and nobody has to type them: your
+        writing, in the right register, on the right platform, already approved by you once.
+        From twenty of them the system reads how you open, how you handle price, how you close.</p>
+      </div>
+      <div class="leaves">
+        <div class="leaves-h">Leaves behind</div>
+        <ul>
+          <li>context/experience.md</li>
+          <li>context/testimonials.json</li>
+          <li><span>your track record, unrounded</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="ring">4</div>
+      <div class="phase-body">
+        <span class="skill">upwork-profile</span>
+        <h3>The profile gets audited, or built</h3>
+        <p>This comes before the first search on purpose. The profile decides whether you appear
+        in results at all and is the first thing a client opens after your cover letter.</p>
+        <p>Honest about its limits: the API can write availability, employment, languages and
+        education, and nothing else. Title, overview, skills, rate, portfolio, video: all of that is
+        handed to you as finished text to paste in.</p>
+      </div>
+      <div class="leaves">
+        <div class="leaves-h">Leaves behind</div>
+        <ul>
+          <li><span>findings, each with what it costs you</span></li>
+          <li><span>finished text to paste</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="ring">5</div>
+      <div class="phase-body">
+        <h3>The niche interview, and only then</h3>
+        <p>What reading could not answer: what a strong match looks like, which search tracks to
+        run, and at least one real false-positive trap.</p>
+        <p>This is the file that stays empty if the interview is rushed, and an empty one
+        produces a screener that scores everything alike.</p>
+      </div>
+      <div class="leaves">
+        <div class="leaves-h">Leaves behind</div>
+        <ul>
+          <li>context/expertise.md</li>
+          <li><span>the file that makes the screener yours</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>The base setup comes first.</strong> This add-on has no day loop, no dashboard and
+    no projects of its own; it fills the ones the base already has. That side is on
+    <a href="WHAT-WORKS-BASE.html">its own page</a>.
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Then the chain runs, in this order</h2>
+    <p>Each step feeds the next, and the last one hands over to the base.</p>
+  </div>
+
+  <div class="flow" aria-hidden="true">
+    <svg viewBox="0 0 760 230" role="img">
+      <path class="draw" style="--len:592" d="M 64 78 H 656"
+            fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+      <g fill="var(--card)" stroke="var(--accent)" stroke-width="3">
+        <circle cx="64" cy="78" r="17"/><circle cx="212" cy="78" r="17"/><circle cx="360" cy="78" r="17"/>
+        <circle cx="508" cy="78" r="17"/><circle cx="656" cy="78" r="17"/>
+      </g>
+      <g fill="var(--accent-deep)" font-family="Georgia,serif" font-size="19" text-anchor="middle">
+        <text x="64" y="85">1</text><text x="212" y="85">2</text><text x="360" y="85">3</text>
+        <text x="508" y="85">4</text><text x="656" y="85">5</text>
+      </g>
+      <g font-size="17" fill="var(--text)" text-anchor="middle" font-family="Georgia,serif">
+        <text x="64" y="40">Scores jobs</text>
+        <text x="212" y="40">Pitch page</text>
+        <text x="360" y="40">Proposal</text>
+        <text x="508" y="40">Replies</text>
+        <text x="656" y="40">Won</text>
+      </g>
+      <path d="M 656 97 V 146" fill="none" stroke="var(--border-strong)" stroke-width="1.5" stroke-dasharray="4 5"/>
+      <rect x="196" y="146" width="460" height="58" rx="11"
+            fill="var(--card)" stroke="var(--border-strong)" stroke-width="1.5"/>
+      <text x="426" y="172" font-size="15" fill="var(--text)" text-anchor="middle"
+            font-family="Georgia,serif">a won job becomes a project</text>
+      <text x="426" y="191" font-size="12.5" fill="var(--text-3)" text-anchor="middle"
+            font-family="-apple-system,sans-serif">in the base layer, with its own first task</text>
+    </svg>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-n">1</div>
+      <div>
+        <h3>Jobs get scored, not just listed</h3>
+        <p><code>upwork-screener</code> searches broadly and scores every result from 0 to 100
+        against your own niche file. Every real candidate is logged with a status, so the same
+        job never surfaces twice. Strong matches can ping you on Slack.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">2</div>
+      <div>
+        <h3>A pitch page built for one job</h3>
+        <p><code>upwork-pitch-page</code> makes a single self-contained page: an interactive
+        diagram of the solution the client can pan around, zoom into and rename nodes in, a slot for a
+        walkthrough video you record yourself, your testimonials and your CV.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">3</div>
+      <div>
+        <h3>The proposal that actually gets submitted</h3>
+        <p><code>upwork-proposal</code> writes the cover letter and the screening answers: proof
+        up front, quantified deliverables, risk reversal, a clear next step.</p>
+        <p>Record yourself solving the problem first and it uses that transcript as its source
+        of real specifics, which reads far less generic than anything written from the posting
+        alone.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">4</div>
+      <div>
+        <h3>Replies, while the thread is warm</h3>
+        <p><code>upwork-inbox</code> and <code>upwork-reply</code> handle client messages,
+        invitations and offers. Drafts, never sends.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">5</div>
+      <div>
+        <h3>And then it stops being acquisition</h3>
+        <p><code>upwork-won</code> turns the job into a project in the base layer, with its own
+        folder, its own first task and the material moved in.</p>
+        <p>Referrals and direct clients take that same route in, which is the point: the
+        pipeline only counts as finished when the work is being delivered.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>One extra tab, three views</h2>
+    <p>It appears in the base layer's dashboard and disappears with the add-on.</p>
+  </div>
+
+  <table>
+    <tbody>
+      <tr><td>List</td><td>Every candidate the screener logged, sortable, with its score and status.</td></tr>
+      <tr><td>Pipeline</td><td>A board with one column each for outreach, in contact and offer sent. Cards move as the status changes.</td></tr>
+      <tr><td>Stats</td><td>The funnel, from found to applied to in contact to offer to won. This is the number that tells you whether the thing is working.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>The dashboard never writes anything, here either.</strong> Buttons copy a ready
+    sentence to your clipboard for you to paste into the chat. It stays a pure view.
+  </div>
+</section>
+
+<section>
+  <div class="never">
+    <h2>What it will not and cannot do</h2>
+    <p>The second half is not a design choice. It is Upwork's rules and Upwork's API.</p>
+    <dl>
+      <dt>Never submits a proposal by itself<span class="tag">choice</span></dt>
+      <dd>Everything is a draft you read and send.</dd>
+
+      <dt>Never runs on a timer<span class="tag">their rules</span></dt>
+      <dd>Upwork treats background polling as scraping and unattended automation as grounds for closing an account. The screener runs when you ask for it and once inside your morning, and that's deliberate.</dd>
+
+      <dt>Cannot change your profile<span class="tag">their API</span></dt>
+      <dd>The API refuses to write your title, overview, skills, rate, portfolio or intro video. The add-on reads all of it and hands you finished text; you paste it in on the site.</dd>
+
+      <dt>Cannot export a message thread<span class="tag">their API</span></dt>
+      <dd>Reading gives a lot here, writing gives almost nothing. Where that limit bites, the docs say so in place.</dd>
+
+      <dt>Sends nothing outward<span class="tag">choice</span></dt>
+      <dd>The one optional exception is a community dashboard you switch on yourself with a token, and it carries counters only: how many jobs found, applied, replied, won. No titles, no client names, no text of any kind. A dry run prints the exact bytes and sends nothing, so you can check before you believe it.</dd>
+    </dl>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Where this sits</h2>
+    <p>One add-on among others, on a base that works without any of them.</p>
+  </div>
+
+  <div class="stack" aria-hidden="true">
+    <svg viewBox="0 0 760 244" role="img">
+      <g>
+        <rect x="60" y="24" width="290" height="68" rx="11"
+              fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="3"/>
+        <text x="86" y="57" font-family="Georgia,serif" font-size="20" fill="var(--text)">Upwork</text>
+        <text x="86" y="78" font-size="13" fill="var(--accent-deep)" font-family="-apple-system,sans-serif">you are here</text>
+      </g>
+      <g>
+        <rect x="380" y="24" width="290" height="68" rx="11"
+              fill="none" stroke="var(--border-strong)" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <text x="406" y="57" font-family="Georgia,serif" font-size="20" fill="var(--text-3)">Cold mailing</text>
+        <text x="406" y="78" font-size="13" fill="var(--text-3)" font-family="-apple-system,sans-serif">planned, not built yet</text>
+      </g>
+      <g stroke="var(--border-strong)" stroke-width="1.5" stroke-dasharray="3 4">
+        <path d="M 205 92 V 128"/><path d="M 525 92 V 128"/>
+      </g>
+      <rect x="60" y="128" width="610" height="96" rx="13"
+            fill="var(--card)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="86" y="169" font-family="Georgia,serif" font-size="25" fill="var(--text)">The base layer</text>
+      <text x="86" y="195" font-size="14" fill="var(--text-2)" font-family="-apple-system,sans-serif">
+        the day loop, your projects, the dashboard, mail drafts
+      </text>
+      <text x="646" y="169" font-size="13" fill="var(--text-3)" text-anchor="end"
+            font-family="-apple-system,sans-serif">always</text>
+    </svg>
+  </div>
+
+  <div class="note">
+    <strong>You never download two things and hope they fit.</strong> You set up the base, and
+    it asks during setup whether you work through a channel an add-on covers. Say yes and it is
+    switched on; say no and nothing about it appears anywhere.
+  </div>
+</section>
+
+<footer>
+  <a href="SETUP.md">Getting in</a>
+  <a href="WHAT-WORKS-BASE.html">The base layer</a>
+  <a href="SYSTEM.html">The whole system</a>
+  <a href="WHAT-THIS-SYSTEM-DOES.md">What happens to your data</a>
+</footer>
+
+</div>
+</body>
+</html>

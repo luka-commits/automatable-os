@@ -349,6 +349,32 @@ def check_placeholders():
     return findings
 
 
+def check_frozen_example():
+    """The example dashboard is a snapshot, and snapshots go stale in silence.
+
+    examples/dashboard.html is a frozen render, embedded in WHAT-WORKS-BASE.html so a
+    reader can click through the real thing. Nothing regenerates it, so once the
+    template or the renderer moves on, the example quietly shows an older product than
+    the one being shipped. Re-freeze it with:
+
+        python3 reference/scripts/render_dashboard.py && cp context/today.html examples/dashboard.html
+
+    then scrub the machine-specific panes again: a plain copy carries the tooling
+    inventory of whoever made it, client MCP names included.
+    """
+    findings = []
+    frozen = W / 'examples/dashboard.html'
+    if not frozen.is_file():
+        return findings
+    stamp = frozen.stat().st_mtime
+    for rel in ('context/today_template.html', 'reference/scripts/render_dashboard.py'):
+        src = W / rel
+        if src.is_file() and src.stat().st_mtime > stamp:
+            findings.append(f'examples/dashboard.html is older than {rel}, so the frozen example '
+                            f'may no longer match what the renderer produces')
+    return findings
+
+
 CHECKS = [
     ('personal data', check_leaks),
     ('output language', check_language),
@@ -359,6 +385,7 @@ CHECKS = [
     ('template placeholders', check_placeholders),
     ('css variables', check_css_vars),
     ('skill assets', check_assets),
+    ('frozen example', check_frozen_example),
 ]
 
 

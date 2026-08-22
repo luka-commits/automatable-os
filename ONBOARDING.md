@@ -7,9 +7,18 @@ with every missing piece marked as a gap so the shape could be judged before it 
 Where something still cannot be done, it says so in place — the Upwork message thread that
 cannot be exported, the profile fields the API refuses to write. Those are limits, not gaps.
 
-The system has one job: **turn Upwork from a place you check into a pipeline that runs.**
-Everything below serves that, and the pipeline only counts as finished when a won job has
-become a project you are actually delivering.
+**Two layers, and this file covers both.** The base runs your day: the briefing, your
+projects, the dashboard, mail drafts. The Upwork add-on sits on top of it and turns Upwork from
+a place you check into a pipeline that runs, but you can switch it off during setup and lose
+nothing else. Phase 4 below is the add-on; the rest is the base.
+
+Either way the pipeline only counts as finished when a won job has become a project you are
+actually delivering.
+
+**Getting in the door is [`SETUP.md`](SETUP.md)**, which covers the terminal, VS Code and the
+desktop app. If you would rather see it than read it, each layer has its own page:
+[`WHAT-WORKS-BASE.html`](WHAT-WORKS-BASE.html) and
+[`WHAT-WORKS-UPWORK.html`](WHAT-WORKS-UPWORK.html).
 
 ---
 
@@ -80,6 +89,17 @@ writes `context/`, creates the project folders, then archives itself so it never
 writes it to `context/config.yaml`. **If the connector is missing, this is where it stops**,
 because nothing downstream works without it and a half-connected setup is worse than an
 honest failure.
+
+**This is where most first runs stall, so the short version up front.** Connect Upwork in the
+Claude app — <https://claude.ai/directory/connectors/upwork>, or Customize → Connectors → Add
+→ Browse connectors → Upwork → Connect. That connection belongs to your account rather than to
+one program, so it is there in the app and in Claude Code, terminal and VS Code alike. **Then
+restart the session**, because a connection made mid-session is invisible to that session, and
+that one step is behind most of the "it says it isn't connected" reports.
+
+The second route (`claude mcp add`), the two cases where the connector button is blocked, and
+the VS Code trap that looks exactly like success are in
+[`reference/mcp.md`](reference/mcp.md) § Upwork.
 
 **The two do not race, and the handover between them is what makes it a chain.** While step 1
 is still pending, `check-setup.sh` has the floor and the second hook stays silent — two voices

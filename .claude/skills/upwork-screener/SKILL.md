@@ -230,14 +230,19 @@ to every other filter: miss it and a good proposal is discarded unread.
 **Two things feed straight back into the scoring:**
 
 1. **A missed minimum bar is an exclusion, not a deduction.** If the job demands a Job Success
-   Score above yours or more lifetime earnings than you have — both in `config.yaml` under
-   `upwork.profile` — applying is burnt connects. Set the status to `archived` with
+   Score above yours or more lifetime earnings than you have, both read from the flat
+   `job_success` and `lifetime_earnings` keys in `config.yaml`, applying is burnt connects. Set the status to `archived` with
    `--note "below the client's minimum bar"`.
 2. **`total_hired ≥ 1` means taken.** Same rule as Step 6, just applied earlier.
 
 At the end of the run, refresh your own figures so the comparison does not go stale:
-`get_profile action=get` returns `profileAggregates.totalEarnings` and the rest, which belong in
-`context/config.yaml` under `upwork.profile`.
+`get_profile action=get` returns `profileAggregates.totalEarnings` and the rest.
+
+**Write them into the flat keys `context/config.yaml` already has** (`job_success`,
+`lifetime_earnings`, `hours_worked`, `hourly_rate`, `jobs_completed`, `reviews`), replacing the
+values in place. Do not create an `upwork.profile:` block for them: the setup and
+`config.yaml.example` put these at the top level, and a nested copy alongside them is the same
+number in two places, which is how a dashboard ends up showing a figure nobody updated.
 
 ## Step 4: Notify — signal only, never noise
 

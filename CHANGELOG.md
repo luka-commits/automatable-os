@@ -9,7 +9,33 @@ capability that leaves your setup alone, patch means a fix.
 
 ## [Unreleased]
 
+### Action needed
+- **`language:` in `context/config.yaml` no longer does anything, and can be deleted.** The
+  system is English throughout now. If you had it set to `de`, your dashboard, your buttons and
+  the sentences they copy into the chat all switch to English on the next render. Nothing else
+  in your setup is touched. The reason: a second language doubles every string and only one
+  half was ever read, so the other half quietly went stale
+
+### Changed
+- **Upwork is now an add-on rather than part of the base.** All 1000 lines of it moved out of
+  `render_dashboard.py` into `reference/addons/upwork.py`, and the renderer no longer knows the
+  word. Delete that one file and the base renders exactly as before, with no Upwork tab, no
+  empty pane and no trace in the interface. Nothing changes for you if you use Upwork; what
+  changes is that the next add-on docks in without touching the base
+- **The session hooks find Python on Windows.** They used to call `python3` directly, which a
+  plain Windows install does not have, so every session start failed a hook with a message
+  nobody could act on. They now go through `.claude/hooks/run-python.sh`, which takes
+  `python3`, `python` or `py -3`, whichever exists
+- **The audit says "unchecked" instead of finding nothing.** On Windows it cannot read
+  `launchctl` or `crontab`, and an empty result there read as an all-clear
+
 ### Added
+- **`SETUP.md`**: getting in from a terminal, from VS Code and from the desktop app, plus the
+  mistake that costs most people twenty minutes — starting Claude in the wrong folder, which
+  produces no error at all, just a Claude that knows nothing about this system
+- **`WHAT-WORKS-BASE.html` and `WHAT-WORKS-UPWORK.html`**: what each layer actually does once
+  it is set up, and how the two relate. Both end in the same block, so the question "do I need
+  both of these?" is answered wherever you land
 - **A portrait above the closing ask on the pitch page** (`--photo`). The page argues for
   itself for two screens; the last thing before "message me" is now the person they would be
   messaging. Without the flag the slot shows a plain placeholder and the run says so, so
@@ -45,6 +71,19 @@ capability that leaves your setup alone, patch means a fix.
   clone and looked broken rather than unfilled
 
 ### Fixed
+- **Connecting Upwork was described nowhere and stalled the first run.** The setup skill sent
+  people to "Settings → Connectors, or whatever the current path is in your client", and the
+  server address appeared in no file in the repo. `reference/mcp.md` now carries both real
+  routes: the connector in the Claude app (<https://claude.ai/directory/connectors/upwork>),
+  which is the recommended one because it belongs to your account and therefore works in the
+  app and in Claude Code, terminal and VS Code alike — and `claude mcp add` for when that route
+  is blocked, which happens on a Team or Enterprise account until an owner releases connectors,
+  and on the free plan once its single custom-connector slot is taken. Named with it are the
+  three things that eat the most time: the session restart (a connection made mid-session is
+  invisible to that session, and this is behind most "it says it isn't connected" reports),
+  VS Code's own MCP settings, which are a different place that Claude Code never reads, and how
+  to check the connection actually answers rather than assuming it does. Both tool prefixes are
+  in the permission allowlist now, so the calls stop asking every time
 - **Money was formatted German in the English dashboard**: `$24.150` and `$55,00` where an
   English reader expects `$24,150` and `$55.00`. The two conventions swap the same two
   characters, so this does not read as a typo, it reads as a different number — `$24.150` is

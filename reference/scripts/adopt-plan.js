@@ -390,7 +390,7 @@ const plan = entries.map((e) => {
         : 'Documents or scripts name this path. Update them after the move.';
     }
     if (!r.outsideChecked) {
-      out.ungeprueft = 'Scheduled jobs outside this folder could not be checked (no ~/Library/LaunchAgents; on Windows this lives in Task Scheduler). Have a look yourself before moving anything.';
+      out.unchecked = 'Scheduled jobs outside this folder could not be checked (no ~/Library/LaunchAgents; on Windows this lives in Task Scheduler). Have a look yourself before moving anything.';
     }
   }
   return out;
@@ -437,7 +437,7 @@ if (args.includes('--json')) {
       if (p.warnung) L(`     ⚠ ${p.warnung}`);
       if (p.verweise && p.verweise.outside.length) L(`       ausserhalb: ${p.verweise.outside.join(', ')}`);
       if (p.verweise && p.verweise.inside.length) L(`       nennen den Pfad: ${p.verweise.inside.slice(0, 4).join(', ')}`);
-      if (p.ungeprueft) L(`     ? ${p.ungeprueft}`);
+      if (p.unchecked) L(`     ? ${p.unchecked}`);
     }
     L('');
   }

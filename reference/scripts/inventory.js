@@ -15,14 +15,8 @@ const { execSync } = require('child_process');
 const root = process.cwd();
 const esc = require('./lib-workspace.js').esc;
 
-// Working language of the workspace, from config.yaml -> language. Default English.
-const lang = (() => {
-  try {
-    const m = fs.readFileSync(path.join(root, 'context', 'config.yaml'), 'utf8')
-      .match(/^language:\s*["']?(\w+)/m);
-    return m && m[1].toLowerCase().startsWith('de') ? 'de' : 'en';
-  } catch { return 'en'; }
-})();
+// The system is English throughout; there is no language to detect.
+const lang = 'en';
 
 const T = {
   en: {
@@ -85,67 +79,6 @@ const T = {
     hPlugins: 'No plugin entered yet. The package needs none; which ones are worth it is in <code>reference/plugins.md</code>',
     hRoutines: 'No routine entered yet. Routines let Claude work on a schedule, for example the briefing at 7 in the morning; see <code>SETUP.md</code>',
     hKeys: 'No access key entered yet. Some tools need a key of their own, for example firecrawl for reading web pages; how that works is in <code>reference/tools.md</code>',
-  },
-  de: {
-    skills: 'Skills', connections: 'MCP', tools: 'CLI', repos: 'Repos',
-    plugins: 'Plugins', routines: 'Routinen', keys: 'API-Keys',
-    notConnected: 'nicht verbunden', notInstalled: 'nicht installiert', noKey: 'kein Key hinterlegt',
-    switchedOff: 'abgeschaltet',
-    skillsFor: (n) => `${n} Skill${n === 1 ? '' : 's'} dafür`, noSkill: 'keine Anleitung',
-    mcp: 'MCP-Server, auf dieser Maschine registriert',
-    pluginFrom: (m, sc) => `Plugin aus ${m}, installiert fuer ${sc === 'project' ? 'ein Projekt' : 'dich'}`,
-    projectRepo: 'Repo eines Projekts in diesem Workspace',
-    scopeWorkspace: 'in diesem Ordner', scopeGlobal: 'ueberall', scopePlugin: 'Plugin',
-    useIt: 'Benutzen', removeIt: 'Entfernen', copied: 'kopiert',
-    sayUse: (n) => `Nutze den Skill ${n}`, sayRemove: (n) => `Entferne den Skill ${n}`,
-    filter: 'Skill suchen',
-    nSkills: (n) => `${n} Skills`,
-    fromSources: (n) => `aus ${n} Quellen`, ofTotal: (n) => `von ${n}`,
-    inWorkspace: 'in diesem Workspace', scheduled: 'nach Zeitplan',
-    xrefKey: 'Key hinterlegt', xrefCli: 'CLI installiert', xrefSkills: (n) => `bringt ${n} Skills mit`,
-    subMcp: 'von {n} verbunden', subCli: 'für diesen Workspace', subKeys: 'von {n} hinterlegt',
-    baseLab: 'Systembasis, ohne Einrichtung da',
-    mcpVia: (x) => `läuft über ${x}`, mcpPlugin: (x) => `kommt mit dem Plugin ${x}`,
-    coveredVia: (c) => `über ${c} CLI abgedeckt`, installedLab: 'installiert', subNone: 'noch keine eingerichtet',
-    optional: 'optional',
-    setupLab: 'Startup-Setup', setupSub: (d, t, o) => `${d} von ${t} Pflichtschritten` + (o ? `, ${o} optionale offen` : ''),
-    stConfig: { t: 'Personalisiert', done: 'Name, Domain und Sprache stehen', open: 'in config.yaml stehen noch Platzhalter' },
-    stMail: { t: 'Postfach', done: 'erreichbar, das Briefing kann sortieren', open: 'noch kein Weg zu deiner Mail' },
-    stCal: { t: 'Kalender', done: 'erreichbar, Termine tauchen auf', open: 'noch kein Weg zu deinem Kalender' },
-    stFirecrawl: { t: 'firecrawl', done: 'CLI und Key sind da', open: 'CLI oder Key fehlt, Web-Recherche bleibt aus' },
-    stPlaywright: { t: 'playwright', done: 'installiert, echter Browser verfügbar', open: 'nicht installiert, keine Browser-Steuerung' },
-    stBackup: { t: 'Backup-Repo', done: 'Remote gesetzt, der Abend sichert deinen Stand', open: 'kein Remote, nichts wird gesichert' },
-    stMailStyle: { t: 'Mail-Stil', done: 'abgeleitet, Entwürfe klingen nach dir', open: 'noch nicht abgeleitet, Entwürfe nutzen die Vorlagen' },
-    stDashboard: { t: 'Dashboard-Laufzeit', done: 'node ist da, diese Seite rendert', open: 'node fehlt, es läuft nur das Briefing im Chat' },
-    stStore: { t: 'Ablage', done: 'erreichbar', open: 'Dokumente müssen von Hand rüberkopiert werden' },
-    stChat: { t: 'Team-Chat', done: 'erreichbar', open: 'Abmachungen aus dem Chat bleiben unsichtbar' },
-    stCrm: { t: 'CRM', done: 'erreichbar', open: 'Kundenstand bleibt draußen' },
-    stDev: { t: 'Entwicklung', done: 'erreichbar', open: 'kein Weg zu Repos oder Deployments' },
-    stPlugins: { t: 'Plugins', done: 'der kuratierte Satz ist installiert', open: 'fehlt: {n}' },
-    stRoutine: { t: 'Routine', done: 'läuft nach Zeitplan', open: 'noch läuft nichts von allein' },
-    openConn: 'Verbunden, aber nicht angemeldet:', openCli: 'Werkzeug nicht installiert:',
-    openKey: 'Kein Zugang hinterlegt:', openNothing: 'Hier ist noch nichts eingerichtet:',
-    grpWorkspace: 'Deine eigenen Skills', grpGlobal: 'Skills für jeden Ordner',
-    grpWorkspaceSub: 'Für diesen Workspace gebaut, liegen in .claude/skills',
-    grpGlobalSub: 'Überall verfügbar, liegen in deinem Benutzerordner',
-    grpPluginSub: 'Kommt mit einem installierten Plugin',
-    auditHead: 'Da, aber nicht in CLAUDE.md verdrahtet',
-    audit: {
-      dead: 'CLAUDE.md verweist auf etwas, das hier nicht installiert ist:',
-      cli: 'Installiert, aber in CLAUDE.md nirgends erwähnt, bleibt also ungenutzt:',
-      key: 'Zugang hinterlegt, aber in CLAUDE.md nicht verdrahtet:',
-    },
-    active: (n, all) => `${n} von ${all} aktiv`, count: (n) => `${n}`,
-    workspace: 'Dieser Workspace, hierhin geht dein Abend-Backup',
-    backedUp: (x) => `gesichert ${x}`, mayNotRun: 'läuft womöglich nicht mehr',
-    ranToday: 'heute gelaufen', ranYesterday: 'zuletzt gestern', ranDays: (d) => `zuletzt vor ${d} Tagen`,
-    hSkills: 'Noch kein Skill gefunden. Skills liegen in <code>.claude/skills/</code>; neue baust du mit <code>skill-creator</code>',
-    hConn: 'Noch keine Verbindung eingetragen. Mail, Kalender und Ablage verbindest du einmalig in Claude Cowork unter Einstellungen &rarr; Connectors',
-    hTools: 'Noch kein Werkzeug eingetragen. firecrawl liest Webseiten, playwright steuert einen echten Browser',
-    hRepos: 'Noch kein Repo eingetragen. Name und Adresse kommen in <code>context/config.yaml</code> unter <code>inventory.repos</code>',
-    hPlugins: 'Noch kein Plugin eingetragen.',
-    hRoutines: 'Noch keine Routine eingetragen. Routinen lassen Claude nach Zeitplan arbeiten, zum Beispiel das Briefing um 7 Uhr',
-    hKeys: 'Noch kein Zugang eingetragen. Manche Werkzeuge brauchen einen eigenen Key, zum Beispiel firecrawl zum Lesen von Webseiten',
   },
 }[lang];
 

@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The base layer: the setup, and what runs after it</title>
+<style>
+  /* Tokens from reference/design.md. Same values as the dashboard and the pitch pages. */
+  :root{
+    --accent:#c1663e; --accent-deep:#a24f2e; --accent-soft:#f3e4db;
+    --bg:#f3efe6; --bg-band:#ece5d7; --card:#fbf9f4;
+    --ink:#1c1712; --on-ink:#f3efe6;
+    --text:#262019; --text-2:#5c5347; --text-3:#6f6656;
+    --border:#e2d9c8; --border-strong:#cfc2ab; --border-soft:#eae3d3;
+    --amber:#B54708; --amber-soft:#f7ecd9; --amber-border:#e3caa0;
+    --serif:Georgia,"Iowan Old Style","Times New Roman",ui-serif,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text-2);
+    font:16px/1.6 var(--sans);
+    padding:0 clamp(20px,5vw,40px) clamp(72px,10vw,120px);
+  }
+  .wrap{max-width:1020px;margin:0 auto}
+  h1,h2,h3{color:var(--text);margin:0;text-wrap:balance;font-weight:400}
+  h1,h2{font-family:var(--serif)}
+  h1{font-size:clamp(34px,6vw,62px);line-height:1.03;letter-spacing:-.028em}
+  h2{font-size:clamp(24px,3.4vw,38px);letter-spacing:-.02em;line-height:1.1}
+  h3{font-family:var(--sans);font-size:16px;letter-spacing:-.005em;font-weight:600}
+  p{margin:0;max-width:64ch;text-wrap:pretty}
+  code{
+    font:12.5px/1.5 var(--mono); background:var(--accent-soft); color:var(--accent-deep);
+    padding:.14em .44em; border-radius:6px; white-space:nowrap;
+  }
+  a{color:var(--accent-deep);text-underline-offset:3px}
+
+  header{padding:clamp(60px,10vw,116px) 0 0}
+  /* The measure belongs to the heading, not to the header: putting it on the
+     container squeezed the lede and the meta row into the same narrow column. */
+  header h1{max-width:16ch}
+  header p{max-width:52ch}
+  .lede{font-size:clamp(18px,2.1vw,21px);line-height:1.5;margin-top:22px}
+  .lede strong{color:var(--text);font-weight:600}
+  header .meta{
+    margin-top:26px;font-size:14px;color:var(--text-3);
+    display:flex;gap:22px;flex-wrap:wrap;
+  }
+  header .meta b{color:var(--text);font-weight:600}
+
+  section{padding:clamp(56px,8vw,104px) 0 0}
+  .sec-head{max-width:58ch}
+  .sec-head h2 + p{color:var(--text-3);font-size:15.5px;margin-top:11px}
+
+  /* ---------------------------------------------------------- the setup timeline */
+  .phases{margin-top:clamp(30px,4vw,46px)}
+  .phase{
+    display:grid; grid-template-columns:44px minmax(0,1fr) minmax(0,320px);
+    gap:clamp(14px,2.5vw,34px); position:relative;
+    padding:0 0 clamp(30px,4vw,42px);
+  }
+  /* the spine: one line through every phase, stopping at the last dot */
+  .phase::before{
+    content:""; position:absolute; left:15px; top:26px; bottom:-4px; width:2px;
+    background:var(--border-strong);
+  }
+  .phase:last-child::before{display:none}
+  .ring{
+    width:32px;height:32px;border-radius:50%;background:var(--card);
+    border:2.5px solid var(--accent); display:grid;place-items:center;
+    font-family:var(--serif); font-size:16px; color:var(--accent-deep);
+    position:relative; z-index:1;
+  }
+  .phase-body h3{font-size:clamp(17px,2vw,21px);font-family:var(--serif);font-weight:400;
+                 letter-spacing:-.012em;line-height:1.25;margin-bottom:8px}
+  .phase-body p{font-size:15px}
+  .phase-body p + p{margin-top:9px;font-size:14.5px;color:var(--text-3)}
+  .skill{
+    display:inline-block; font:11.5px/1 var(--mono); color:var(--accent-deep);
+    background:var(--accent-soft); padding:5px 8px; border-radius:5px;
+    margin-bottom:10px; letter-spacing:.01em;
+  }
+  .leaves{
+    background:var(--card); border:1px solid var(--border); border-radius:11px;
+    padding:15px 17px; align-self:start;
+  }
+  .leaves-h{
+    font-size:11px; letter-spacing:.07em; text-transform:uppercase;
+    color:var(--text-3); margin-bottom:10px;
+  }
+  .leaves ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+  .leaves li{font:12.5px/1.45 var(--mono);color:var(--text-2)}
+  .leaves li span{font-family:var(--sans);font-size:13px;color:var(--text-3)}
+  @media(max-width:760px){
+    .phase{grid-template-columns:32px minmax(0,1fr)}
+    .leaves{grid-column:2;margin-top:14px}
+    .phase::before{left:15px}
+  }
+
+  /* ---------------------------------------------------------- system picture */
+  .system{margin-top:clamp(28px,4vw,42px)}
+  .repo-pic{margin-top:22px}
+  .system svg{display:block;width:100%;height:auto;overflow:visible}
+
+  /* ---------------------------------------------------------- what lands here */
+  .kind{margin-top:clamp(30px,4vw,44px)}
+  .kind-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+             border-bottom:1px solid var(--border-strong);padding-bottom:11px}
+  .kind-head h3{font-family:var(--serif);font-size:clamp(20px,2.3vw,25px);font-weight:400;
+                letter-spacing:-.015em}
+  .count{font-size:13px;color:var(--text-3)}
+  .kind-sub{font-size:14.5px;color:var(--text-3);margin-top:13px;max-width:70ch}
+
+  /* skills as chips: the quantity and the grouping are the point, not the reading */
+  .chips{margin-top:20px;display:grid;gap:16px}
+  .chip-group{display:flex;flex-wrap:wrap;gap:7px;align-items:baseline}
+  .grp{
+    flex:0 0 128px; font-size:12.5px; color:var(--text-3);
+  }
+  .chip-group b{
+    font:12px/1 var(--mono); font-weight:400; color:var(--accent-deep);
+    background:var(--accent-soft); padding:6px 9px; border-radius:6px;
+  }
+  @media(max-width:620px){ .grp{flex:0 0 100%;margin-bottom:2px} }
+
+  /* Depth without length: the page stays scannable and the reasoning is one click
+     away. Native <details>, so it works offline, prints open, and needs no script. */
+  details{
+    margin-top:16px; border-top:1px solid var(--border-soft); padding-top:14px;
+  }
+  summary{
+    cursor:pointer; list-style:none; font-size:14px; color:var(--accent-deep);
+    display:flex; align-items:center; gap:8px; width:fit-content;
+  }
+  summary::-webkit-details-marker{display:none}
+  summary::before{
+    content:"+"; font:14px/1 var(--mono); color:var(--accent);
+    border:1px solid var(--accent-soft); background:var(--accent-soft);
+    width:19px; height:19px; border-radius:5px; display:grid; place-items:center;
+  }
+  details[open] summary::before{content:"–"}
+  summary:hover{color:var(--text)}
+  details > p{margin-top:12px;font-size:14.5px;max-width:68ch}
+  details > p + p{margin-top:9px}
+
+  .live iframe{
+    display:block; width:100%; height:560px; margin-top:12px;
+    border:1px solid var(--border-strong); border-radius:12px; background:var(--card);
+  }
+  .live-note{font-size:13.5px;color:var(--text-3);margin-top:12px;max-width:64ch}
+
+  .rows{margin-top:6px}
+  /* Plugins carry their origin instead of a status: where a thing comes from is
+     the fact that matters when it runs on your whole machine. */
+  .plugin-rows .row{grid-template-columns:196px 246px minmax(0,1fr)}
+  .src{
+    font:11.5px/1.4 var(--mono); color:var(--text-3);
+    word-break:break-all;
+  }
+  .sub-head{margin-top:clamp(26px,3vw,34px)}
+  @media(max-width:680px){ .plugin-rows .row{grid-template-columns:1fr} }
+  .row{
+    display:grid; grid-template-columns:150px 162px minmax(0,1fr);
+    gap:clamp(12px,2vw,24px); padding:14px 0; border-bottom:1px solid var(--border-soft);
+    align-items:baseline;
+  }
+  .row b{color:var(--text);font-weight:600;font-size:15px}
+  .row p{font-size:14.5px}
+  .row em{color:var(--text-3);font-style:normal;display:block;margin-top:4px;font-size:13.5px}
+  .pill{
+    font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; font-weight:700;
+    padding:4px 8px; border-radius:5px; white-space:nowrap; display:inline-block;
+  }
+  .pill.carry{background:var(--accent-soft);color:var(--accent-deep);font-weight:600}
+  .pill.ask{background:var(--accent-soft);color:var(--accent-deep)}
+  .pill.opt{background:transparent;color:var(--text-3);border:1px solid var(--border-strong)}
+  @media(max-width:680px){
+    .row{grid-template-columns:1fr auto;gap:5px 12px}
+    .row > p{grid-column:1/-1}
+  }
+
+  .note{
+    background:var(--amber-soft); border:1px solid var(--amber-border);
+    border-radius:12px; padding:17px 19px; margin-top:26px; font-size:14.5px; color:#5b4a30;
+  }
+  .note strong{color:#402f18}
+  .note code{background:#efdfc4;color:#5b4a30}
+
+  /* ---------------------------------------------------------- the day loop */
+  .loop{margin-top:clamp(28px,4vw,44px)}
+  .loop svg{display:block;width:100%;height:auto;overflow:visible}
+  .loop-legend{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:clamp(20px,3vw,36px); margin-top:28px;
+  }
+  .loop-legend h3{margin-bottom:5px}
+  .loop-legend p{font-size:14.5px;max-width:36ch}
+  .cmd{
+    font:12.5px/1 var(--mono); color:var(--accent-deep);
+    display:block; margin-bottom:8px; letter-spacing:.01em;
+  }
+
+  /* ---------------------------------------------------------- what you get */
+  .gets{margin-top:clamp(24px,3vw,36px);border-top:1px solid var(--border)}
+  .get{
+    display:grid; grid-template-columns:minmax(0,6fr) minmax(0,9fr);
+    gap:clamp(16px,4vw,46px); padding:clamp(22px,3vw,30px) 0;
+    border-bottom:1px solid var(--border);
+  }
+  .get > h3{font-family:var(--serif);font-size:clamp(19px,2.1vw,24px);font-weight:400;
+            letter-spacing:-.012em;line-height:1.25}
+  .get p{font-size:15px}
+  .get p + p{margin-top:9px;color:var(--text-3);font-size:14.5px}
+  @media(max-width:620px){.get{grid-template-columns:1fr;gap:10px}}
+
+  /* ---------------------------------------------------------- never */
+  .never{
+    background:var(--ink); color:var(--on-ink); border-radius:18px;
+    padding:clamp(30px,5vw,50px) clamp(24px,4vw,44px); margin-top:clamp(28px,4vw,40px);
+  }
+  .never h2{color:var(--on-ink)}
+  .never > p{color:#a89e8e;font-size:15.5px;margin-top:11px}
+  .never dl{margin:clamp(24px,3vw,34px) 0 0}
+  .never dt{
+    color:var(--on-ink); font-weight:600; font-size:15.5px;
+    padding-top:16px; border-top:1px solid rgba(243,239,230,.14);
+  }
+  .never dd{margin:5px 0 16px;color:#c9c0b3;font-size:14.5px;max-width:66ch}
+  .never dt:first-of-type{border-top:0;padding-top:0}
+
+  /* ---------------------------------------------------------- layers */
+  .stack{margin-top:clamp(28px,4vw,40px)}
+  .stack svg{display:block;width:100%;height:auto;overflow:visible}
+  .stack-legend{margin-top:26px;display:grid;gap:18px}
+  .stack-legend div{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:baseline}
+  .dot{width:11px;height:11px;border-radius:3px;translate:0 1px}
+  .dot.base{background:var(--accent)}
+  .dot.on{background:var(--accent-soft);border:1px solid var(--accent)}
+  .dot.soon{background:transparent;border:1px dashed var(--border-strong)}
+  .stack-legend b{color:var(--text);font-weight:600}
+  .stack-legend p{font-size:14.5px;max-width:62ch}
+
+  footer{
+    margin-top:clamp(64px,9vw,104px); padding-top:28px; border-top:1px solid var(--border);
+    font-size:14px; color:var(--text-3);
+  }
+  footer a{margin-right:20px;white-space:nowrap}
+
+  /* Motion enhances a state that is already visible. Nothing starts at opacity 0
+     or with the line undrawn: in a headless renderer or an inactive tab the
+     animation never fires, and a reveal that owns visibility ships a blank page. */
+  .draw{animation:draw 1.4s var(--ease) .25s}
+  @keyframes draw{
+    from{stroke-dasharray:var(--len);stroke-dashoffset:var(--len)}
+    to{stroke-dasharray:var(--len);stroke-dashoffset:0}
+  }
+  /* Below this width the diagram would scale its type down to about 6px. A diagram
+     nobody can read is not a diagram, so it keeps a readable minimum and scrolls. */
+  @media(max-width:640px){
+    .loop,.stack,.system{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .loop svg,.stack svg{min-width:540px}
+    .system svg{min-width:660px}
+  }
+  @media (prefers-reduced-motion: reduce){ .draw{animation:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Half an hour once, then it runs your day.</h1>
+  <p class="lede">One conversation, about half an hour. Below is <strong>every phase the setup goes
+  through, what each one leaves behind</strong>, and what the system does for you every day
+  after that.</p>
+  <div class="meta">
+    <span><b>4 phases</b> in the base</span>
+    <span><b>20 to 30 minutes</b>, once</span>
+    <span><b>Nothing installed</b> before you say yes</span>
+  </div>
+</header>
+
+<section>
+  <div class="sec-head">
+    <h2>How the pieces fit</h2>
+    <p>This page is the base layer. Add-ons sit on top of it, and you never pick between them.</p>
+  </div>
+
+  <div class="stack" aria-hidden="true">
+    <svg viewBox="0 0 760 244" role="img">
+      <g>
+        <rect x="60" y="24" width="290" height="68" rx="11"
+              fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="86" y="57" font-family="Georgia,serif" font-size="20" fill="var(--text)">Upwork</text>
+        <text x="86" y="78" font-size="13" fill="var(--text-3)" font-family="-apple-system,sans-serif">acquisition, optional</text>
+      </g>
+      <g>
+        <rect x="380" y="24" width="290" height="68" rx="11"
+              fill="none" stroke="var(--border-strong)" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <text x="406" y="57" font-family="Georgia,serif" font-size="20" fill="var(--text-3)">Cold mailing</text>
+        <text x="406" y="78" font-size="13" fill="var(--text-3)" font-family="-apple-system,sans-serif">planned, not built yet</text>
+      </g>
+      <g stroke="var(--border-strong)" stroke-width="1.5" stroke-dasharray="3 4">
+        <path d="M 205 92 V 128"/><path d="M 525 92 V 128"/>
+      </g>
+      <rect x="60" y="128" width="610" height="96" rx="13"
+            fill="var(--card)" stroke="var(--accent)" stroke-width="3"/>
+      <text x="86" y="169" font-family="Georgia,serif" font-size="25" fill="var(--text)">The base layer</text>
+      <text x="86" y="195" font-size="14" fill="var(--text-2)" font-family="-apple-system,sans-serif">
+        the day loop, your projects, the dashboard, mail drafts
+      </text>
+      <text x="646" y="169" font-size="13" fill="var(--accent-deep)" text-anchor="end"
+            font-family="-apple-system,sans-serif">always</text>
+    </svg>
+  </div>
+
+  <div class="stack-legend">
+    <div><span class="dot base"></span><p><b>The base is set up first,</b> and for a lot of
+      people it's all they ever switch on.</p></div>
+    <div><span class="dot on"></span><p><b>An add-on is one channel of work,</b> bolted on
+      during setup when you say you use it. Say no and nothing about it appears anywhere.</p></div>
+    <div><span class="dot soon"></span><p><b>The next one docks in the same way,</b> without
+      the base changing. That's the whole point of the seam.</p></div>
+  </div>
+
+  <div class="note">
+    <strong>You never download two things and hope they fit.</strong> There's one system, and
+    the setup asks which channels you actually work through.
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>The whole thing, on one picture</h2>
+    <p>A folder on your machine, a chat in front of it, and two places anything ever leaves to.
+    That's all of it.</p>
+  </div>
+
+  <div class="system" aria-hidden="true">
+    <svg viewBox="0 0 760 348" role="img">
+      <!-- what comes in -->
+      <text x="20" y="30" font-size="12" fill="var(--text-3)" font-family="-apple-system,sans-serif"
+            letter-spacing=".06em">READ</text>
+      <g font-size="13.5" fill="var(--text-2)" font-family="-apple-system,sans-serif">
+        <text x="20" y="72">Mail</text>
+        <text x="20" y="106">Calendar</text>
+        <text x="20" y="140">Documents you drop in</text>
+        <text x="20" y="174">Web pages</text>
+      </g>
+      <g stroke="var(--border-strong)" stroke-width="1.5" fill="none">
+        <path d="M 168 67 H 236"/><path d="M 168 101 H 236"/>
+        <path d="M 168 135 H 236"/><path d="M 168 169 H 236"/>
+      </g>
+      <g fill="var(--border-strong)">
+        <path d="M 236 67 l -7 -4 v 8 z"/><path d="M 236 101 l -7 -4 v 8 z"/>
+        <path d="M 236 135 l -7 -4 v 8 z"/><path d="M 236 169 l -7 -4 v 8 z"/>
+      </g>
+
+      <!-- the folder -->
+      <rect x="240" y="34" width="270" height="176" rx="13"
+            fill="var(--card)" stroke="var(--accent)" stroke-width="3"/>
+      <text x="262" y="66" font-family="Georgia,serif" font-size="20" fill="var(--text)">Your folder</text>
+      <text x="262" y="86" font-size="12" fill="var(--text-3)" font-family="-apple-system,sans-serif">
+        plain text files, on this machine
+      </text>
+      <g font-family="ui-monospace,Menlo,monospace" font-size="12.5" fill="var(--accent-deep)">
+        <text x="262" y="122">context/</text>
+        <text x="262" y="146">projects/</text>
+        <text x="262" y="170">.claude/skills/</text>
+      </g>
+      <g font-size="12" fill="var(--text-3)" font-family="-apple-system,sans-serif">
+        <text x="366" y="122">state, tasks, journal</text>
+        <text x="366" y="146">one folder per project</text>
+        <text x="366" y="170">how Claude works here</text>
+      </g>
+
+      <!-- what goes out -->
+      <text x="558" y="30" font-size="12" fill="var(--text-3)" font-family="-apple-system,sans-serif"
+            letter-spacing=".06em">WRITTEN</text>
+      <g stroke="var(--border-strong)" stroke-width="1.5" fill="none">
+        <path d="M 510 79 H 552"/><path d="M 510 122 H 552"/><path d="M 510 165 H 552"/>
+      </g>
+      <g fill="var(--border-strong)">
+        <path d="M 552 79 l -7 -4 v 8 z"/><path d="M 552 122 l -7 -4 v 8 z"/><path d="M 552 165 l -7 -4 v 8 z"/>
+      </g>
+      <g font-size="13.5" fill="var(--text-2)" font-family="-apple-system,sans-serif">
+        <text x="558" y="76">Your dashboard</text>
+        <text x="558" y="119">Mail drafts</text>
+        <text x="558" y="162">Your private repo</text>
+      </g>
+      <g font-size="11.5" fill="var(--text-3)" font-family="-apple-system,sans-serif">
+        <text x="558" y="92">a file, opened in a browser</text>
+        <text x="558" y="135">you press send</text>
+        <text x="558" y="178">the only thing that leaves</text>
+      </g>
+
+      <!-- the chat underneath everything -->
+      <path d="M 375 210 V 246" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 5" fill="none"/>
+      <rect x="152" y="246" width="446" height="60" rx="11"
+            fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="375" y="272" font-family="Georgia,serif" font-size="17" fill="var(--text)" text-anchor="middle">
+        Everything happens through your Claude chat
+      </text>
+      <text x="375" y="292" font-size="12.5" fill="var(--accent-deep)" text-anchor="middle"
+            font-family="-apple-system,sans-serif">
+        no server, no login, no account with anyone else
+      </text>
+      <text x="375" y="332" font-size="12.5" fill="var(--text-3)" text-anchor="middle"
+            font-family="-apple-system,sans-serif">
+        Take the folder with you and you take everything. Delete it and everything is gone.
+      </text>
+    </svg>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>What happens during the setup</h2>
+    <p>Started by a session-start hook on your first message. You don't have to know a command
+    to begin, and every phase names what it produced before moving on.</p>
+  </div>
+
+  <div class="phases">
+    <div class="phase">
+      <div class="ring">1</div>
+      <div class="phase-body">
+        <span class="skill">setup</span>
+        <h3>Who you are, and what you are working on</h3>
+        <p>Six questions. The one that matters most is the fifth: which tools you work with
+        every day, and what each one is for. Everything in phase 3 is derived from that answer
+        and not from a checklist.</p>
+        <p>Then it archives itself, so it can never run twice.</p>
+      </div>
+      <div class="leaves">
+        <div class="leaves-h">Leaves behind</div>
+        <ul>
+          <li>context/config.yaml</li>
+          <li>context/STATUS.md</li>
+          <li>context/PROJECTS.md</li>
+          <li><span>a folder per project</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="ring">2</div>
+      <div class="phase-body">
+        <h3>Your existing material gets filed</h3>
+        <p>Documents you already have get read and filed where they belong: what a
+        client sent into <code>inputs/</code>, what you made into <code>work/</code>.</p>
+        <details>
+          <summary>What if my folder already has a structure?</summary>
+          <p>It gets measured before anything moves, and you are asked. Nothing is deleted,
+          ever: "gone" means moved somewhere you can walk back into.</p>
+        </details>
+      </div>
+      <div class="leaves">
+        <div class="leaves-h">Leaves behind</div>
+        <ul>
+          <li><span>your documents inside the right project</span></li>
+          <li><span>nothing deleted</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="ring">3</div>
+      <div class="phase-body">
+        <h3>The equipment</h3>
+        <p>Four rounds: tools on your machine, connections to the systems you named in phase 1,
+        keys for the tools that are half dead without one, and repos cloned into the project they
+        belong to. Everything that lands here is listed below.</p>
+        <details>
+          <summary>Why it asks once per group</summary>
+          <p>Six questions in a row get answered with "yes, yes, yes", and that isn't consent.
+          One question per group keeps the answer meaningful, and a no stays a real no: nothing
+          in that group is installed and the setup carries on.</p>
+        </details>
+      </div>
+      <div class="leaves">
+        <div class="leaves-h">Leaves behind</div>
+        <ul>
+          <li>~/.config/credentials.env</li>
+          <li><span>the tools you agreed to</span></li>
+          <li><span>a private backup repo</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="ring">4</div>
+      <div class="phase-body">
+        <span class="skill">morning</span>
+        <h3>The first day starts</h3>
+        <p>The setup skill archives itself away, so it can never run twice. Nothing is left to
+        configure: the briefing reads what the phases above wrote and hands you your tasks one
+        at a time.</p>
+      </div>
+      <div class="leaves">
+        <div class="leaves-h">Leaves behind</div>
+        <ul>
+          <li>context/BRIEFING.md</li>
+          <li>context/today.html</li>
+          <li><span>a dashboard you open on a double click</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>If you work through Upwork, one more phase sits between 3 and 4.</strong> That is
+    the add-on, and it is laid out on
+    <a href="WHAT-WORKS-UPWORK.html">its own page</a>. Say you don't use it and it never
+    appears again: no tab, no skills, no nagging.
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>What lands on your machine</h2>
+    <p>Six kinds of thing, and only the first is already there. You can say no to every one of them,
+    and what you give up by saying no is written next to it.</p>
+  </div>
+
+  <div class="kind">
+    <div class="kind-head">
+      <h3>Skills</h3>
+      <span class="count">25 · already in the folder</span>
+    </div>
+    <p class="kind-sub">Instruction sets Claude reads when a task needs them. You do not call
+    most of them; they apply themselves. Nothing to install.</p>
+    <div class="chips">
+      <div class="chip-group">
+        <span class="grp">Your day</span>
+        <b>morning</b><b>eod</b><b>ingest</b><b>checkup</b><b>audit</b><b>adopt</b><b>setup</b>
+      </div>
+      <div class="chip-group">
+        <span class="grp">Mail &amp; calendar</span>
+        <b>email</b><b>gws-gmail</b><b>gws-gmail-send</b><b>gws-calendar</b><b>gws-calendar-agenda</b>
+      </div>
+      <div class="chip-group">
+        <span class="grp">Files &amp; data</span>
+        <b>gws-drive</b><b>gws-sheets-read</b><b>gws-sheets-append</b><b>gws-shared</b><b>supabase</b><b>supabase-postgres-best-practices</b>
+      </div>
+      <div class="chip-group">
+        <span class="grp">The web</span>
+        <b>firecrawl</b><b>playwright-cli</b>
+      </div>
+      <div class="chip-group">
+        <span class="grp">Making things</span>
+        <b>skill-creator</b><b>design-taste-frontend</b><b>writing-clearly-and-concisely</b><b>notebooklm</b><b>managed-agents</b>
+      </div>
+    </div>
+  </div>
+
+  <div class="kind">
+    <div class="kind-head">
+      <h3>Command line tools</h3>
+      <span class="count">installed in phase 3, one question per group</span>
+    </div>
+    <div class="rows">
+      <div class="row">
+        <b>Node.js</b><span class="pill carry">carries the dashboard</span>
+        <p>Renders the dashboard. Without it a third of the package doesn't exist, so it is
+        announced rather than asked about.</p>
+      </div>
+      <div class="row">
+        <b>claude CLI</b><span class="pill carry">carries the plugins</span>
+        <p>Installing plugins at all. Same reason.</p>
+      </div>
+      <div class="row">
+        <b>playwright</b><span class="pill ask">offered</span>
+        <p>A real browser. Claude can open an interface and look at it.</p>
+      </div>
+      <div class="row">
+        <b>firecrawl</b><span class="pill ask">offered</span>
+        <p>Reading web pages properly. Needs its own key, see below.</p>
+      </div>
+      <div class="row">
+        <b>gws</b><span class="pill ask">offered</span>
+        <p>Google Workspace from the command line: Gmail, Calendar, Drive, Sheets. Only if you
+        are on Google.</p>
+      </div>
+      <div class="row">
+        <b>gh + vercel</b><span class="pill opt">if you build</span>
+        <p>Putting something online and handing the client a link they can click.</p>
+      </div>
+      <div class="row">
+        <b>Plugins</b><span class="pill ask">one question</span>
+        <p>A curated set, installed together. New ones appear almost daily; this is the one week
+        of reading you do not have to do.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="kind" id="connections">
+    <div class="kind-head">
+      <h3>Connections</h3>
+      <span class="count">through Claude's own settings, never a password</span>
+    </div>
+    <p class="kind-sub">This package brings no connection of its own and never sees a password:
+    you sign in, Claude gets the access. Two ways in, and the setup can drive either one.</p>
+    <details>
+      <summary>Connect in the app, or from the terminal</summary>
+      <p><strong>In the Claude app.</strong> Customize → Connectors → Add. The connection belongs
+      to your account, so it's there in the app, in the terminal and in VS Code without doing it
+      again.</p>
+      <p><strong>Or from the session you're already in</strong>, which is the way out when the
+      button is blocked. A work account needs an owner to release a connector once, and the free
+      plan allows exactly one, so this route matters more often than it sounds:</p>
+      <p><code>claude mcp add --transport http &lt;name&gt; &lt;url&gt; -s user</code></p>
+      <p>Then <code>/mcp</code>, pick it, choose Authenticate. The <code>-s user</code> flag makes
+      the connection follow you instead of the folder. Claude runs this for you, so you don't
+      have to remember the syntax.</p>
+      <p>Either way: <strong>restart the session afterwards.</strong> A connection made
+      mid-session is invisible to the session that made it, and that one step is behind most of
+      the "it says it isn't connected" reports.</p>
+    </details>
+    <div class="rows">
+      <div class="row">
+        <b>Mail</b><span class="pill carry">carries the briefing</span>
+        <p>Microsoft 365 or Google Workspace. You're not asked whether, only which.
+        <em>Without it: the briefing is tasks with no day around them.</em></p>
+      </div>
+      <div class="row">
+        <b>Calendar</b><span class="pill carry">carries your day</span>
+        <p>Comes with the same account as mail.
+        <em>Without it: your appointments never reach the briefing.</em></p>
+      </div>
+      <div class="row">
+        <b>Storage</b><span class="pill ask">asked</span>
+        <p>SharePoint, OneDrive or Drive. Usually one checkbox once mail is connected.
+        <em>Without it: documents get copied in by hand.</em></p>
+      </div>
+      <div class="row">
+        <b>Chat</b><span class="pill ask">asked</span>
+        <p>Teams or Slack.
+        <em>Without it: what was agreed in chat stays invisible.</em></p>
+      </div>
+      <div class="row">
+        <b>CRM</b><span class="pill ask">asked</span>
+        <p>HubSpot or GoHighLevel, with the honest limit that the briefing doesn't pull
+        CRM data. It's there for asking directly.</p>
+      </div>
+      <div class="row">
+        <b>Dev</b><span class="pill opt">if relevant</span>
+        <p>GitHub and the like. Only raised if you work with repos.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="kind">
+    <div class="kind-head">
+      <h3>Keys</h3>
+      <span class="count">always outside this folder</span>
+    </div>
+    <p class="kind-sub">Into <code>~/.config/credentials.env</code>, never into the repo. This
+    folder gets cloned and versioned, and a key committed once stays in the history even after
+    you delete the file. Nothing else here leaves your machine; what the system reads and writes
+    is spelled out in <a href="WHAT-THIS-SYSTEM-DOES.md">WHAT-THIS-SYSTEM-DOES.md</a>.</p>
+    <div class="rows">
+      <div class="row">
+        <b>Firecrawl</b><span class="pill ask">offered</span>
+        <p>Without it the tool is installed and can't read a page. Free tier is enough to try
+        it.</p>
+      </div>
+      <div class="row">
+        <b>OpenRouter</b><span class="pill ask">offered</span>
+        <p>Images, and models that do not come from Anthropic. Without it the system says so up front.</p>
+      </div>
+      <div class="row">
+        <b>Anthropic API</b><span class="pill opt">on request</span>
+        <p>Only the <code>managed-agents</code> skill needs one, and it bills separately from
+        your subscription.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="kind" id="plugins">
+    <div class="kind-head">
+      <h3>Plugins from GitHub</h3>
+      <span class="count">six in one question, two asked separately</span>
+    </div>
+    <p class="kind-sub">Plugins apply to your whole machine, so they turn up in every Claude Code project you have. The setup
+    installs a set, because new ones appear almost daily and telling this
+    week's real thing from the noise is a job of its own.</p>
+    <div class="rows plugin-rows">
+      <div class="row">
+        <b>ponytail</b><span class="src">DietrichGebert/ponytail</span>
+        <p>Forces the simplest solution that works. Useful before every larger build.</p>
+      </div>
+      <div class="row">
+        <b>impeccable</b><span class="src">pbakaus/impeccable</span>
+        <p>Serious frontend and interface work, so a page doesn't come out looking templated.</p>
+      </div>
+      <div class="row">
+        <b>claude-code-setup</b><span class="src">anthropics/claude-plugins-official</span>
+        <p>Reads how you actually work and names what's worth automating for you.</p>
+      </div>
+      <div class="row">
+        <b>code-review</b><span class="src">anthropics/claude-plugins-official</span>
+        <p>Reviews code you or Claude wrote, security pass included.</p>
+      </div>
+      <div class="row">
+        <b>claude-md-management</b><span class="src">anthropics/claude-plugins-official</span>
+        <p>Audits the rules file once it's grown over months and starts contradicting itself.</p>
+      </div>
+      <div class="row">
+        <b>superpowers</b><span class="src">anthropics/claude-plugins-official</span>
+        <p>Test-driven development, systematic debugging, planning. Developer machines.</p>
+      </div>
+    </div>
+
+    <div class="kind-head sub-head">
+      <h3>Asked on their own</h3>
+      <span class="count">because a yes here has a consequence</span>
+    </div>
+    <div class="rows plugin-rows">
+      <div class="row">
+        <b>claude-mem</b><span class="src">thedotmack/claude-mem</span>
+        <p>Remembers across sessions so you don't repeat yourself in a new chat.
+        <em>It runs a background daemon and logs what was read into its own local database, so
+        you hear about it up front.</em></p>
+      </div>
+      <div class="row">
+        <b>last30days</b><span class="src">mvanhorn/last30days-skill</span>
+        <p>Researches what people have actually been saying about a topic in the last month.
+        It's pulled from its source, so you get its updates and not our snapshot.</p>
+      </div>
+    </div>
+    <details>
+      <summary>Why the setup just installs them</summary>
+      <p>A recommendation you have to act on later is a recommendation nobody acts on. The set is
+      installed once, in one question, and every one of them can be removed with a single
+      command afterwards.</p>
+      <p>The two below it are separated for a reason: <code>claude-mem</code> keeps its own copy
+      of what it saw, which matters if you work with client material, and
+      <code>last30days</code> is somebody else's skill on its own release cycle.</p>
+    </details>
+  </div>
+
+  <div class="kind" id="repos">
+    <div class="kind-head">
+      <h3>Your own repos</h3>
+      <span class="count">the backup, and any project code</span>
+    </div>
+    <div class="rows">
+      <div class="row">
+        <b>Your backup repo</b><span class="pill carry">carries your history</span>
+        <p>Created under your own account. It's private and it's yours from the start. The end of the day
+        pushes the state of this folder into it.
+        <em>Nobody else is offered access to it.</em></p>
+      </div>
+      <div class="row">
+        <b>Project repos</b><span class="pill opt">if any</span>
+        <p>Cloned into <code>projects/&lt;slug&gt;/code</code>, so the project keeps its own history and doesn't get mixed into the workspace.</p>
+      </div>
+    </div>
+    <div class="system repo-pic" aria-hidden="true">
+      <svg viewBox="0 0 760 150" role="img">
+        <rect x="4" y="36" width="176" height="64" rx="11"
+              fill="none" stroke="var(--border-strong)" stroke-width="1.5"/>
+        <text x="24" y="64" font-family="Georgia,serif" font-size="15.5" fill="var(--text-2)">The package repo</text>
+        <text x="24" y="84" font-family="ui-monospace,Menlo,monospace" font-size="12" fill="var(--text-3)">upstream</text>
+
+        <path d="M 180 68 H 282" stroke="var(--border-strong)" stroke-width="1.5" fill="none"/>
+        <path d="M 282 68 l -7 -4 v 8 z" fill="var(--border-strong)"/>
+        <text x="229" y="56" font-size="11.5" fill="var(--text-3)" text-anchor="middle"
+              font-family="-apple-system,sans-serif">updates in</text>
+
+        <rect x="286" y="28" width="188" height="80" rx="12"
+              fill="var(--card)" stroke="var(--accent)" stroke-width="3"/>
+        <text x="308" y="62" font-family="Georgia,serif" font-size="17" fill="var(--text)">Your folder</text>
+        <text x="308" y="84" font-size="12" fill="var(--text-3)" font-family="-apple-system,sans-serif">on this machine</text>
+
+        <path d="M 474 68 H 576" stroke="var(--accent)" stroke-width="2" fill="none"/>
+        <path d="M 576 68 l -7 -4 v 8 z" fill="var(--accent)"/>
+        <text x="525" y="56" font-size="11.5" fill="var(--accent-deep)" text-anchor="middle"
+              font-family="-apple-system,sans-serif">every evening</text>
+
+        <rect x="580" y="36" width="176" height="64" rx="11"
+              fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="600" y="64" font-family="Georgia,serif" font-size="15.5" fill="var(--text)">Your private repo</text>
+        <text x="600" y="84" font-family="ui-monospace,Menlo,monospace" font-size="12" fill="var(--accent-deep)">origin</text>
+
+        <text x="380" y="138" font-size="12.5" fill="var(--text-3)" text-anchor="middle"
+              font-family="-apple-system,sans-serif">
+          Nothing ever flows back to the left. Your work only moves right.
+        </text>
+      </svg>
+    </div>
+
+    <details>
+      <summary>What happens if you skip the backup repo</summary>
+      <p>A fresh clone still points at the repo of whoever sent you the package. Without this
+      step the end of the day would push your work, your notes and your client material into
+      <strong>their</strong> repo, every evening, quietly.</p>
+      <p>So the setup renames that remote to <code>upstream</code> and creates yours as
+      <code>origin</code>. Updates keep flowing in from upstream; nothing of yours ever flows
+      back out.</p>
+    </details>
+  </div>
+
+  <div class="note">
+    <strong>A connector that doesn't exist gets said out loud.</strong> The catalogue moves in
+    both directions, so a route is never guessed at. A connection that fails twice is recorded
+    as not set up and the setup carries on: the rest does not wait for it.
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Then the day is a loop, not a list</h2>
+    <p>Two commands carry it. What happens between them is filed as it happens.</p>
+  </div>
+
+  <div class="loop" aria-hidden="true">
+    <svg viewBox="0 0 760 236" role="img">
+      <path d="M 656 96 C 726 96 736 176 664 192 L 96 192 C 24 192 24 118 62 98"
+            fill="none" stroke="var(--border-strong)" stroke-width="1.5"
+            stroke-dasharray="4 6" opacity=".8"/>
+      <path class="draw" style="--len:592" d="M 64 96 H 656"
+            fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+      <g fill="var(--card)" stroke="var(--accent)" stroke-width="3">
+        <circle cx="64" cy="96" r="16"/><circle cx="360" cy="96" r="16"/><circle cx="656" cy="96" r="16"/>
+      </g>
+      <g fill="var(--accent)">
+        <circle cx="64" cy="96" r="5"/><circle cx="360" cy="96" r="5"/><circle cx="656" cy="96" r="5"/>
+      </g>
+      <g font-family="Georgia,serif" font-size="21" fill="var(--text)" text-anchor="middle">
+        <text x="64" y="56">Morning</text>
+        <text x="360" y="56">While you work</text>
+        <text x="656" y="56">Evening</text>
+      </g>
+      <g font-size="13" fill="var(--accent-deep)" text-anchor="middle" font-family="ui-monospace,Menlo,monospace">
+        <text x="64" y="140">/morning</text>
+        <text x="656" y="140">/eod</text>
+      </g>
+      <text x="360" y="216" font-size="13" fill="var(--text-3)" text-anchor="middle"
+            font-family="-apple-system,sans-serif">tomorrow starts from where today ended</text>
+    </svg>
+  </div>
+
+  <div class="loop-legend">
+    <div>
+      <h3><span class="cmd">/morning</span>It hands you the day</h3>
+      <p>Calendar, your inbox if you allow it that session, then your tasks sorted by urgent ×
+      important and handed over one at a time.</p>
+    </div>
+    <div>
+      <h3>Nobody files anything</h3>
+      <p>Say a task is done or a project moved, and it lands in the right file. Drop a document
+      in <code>inbox/</code> and <code>/ingest</code> sorts it.</p>
+    </div>
+    <div>
+      <h3><span class="cmd">/eod</span>It closes the day</h3>
+      <p>Plan against reality, the day into the journal, what carries over named, and the whole
+      folder backed up to your own private repo.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>What you have the next morning</h2>
+    <p>All of it plain files on your machine. No account, no server, no login.</p>
+  </div>
+
+  <div class="gets">
+    <div class="get">
+      <h3>A dashboard you open in a browser</h3>
+      <div>
+        <p>One HTML file with a tab for today, one for your projects, and one for what this machine actually
+        has, that last one gets read off the machine on every render, so it can't quietly go stale.</p>
+        <p>It never writes anything. Buttons copy a ready sentence for you to paste into the
+        chat, so the work happens in Claude with its normal safeguards.</p>
+        <details class="live" id="demo">
+          <summary>Open the example dashboard</summary>
+          <p class="live-note">A frozen copy with made-up data, so it always shows the same
+          thing. Click around: tabs, filters and the copy buttons all work.
+          <a href="examples/dashboard.html" target="_blank">Open it in its own tab</a> if the
+          frame below stays empty, which some browsers do with local files.</p>
+          <iframe src="examples/dashboard.html" title="Example dashboard" loading="lazy"></iframe>
+        </details>
+      </div>
+    </div>
+    <div class="get">
+      <h3>Projects that hold their own state</h3>
+      <div>
+        <p>What it is, what came in, your own work, what went out. New ones get scaffolded with
+        a first task, finished ones get archived.</p>
+        <p>Nothing gets deleted. "Gone" means moved somewhere you can walk back into.</p>
+      </div>
+    </div>
+    <div class="get">
+      <h3>Mail drafts that sound like you</h3>
+      <div>
+        <p>The style comes from your own sent mail, read once during setup. It reads like you
+        rather than like a language model being polite.</p>
+      </div>
+    </div>
+    <div class="get">
+      <h3>A system that checks itself</h3>
+      <div>
+        <p><code>/checkup</code> asks whether the machinery is intact right now.
+        <code>/audit</code> asks the harder question, whether this folder is any good as a
+        working system, and it runs on any folder rather than only this one.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <a href="SETUP.md">Getting in</a>
+  <a href="WHAT-WORKS-UPWORK.html">The Upwork add-on</a>
+  <a href="SYSTEM.html">The whole system</a>
+  <a href="WHAT-THIS-SYSTEM-DOES.md">What happens to your data</a>
+</footer>
+
+</div>
+</body>
+</html>

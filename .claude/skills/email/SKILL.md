@@ -28,63 +28,32 @@ Generate business mail drafts (EN + DE) in the learned personal style. User give
 ### English
 
 **Opener:**
-- `Hi <Firstname>,` — standard
-- `Hello <Firstname>,` — slightly more formal (IT tickets, externals)
-- `Dear <X> Team,` — teams, RAI, DPO, etc.
+- `Hi <FirstName>,` standard, all direct colleagues
+- `Hello <FirstName>,` slightly more formal
+- `Dear <X> Team,` teams, formal requests
+- Inline is fine: `Hi FirstName, happy to! I've...`
 
 **Tone:**
-- Short and direct, often 1 to 3 sentences, otherwise one paragraph at most
-- Direct verbs instead of chains of conditionals: `I'll send it Thursday`, not `I would potentially be able to send it`
-- The greeting can run inline: `Hi Anna, happy to. I have ...`
-- When you are late, say so plainly instead of dressing it up: `sorry for the slow reply`
-- One sentence on availability where it saves a round trip: `Friday I'm at a client`
-- Exclamation marks sparingly, emoji rarely and at most a 🙂
-- Contractions ok: `I'd`, `don't`, `we'll`
-- `Thank you very much!` / `Thanks!` to convey warmth
-- `My apologies for the inconvenience` for your own mistake
-- When unsure: `I would say X in general` (weighing it up)
+- **Formality follows the recipient:** colleagues (an address on a domain from `company_domains`) and recognisably familiar contacts (an existing first-name thread) get the relaxed register. Externals, first contacts and anything unclear get the careful one: full name in the greeting, no contractions, no exclamation marks. When in doubt, careful. Too formal with a close contact is a small thing; too casual with the wrong recipient is embarrassing. (As soon as `EMAIL_STYLE.md` exists, its rule applies.)
+- Short, often 1 to 3 sentences, otherwise one paragraph at most
+- Direct verbs instead of chains of conditionals
+- Warmth through a sparing `!` (`happy to!`, `got it!`, `great, thank you!`)
+- When late, honest meta-info: `sorry for the slow reply`, `sorry, I was stuck on other blockers`
+- Context sentences for availability: `Friday I'm at a client`
+- Emojis rare, the occasional 🙂 at most
 
 **Banned filler phrases (never use):**
 - "I hope this email finds you well"
-- "Please don't hesitate to reach out"
-- "Kindly find attached"
-- "As per my previous email"
+- "I am reaching out regarding..."
+- "Thank you in advance for your efforts"
+- "Please do not hesitate to contact me"
 - Em-dashes (`—`)
 
 **Closer:**
-- `Best regards\n{FirstName}` — standard
-- `Best Regards\n{FirstName}` (capitalized variant ok)
-- `Thanks!\n{FirstName}` for a short thank-you mail
-
-### German
-
-**Opener:**
-- `Hi <Vorname>,` — standard, all direct colleagues
-- `Hallo <Vorname>,` — slightly more formal
-- `Dear <X> Team,` — teams, formal requests
-- Inline is fine: `Hi Vorname, gerne! Ich habe...`
-
-**Tone:**
-- **Du/Sie depending on the recipient:** colleagues (address on a domain from `company_domains`) and recognisably familiar contacts (an existing Du thread) → **Du**. Externals, first contacts and anything unclear → **Sie** with `Hallo Herr/Frau <Name>,` or `Guten Tag <Name>,`. When in doubt, Sie — a Sie to a Du contact is a small thing, a Du to the wrong recipient is embarrassing. (As soon as `EMAIL_STYLE.md` exists, its rule applies.)
-- Short, often 1-3 sentences, otherwise max. 1 paragraph
-- Direct verbs instead of subjunctive chains
-- Convey warmth with `!` used sparingly (`gerne!`, `alles klar!`, `super, vielen Dank!`)
-- When late, honest meta-info: `sorry für die späte Rückmeldung`, `sorry ich war noch an anderen Blockern dran`
-- Context sentences for availability: `Freitag bin ich beim Klienten`
-- Emojis rare, only 🙂 occasionally
-
-**Banned filler phrases (never use):**
-- "Ich hoffe, diese E-Mail erreicht dich gut"
-- "Ich melde mich hiermit bezüglich..."
-- "Vielen Dank im Voraus für deine Bemühungen"
-- "Zögere nicht mich zu kontaktieren"
-- Em-dashes (`—`)
-
-**Closer:**
-- `LG {FirstName}` — standard, 90% of the time
-- `LG\n{FirstName}` (on 2 lines)
-- `Vielen Dank\n{FirstName}` when making an explicit request
-- `Beste Grüße\n{FirstName}` rare, only for formal requests
+- `Best, {FirstName}` standard, 90% of the time
+- `Best\n{FirstName}` (on 2 lines)
+- `Thank you\n{FirstName}` when making an explicit request
+- `Kind regards\n{FirstName}` rare, only for formal requests
 
 ### Signature (always, after the closer)
 
@@ -103,22 +72,15 @@ Each type is given in both languages. The German versions are the original examp
 
 ### 1. Short confirmation / thanks
 
-EN:
 ```
 Hi <Name>, thanks a lot!
 Best regards
 {FirstName}
 ```
-DE:
-```
-Hi <Name>, super vielen Dank!
-LG {FirstName}
-```
 One sentence is enough.
 
 ### 2. Follow-up with a question
 
-EN:
 ```
 Hi <Name>,
 
@@ -127,32 +89,17 @@ quick one, <one sentence of context>. <One-sentence question>?
 Best regards
 {FirstName}
 ```
-DE:
-```
-Hi <Name>,
-
-kurze Nachricht: <ein Satz Kontext>. <Ein Satz Frage>?
-
-LG {FirstName}
-```
 
 ### 3. Meeting proposal
 
-EN:
 ```
 Hi <Name>, happy to! I've sent a proposal for <weekday>, unfortunately <alternative day> I'm <reason>.
 Best regards
 {FirstName}
 ```
-DE:
-```
-Hi <Name>, gerne! Ich habe mal einen Vorschlag für <Wochentag> geschickt, <alternativer Tag> habe ich leider <Grund>.
-LG {FirstName}
-```
 
 ### 4. Status update to stakeholders
 
-EN:
 ```
 Hi <Name>,
 
@@ -163,20 +110,9 @@ I have now done <what>, <recommendation / request for feedback>.
 Best regards
 {FirstName}
 ```
-DE:
-```
-Hi <Name>,
-
-kurze Nachricht und vorab schon mal sorry für die lange Funkstille, die letzten Wochen waren mit dem <Projekt>-Projekt ziemlich voll.
-
-Ich habe jetzt <Was> gemacht, <Handlungsempfehlung / Bitte um Feedback>.
-
-LG {FirstName}
-```
 
 ### 5. IT ticket reply
 
-EN:
 ```
 Hello <Name>,
 
@@ -185,18 +121,9 @@ Thank you for your message! <Concrete answer/question>.
 Best regards
 {FirstName}
 ```
-DE:
-```
-Hallo <Name>,
-
-vielen Dank für deine Nachricht! <Konkrete Antwort/Frage>.
-
-LG {FirstName}
-```
 
 ### 6. Formal request to a team
 
-EN:
 ```
 Dear <X> Team,
 
@@ -205,30 +132,14 @@ I am currently working on <context sentence>. <Concrete request / question>.
 Best regards
 {FirstName}
 ```
-DE:
-```
-Dear <X> Team,
-
-ich arbeite gerade an <Kontext-Satz>. <Konkrete Bitte / Frage>.
-
-Beste Grüße
-{FirstName}
-```
 
 ### 7. Sensitive/diplomatic (rescheduling, cancellation)
 
-EN:
 ```
 Hi <Name>, all good!
 <Short context / proposal>.
 Best regards
 {FirstName}
-```
-DE:
-```
-Hi <Name>, alles klar!
-<Kurzer Kontext / Vorschlag>.
-LG {FirstName}
 ```
 
 ## Workflow
@@ -384,11 +295,11 @@ Input: /email
 → User: "to [colleague], German, wanted to push for status, no reply yet"
 → Draft:
    To: [name.colleague@company.com]
-   Subject: Projekt X, kurzes Update?
+   Subject: Project X, quick update?
    Body:
-     Hi [Vorname],
-     kurze Nachricht: wollte kurz nachfragen ob du schon weitergekommen bist? Falls ich noch was aufbereiten soll, sag Bescheid.
-     LG [YOUR NAME]
+     Hi [FirstName],
+     quick one: wanted to check whether you got any further on this? If there is anything I should prepare, say the word.
+     Best, [YOUR NAME]
      [+ signature]
 → User: "more casual tone"
 → Draft 2 with adjustments

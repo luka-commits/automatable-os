@@ -17,9 +17,15 @@ niche, your own data, your own repo.
 can see what the thing does before deciding to set it up. A banner says plainly that the data is
 not yours, and the setup deletes it as its last step.
 
-**Want the picture before the detail?** Two pages, both offline and both a double click:
-[`ONBOARDING.html`](ONBOARDING.html) is the first run: five phases, which tools get
-connected and why, and where the keys end up; [`SYSTEM.html`](SYSTEM.html) is every step of the day and why it is shaped that way.
+**Want the picture before the detail?** Four pages, all offline and all a double click.
+
+Start with the one for the layer you care about: [`WHAT-WORKS-BASE.html`](WHAT-WORKS-BASE.html)
+walks through what the setup does, what each phase leaves on your machine, and what the system
+does for you every day after. [`WHAT-WORKS-UPWORK.html`](WHAT-WORKS-UPWORK.html) does the same
+for the Upwork add-on, which you can leave switched off without losing anything else.
+
+For more depth: [`ONBOARDING.html`](ONBOARDING.html) is the first run phase by phase, and
+[`SYSTEM.html`](SYSTEM.html) is every step of the day with the reasoning behind its shape.
 
 ## What you get
 
@@ -123,6 +129,10 @@ git clone https://github.com/luka-commits/automatable-os.git
 cd automatable-os
 claude
 ```
+
+**Not using a terminal?** [`SETUP.md`](SETUP.md) has the same route for VS Code and for the
+Claude desktop app, plus the one mistake that costs most people twenty minutes: starting Claude
+in the wrong folder, which produces no error at all.
 
 **You do not have to type anything to start.** A session-start hook notices the setup has
 not run and begins it on your first message. If you would rather drive it yourself, say

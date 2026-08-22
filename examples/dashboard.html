@@ -1,0 +1,657 @@
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Automatable OS</title>
+<style>
+  /* Same palette as the pitch pages this system generates, so what a client sees
+     and what you work in are recognisably one thing. Contrast is measured, not
+     estimated, and the ratio sits next to the token so it survives the next
+     person who finds a lighter shade prettier. */
+  :root {
+    --bg: #f3efe6;            /* warm paper, not a cool near-white */
+    --bg-band: #ece5d7;       /* a shade down, for header and rails */
+    --card: #fbf9f4;
+    --ink: #1c1712;           /* warm near-black, for inverted surfaces */
+    --on-ink: #f3efe6;        /* 15.5:1 on --ink */
+    --text: #262019;          /* 14.0:1 on --bg */
+    --text-2: #5c5347;        /*  6.6:1 on --bg */
+    --text-3: #6f6656;        /*  4.9:1 on --bg, 5.4:1 on --card */
+    --accent: #c1663e;        /* 3.5:1 — large text, borders and dots only */
+    --accent-deep: #a24f2e;   /* 5.0:1 — anything small, and white sits on it */
+    --accent-soft: #f3e4db;
+    --on-accent: #ffffff;
+    --border: #e2d9c8; --border-strong: #cfc2ab; --border-soft: #eae3d3;
+    /* Warning levels, tuned to the warm ground. Defined here rather than left
+       to a fallback in each rule: an undefined var() without one voids the whole
+       declaration, silently, which is how the amber date marker rendered as
+       ordinary grey text for a while without anyone seeing a thing. */
+    --sev-amber: #a2540f; --amber-soft: #f7ecd9; --amber-border: #e3caa0;
+    --sev-red: #a3271c; --red-soft: #f7e3df; --red-border: #e6bfb7; --red-deep: #822017;
+    --shadow-1: 0 1px 2px rgba(28, 23, 18, .05);
+    --shadow-2: 0 6px 20px rgba(28, 23, 18, .09);
+    --ease: cubic-bezier(.16, 1, .3, 1);
+    --serif: Georgia, "Iowan Old Style", "Times New Roman", ui-serif, serif;
+    --gap: 14px; --radius: 14px; --radius-lg: 16px; --radius-sm: 8px;
+
+    /* The old green names still resolve, because skills and this template refer
+       to them in a dozen places and a rename would be churn without a reader. */
+    --brand: var(--accent); --brand-deep: var(--accent-deep); --brand-soft: var(--accent-soft);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.55 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+  a { color: var(--brand); text-decoration: none; font-weight: 500; }
+  a:hover { text-decoration: underline; }
+  code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 12px;
+    background: var(--bg-band); border-radius: var(--radius-sm); padding: 1px 6px;
+    color: var(--text-2); }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 20px 22px 60px; }
+  header.top { background: var(--bg-band); border-bottom: 1px solid var(--border); padding: 20px 22px; }
+  header.top h1 { margin: 0; font-family: var(--serif); font-size: 27px; font-weight: 400;
+    letter-spacing: -.02em; color: var(--text); }
+  header.top .sub { margin-top: 3px; font-size: 12.5px; color: var(--text-3); }
+  /* The briefing, in the pitch pages' voice: serif lead, then prose, then the
+     lists folded away. It is the one place on the dashboard that is written
+     rather than generated, so it gets the typographic treatment writing earns. */
+  .bf { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+        padding: 22px 24px; box-shadow: var(--shadow-1); margin: 0 0 var(--gap); }
+  .bf-lead { font-family: var(--serif); font-size: 20px; line-height: 1.35; font-weight: 400;
+             letter-spacing: -.012em; color: var(--text); margin: 0 0 12px; max-width: 46ch;
+             text-wrap: balance; }
+  .bf-text { font-size: 14px; line-height: 1.65; color: var(--text-2); margin: 0 0 10px;
+             max-width: 68ch; }
+  .bf-text strong { color: var(--text); font-weight: 600; }
+  .bf-sec { border-top: 1px solid var(--border-soft); }
+  .bf-sec summary { cursor: pointer; list-style: none; padding: 11px 0 10px; font-size: 12.5px;
+                    font-weight: 600; color: var(--text-2); display: flex; align-items: center; gap: 8px; }
+  .bf-sec summary::-webkit-details-marker { display: none; }
+  .bf-sec summary:hover { color: var(--accent-deep); }
+  .bf-count { font-size: 11px; font-weight: 500; color: var(--text-3); background: var(--bg-band);
+              border-radius: 999px; padding: 1px 8px; }
+  .bf-sec ul { margin: 0 0 12px; padding-left: 18px; }
+  .bf-sec li { font-size: 13.5px; line-height: 1.55; color: var(--text-2); margin-bottom: 5px; }
+  .bf-none { font-style: italic; }
+
+  /* Task filters. Same pills as the Upwork tab so there is one filter idiom. */
+  .pane-h2 { font-family: var(--serif); font-size: 17px; font-weight: 400;
+             letter-spacing: -.012em; color: var(--text); margin: 4px 0 10px; }
+  .t-filterbar { margin-bottom: 12px; }
+  /* A project name can be a whole sentence on Upwork. The chip keeps the start,
+     which is the part that distinguishes it, and the full name is the tooltip. */
+  .t-filterpill { max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .t-filterpill.active { background: var(--accent-soft); color: var(--accent-deep);
+                         border-color: var(--border-strong); font-weight: 600; }
+
+  /* Tooling tab. inventory.js emits this markup; it arrived in the repo without
+     the styles or the icons it needs, so it would have rendered as a wall of
+     unstyled text with eight empty boxes. */
+  .kpigrid { display: grid; gap: 10px; }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+         box-shadow: var(--shadow-1); overflow: hidden; }
+  .kpi[open] { border-color: var(--border-strong); box-shadow: var(--shadow-2); }
+  .kpi > summary { list-style: none; cursor: pointer; padding: 14px 18px;
+                   display: grid; grid-template-columns: 30px 62px 1fr; gap: 14px;
+                   align-items: center; transition: background .18s var(--ease); }
+  .kpi > summary::-webkit-details-marker { display: none; }
+  .kpi > summary:hover { background: var(--bg-band); }
+  .kpi-ico { color: var(--text-3); display: grid; place-items: center; }
+  .kpi-ico svg { width: 19px; height: 19px; }
+  .kpi-num { font-family: var(--serif); font-size: 23px; font-weight: 400; color: var(--text);
+             letter-spacing: -.02em; text-align: right; }
+  .kpi-lab { font-weight: 600; font-size: 13.5px; color: var(--text); grid-column: 3; }
+  .kpi-sub { grid-column: 3; font-size: 12px; color: var(--text-3); margin-top: 1px; }
+  .kpi-bar { grid-column: 3; height: 4px; border-radius: 999px; background: var(--bg-band);
+             margin-top: 8px; overflow: hidden; }
+  .kpi-bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+  .kpi-body { padding: 4px 18px 16px; border-top: 1px solid var(--border-soft); }
+
+  .ivrow { padding: 9px 0; border-bottom: 1px solid var(--border-soft); }
+  .ivrow:last-child { border-bottom: 0; }
+  .ivname { display: flex; align-items: baseline; gap: 8px; font-size: 13.5px; color: var(--text); }
+  .ivname b { font-weight: 600; }
+  .ivrow p { margin: 2px 0 0 22px; font-size: 12.5px; color: var(--text-3); }
+  .ivtick { color: var(--accent-deep); font-size: 12px; width: 14px; flex: none; }
+  .ivrow.done .ivtick { color: var(--accent-deep); }
+  .ivrow:not(.done) .ivtick { color: var(--text-3); opacity: .5; }
+  .ivempty { font-size: 12.5px; color: var(--text-3); font-style: italic; padding: 8px 0; }
+  .ivmeta, .ivmet { font-size: 12px; color: var(--text-3); }
+  .ivpill, .ivpne, .inv-badge, .inv-bdge { display: inline-block; font-size: 11px; padding: 1px 8px;
+         border-radius: 999px; background: var(--bg-band); color: var(--text-3); }
+  .xref { font-size: 11.5px; color: var(--text-3); }
+  .invrow { border-bottom: 1px solid var(--border-soft); }
+  .invrow > summary { list-style: none; cursor: pointer; padding: 10px 2px;
+                      display: grid; grid-template-columns: 26px 40px 1fr auto 16px;
+                      gap: 12px; align-items: center; }
+  .invrow > summary::-webkit-details-marker { display: none; }
+  .invrow > summary:hover { background: var(--bg-band); }
+  .invrow-ico, .invrow-io { color: var(--text-3); display: grid; place-items: center; }
+  .invrow-ico svg, .invrow-io svg { width: 17px; height: 17px; }
+  .invrow-num { font-family: var(--serif); font-size: 18px; color: var(--text); text-align: right;
+                letter-spacing: -.02em; }
+  .invrow-lab { font-size: 13.5px; font-weight: 600; color: var(--text); }
+  .invrow-sub { font-size: 12px; color: var(--text-3); text-align: right; }
+  .invrow-body { padding: 2px 0 14px 40px; }
+  /* State belongs on the number, not on the row. design.md: a coloured dot or a
+     coloured edge, never a coloured block — and .ok on the container tinted the
+     label and the subtitle along with it, which made half the rows read as links. */
+  .invrow.ok .invrow-num, .kpi.ok .kpi-num { color: var(--accent-deep); }
+  .invrow.none .invrow-num, .kpi.none .kpi-num { color: var(--text-3); }
+  .invrow.none .invrow-lab { color: var(--text-2); }
+
+  /* Demo banner. Loud rather than subtle: someone mistaking these jobs for their
+     own concludes the tool invents work, which is a worse first impression than
+     an empty page would have been. */
+  .demo-banner { background: var(--amber-soft); border: 1px solid var(--amber-border);
+    border-radius: var(--radius); padding: 11px 15px; margin: 16px 0 0; font-size: 13px;
+    color: var(--text-2); }
+  .demo-banner b { color: var(--sev-amber); }
+  .demo-banner code { background: var(--card); }
+
+  nav.tabs { display: flex; gap: 4px; margin: 18px 0 var(--gap); border-bottom: 1px solid var(--border); }
+  /* The System tab embeds SYSTEM.html rather than restating it. One source, and
+     the iframe keeps that page's CSS from colliding with the dashboard's. */
+  .sysframe { width: 100%; height: calc(100vh - 190px); min-height: 460px; border: 1px solid var(--border);
+              border-radius: 10px; background: var(--card); display: block; }
+  .sysnote { font-size: 12.5px; color: var(--text-3); margin: 0 0 10px; }
+  .tab { font: inherit; font-size: 13.5px; font-weight: 500; color: var(--text-3); background: none;
+    border: none; border-bottom: 2px solid transparent; cursor: pointer; padding: 9px 4px; margin-right: 18px; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--brand); border-bottom-color: var(--brand); font-weight: 600; }
+  .tabpane[hidden] { display: none; }
+  .hint { font-size: 12px; color: var(--text-3); margin: 0 0 var(--gap); line-height: 1.5; }
+  .sub { color: var(--text-3); font-size: 13px; }
+  /* Project cards. One per block in PROJECTS.md, and every line is optional —
+     a project with only a name still renders as a card rather than a gap. */
+  .pr-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .pr-card { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
+    background: var(--card); }
+  .pr-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 0 0 6px; }
+  .pr-name { font-weight: 600; font-size: 15px; }
+  .pr-meta { font-size: 12px; color: var(--text-2); }
+  .pr-purpose { margin: 0 0 6px; font-size: 13.5px; line-height: 1.5; }
+  .pr-foot { font-size: 11.5px; color: var(--text-3); margin: 8px 0 0; }
+  .pr-status { margin: 0; font-size: 13px; color: var(--text-2); line-height: 1.5; }
+  .pr-blocker { margin-top: 9px; padding: 8px 11px; border-radius: var(--radius-sm); font-size: 12.5px;
+    background: var(--red-soft); color: var(--red-deep); }
+  .pill { font: inherit; font-size: 12px; font-weight: 500; cursor: pointer;
+    color: var(--text-2); background: var(--card); border: 1px solid var(--border);
+    border-radius: 999px; padding: 4px 12px; }
+  .pill:hover { border-color: var(--brand); }
+
+  /* Task list */
+  .task-list { list-style: none; margin: 0; padding: 0; background: var(--card);
+    border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-1); overflow: hidden; }
+  .task-list li { display: grid; grid-template-columns: 30px minmax(0,1fr) 140px 110px 100px 70px;
+    align-items: center; gap: 10px; padding: 10px 14px; border-top: 1px solid var(--border); font-size: 13px; }
+  .task-list li:first-child { border-top: none; }
+  .c-quad { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 20px;
+    border-radius: 5px; font-size: 10px; font-weight: 700; background: var(--bg); color: var(--text-3); }
+  .c-quad.q1 { background: var(--red-soft); color: var(--sev-red); }
+  .c-quad.q2 { background: var(--accent-soft); color: var(--accent-deep); }
+  .c-quad.q3 { background: var(--amber-soft); color: var(--sev-amber); }
+  .c-proj, .c-cat, .c-status, .c-due { font-size: 11.5px; color: var(--text-3); }
+  /* A due date the renderer could not read. Amber rather than blank, because a
+     blank cell reads as "no deadline" and that is the wrong conclusion. */
+  .c-due-bad { color: var(--sev-amber); border-bottom: 1px dotted var(--amber-border); cursor: help; }
+  .t-note { grid-column: 2 / -1; font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+  @media (max-width: 720px) {
+    .task-list li { grid-template-columns: 24px 1fr; }
+    .c-proj, .c-cat, .c-status, .c-due { display: none; }
+  }
+
+  /* say-btn / apply-btn — every action is "copy a sentence for chat", the
+     dashboard itself never writes anything (see CLAUDE.md in this repo). */
+  .say-btn { font: inherit; font-size: 11.5px; font-weight: 500; cursor: pointer;
+    color: var(--brand-deep); background: var(--brand-soft); border: 1px solid transparent;
+    border-radius: 6px; padding: 3px 10px; }
+  .say-btn:hover { border-color: var(--brand); }
+  .say-btn.done { background: var(--bg); color: var(--text-3); }
+  .apply-btn { font: inherit; font-size: 11.5px; font-weight: 500; cursor: pointer;
+    color: var(--text-2); background: var(--card); border: 1px solid var(--border);
+    border-radius: 6px; padding: 3px 10px; }
+  .apply-btn:hover { border-color: var(--brand); color: var(--text); }
+
+  /* rt-table — generic table shell, shared by the Upwork list view */
+  .rt-table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-1); }
+  .rt-table th { text-align: left; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-3); padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .rt-table td { padding: 11px 14px; border-top: 1px solid var(--border); vertical-align: middle; }
+  .rt-td-name { display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; color: var(--text); }
+  .rt-td-title { display: flex; align-items: center; gap: 7px; }
+  .rt-td-desc { font-size: 11.5px; font-weight: 400; color: var(--text-3); }
+  @media (max-width: 720px) {
+    .rt-table, .rt-table thead, .rt-table tbody, .rt-table th, .rt-table td, .rt-table tr { display: block; }
+    .rt-table thead { display: none; }
+    .rt-table tr { border-top: 1px solid var(--border); padding: 10px 14px; }
+    .rt-table td { border-top: none; padding: 2px 0; }
+  }
+
+  /* Upwork tab: Stage-Board, 1:1 borrowed from the Automatable tracker's
+     PipelineBoard — columns per stage, one accent that deepens, a follow-up
+     chip on the card. */
+  .uw-viewbar { display: flex; gap: 6px; margin: 0 0 10px; }
+  .uw-viewpill.active { background: var(--brand-soft); color: var(--brand-deep); font-weight: 600;
+    border-color: color-mix(in srgb, var(--brand) 35%, transparent); }
+  .uw-filterbar { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; }
+  .uw-filterpill.active { background: var(--brand-soft); color: var(--brand-deep); font-weight: 600;
+    border-color: color-mix(in srgb, var(--brand) 35%, transparent); }
+  .uw-task-btn { color: var(--brand-deep); border-color: color-mix(in srgb, #B0143C 35%, transparent); }
+  /* 250px rather than 280: the board has four stages, and at a typical 1440px
+   window the content column is ~1156px — at 280px the fourth stage wrapped
+   under the first, which is the one thing a pipeline board must not do. */
+.uw-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--gap); align-items: start; }
+  .uw-col { display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: var(--shadow-1); overflow: hidden; }
+  .uw-col-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+    padding: 11px 13px; border-top: 3px solid var(--border); border-bottom: 1px solid var(--border); }
+  .uw-col-title { font-size: 13.5px; font-weight: 700; letter-spacing: -.01em; }
+  .uw-col-hint { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .uw-col-count { flex: none; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums;
+    border-radius: 999px; padding: 2px 8px; }
+  .uw-col-body { list-style: none; margin: 0; padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+  .uw-empty { list-style: none; text-align: center; padding: 14px 0; font-size: 12px; color: var(--text-3); }
+  .uw-card { list-style: none; border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; background: var(--bg); }
+  .uw-card.due { background: color-mix(in srgb, #B0143C 7%, var(--bg));
+    border-color: color-mix(in srgb, #B0143C 30%, var(--border)); }
+  .uw-row.due { background: color-mix(in srgb, #B0143C 7%, transparent); }
+  .uw-card-top { display: flex; align-items: baseline; gap: 7px; }
+  .uw-card-title { font-size: 12.5px; font-weight: 600; line-height: 1.3; }
+  .uw-card-meta { margin-top: 3px; font-size: 11px; color: var(--text-3); }
+  .uw-card-rationale { margin-top: 4px; font-size: 11.5px; color: var(--text-2); line-height: 1.4; }
+  .uw-score { display: inline-flex; align-items: center; justify-content: center; min-width: 26px;
+    font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; border-radius: 6px;
+    padding: 1px 5px; color: var(--brand-deep); background: var(--brand-soft); }
+  .uw-score.strong { color: #fff; background: var(--brand); }
+  /* Job detail. The panel is rendered inside its row and hidden; opening clones it
+     into the dialog, so the markup has one source and the table stays the truth. */
+  .is-openable { cursor: pointer; }
+  .uw-row.is-openable:hover { background: var(--bg-band); }
+  .uw-open { font: inherit; color: var(--accent-deep); background: none; border: 0;
+    padding: 0; cursor: pointer; text-align: left; font-weight: 500; }
+  .uw-open:hover { text-decoration: underline; }
+  .uw-modal { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0;
+    max-width: 640px; width: calc(100% - 40px); background: var(--card);
+    box-shadow: var(--shadow-2); color: var(--text-2); position: relative; }
+  .uw-modal::backdrop { background: rgba(28, 23, 18, .38); }
+  .uw-modal-body { padding: 26px 28px 24px; }
+  .uw-modal-body h3 { font-family: var(--serif); font-weight: 400; font-size: 21px;
+    letter-spacing: -.015em; color: var(--text); margin: 0 0 16px; padding-right: 30px; }
+  .uw-modal-x { position: absolute; top: 12px; right: 14px; font-size: 22px; line-height: 1;
+    background: none; border: 0; color: var(--text-3); cursor: pointer; padding: 4px 8px; }
+  .uw-modal-x:hover { color: var(--text); }
+  .uw-d-grid { margin: 0; display: grid; gap: 0; }
+  .uw-d-row { display: grid; grid-template-columns: 150px 1fr; gap: 14px;
+    padding: 9px 0; border-top: 1px solid var(--border-soft); }
+  .uw-d-row:first-child { border-top: 0; }
+  .uw-d-row.wide { grid-template-columns: 1fr; gap: 4px; }
+  .uw-d-row dt { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-3); padding-top: 2px; }
+  .uw-d-row dd { margin: 0; font-size: 14px; color: var(--text); }
+  .uw-d-note { color: var(--text-3); font-size: 12.5px; }
+  .uw-d-screen { background: var(--amber-soft); border: 1px solid var(--amber-border);
+    border-radius: var(--radius-sm); padding: 9px 11px; font-size: 13.5px; }
+  .uw-d-empty { font-size: 13.5px; color: var(--text-3); font-style: italic; margin: 0; }
+  .uw-d-desc { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-soft); }
+  .uw-d-desc summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--accent-deep); }
+  .uw-d-desc p { margin-top: 9px; font-size: 13.5px; white-space: pre-wrap; color: var(--text-2); }
+
+  /* The daily tracker. Sits above the views because it is the daily handle, and
+     anything behind a click does not get looked at. */
+  .uw-tracker { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 18px 20px 16px; box-shadow: var(--shadow-1); margin-bottom: var(--gap); }
+  .uw-tracker-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .uw-tracker-title { font-family: var(--serif); font-size: 17px; color: var(--text);
+    letter-spacing: -.012em; }
+  .uw-tracker-count { font-size: 14px; color: var(--text-2); }
+  .uw-tracker-count b { font-family: var(--serif); font-size: 21px; color: var(--text);
+    letter-spacing: -.02em; }
+  .uw-tracker-meta { margin-left: auto; font-size: 12px; color: var(--text-3); }
+  .uw-progress { height: 6px; border-radius: 999px; background: var(--bg-band);
+    margin: 12px 0 14px; overflow: hidden; }
+  /* scaleX rather than width, same reason as the onboarding page: width forces a
+     layout pass per frame, transform does not touch layout. */
+  .uw-progress-fill { display: block; height: 100%; width: 100%; background: var(--accent);
+    border-radius: 999px; transform-origin: left; transition: transform .3s var(--ease); }
+  .uw-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  /* Every day gets a track, so an empty day reads as empty and not as missing. A bar
+     at 2% of the height was 0.8px in the palest colour on the page, which is to say
+     it was not there at all. */
+  .uw-daybar { position: relative; height: 42px; border-radius: var(--radius-sm);
+    background: var(--bg-band); display: flex; align-items: flex-end; justify-content: center; }
+  /* The fill was --accent-soft on a --bg-band track: 1.01:1, which is not "faint",
+     it is the same colour. Measured, not eyeballed. Both states use a fill that
+     clears 3:1 against the track, and the difference between a partial day and a
+     met one is carried by height plus the darker tone, not by tint alone. */
+  .uw-daybar-fill { display: block; width: 100%; border-radius: var(--radius-sm);
+    background: var(--accent); min-height: 5px; }        /* 3.20:1 on the track */
+  .uw-daybar.hit .uw-daybar-fill { background: var(--accent-deep); }  /* 4.54:1 */
+  .uw-daybar.future { opacity: .45; }
+  .uw-daybar-lbl { position: absolute; bottom: -17px; left: 0; right: 0; text-align: center;
+    font-size: 10px; color: var(--text-3); }
+  .uw-next { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-top: 28px; padding-top: 12px; border-top: 1px solid var(--border-soft); font-size: 13px; }
+  .uw-next-lbl { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-3); }
+  .uw-next-title { color: var(--text); font-weight: 600; }
+  .uw-batch-btn { font-weight: 600; }
+
+  .uw-project { font-size: 11.5px; color: var(--text-3); }
+  .uw-project code { font-size: 11px; }
+  /* A pipeline is a progression, so the badge reads as one: nothing has happened
+     yet is quiet, you acted gets an edge, they replied gets the tint, done is
+     filled. One flat grey for every stage said nothing and looked washed out. */
+  .uw-status { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-3); background: var(--bg-band); border: 1px solid var(--border);
+    border-radius: 999px; padding: 3px 9px; white-space: nowrap; display: inline-block; }
+  .uw-status.new, .uw-status.notified { color: var(--text-2); }
+  .uw-status.proposal_sent { color: var(--accent-deep); border-color: var(--border-strong);
+    background: var(--card); }
+  .uw-status.interviewing { color: var(--accent-deep); background: var(--accent-soft);
+    border-color: var(--accent-soft); }
+  .uw-status.offer_sent { color: var(--on-accent); background: var(--accent-deep);
+    border-color: var(--accent-deep); }
+  .uw-status.hired { color: var(--on-ink); background: var(--ink); border-color: var(--ink); }
+  .uw-status.rejected, .uw-status.archived, .uw-status.ignored {
+    color: var(--text-3); background: transparent; border-style: dashed; }
+  .uw-due-badge { display: inline-block; margin-top: 3px; font-size: 10.5px; font-weight: 700;
+    color: var(--sev-red); }
+  .uw-desc { margin-top: 4px; font-size: 11.5px; }
+  .uw-desc summary { cursor: pointer; color: var(--brand-deep); font-weight: 600; }
+  .uw-desc p { margin-top: 4px; color: var(--text-2); white-space: pre-wrap; }
+  .uw-budget { font-size: 12.5px; color: var(--text-2); max-width: 130px; line-height: 1.35; }
+  .uw-client { font-size: 11.5px; color: var(--text-3); }
+  .uw-ago { font-size: 10.5px; color: var(--text-3); font-weight: 400; white-space: nowrap; }
+  .uw-status-cell { white-space: nowrap; }
+  .uw-actions { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+  .uw-actions .say-btn, .uw-actions .apply-btn { padding: 2px 7px; font-size: 10.5px; }
+  .uw-funnel { display: flex; flex-direction: column; gap: 7px; margin: 0 0 4px; }
+  .uw-funnel-row { display: grid; grid-template-columns: 120px 1fr 32px 150px; align-items: center; gap: 10px; }
+  .uw-funnel-label { font-size: 12px; color: var(--text-2); font-weight: 500; }
+  .uw-funnel-track { height: 16px; border-radius: 5px; background: var(--bg); overflow: hidden; }
+  .uw-funnel-bar { display: block; height: 100%; border-radius: 5px; background: var(--brand); }
+  .uw-funnel-count { font-size: 13px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+  .uw-funnel-pct { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .uw-funnel-note { margin: 2px 0 14px; font-size: 10.5px; color: var(--text-3); }
+  @media (max-width: 640px) { .uw-funnel-row { grid-template-columns: 90px 1fr 28px; } .uw-funnel-pct { display: none; } }
+
+/* ── Upwork tab: rules carried over with the screener block ── */
+.uw-desc-src { margin-top: 4px; font-size: 10px; font-family: ui-monospace, monospace; color: var(--text-3); opacity: .6; }
+.uw-status.notified { color: var(--brand-deep); border-color: var(--brand); }
+.uw-closed { margin-top: var(--gap); }
+.uw-closed summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--text-2); padding: 6px 2px; }
+.uw-closed-list { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.uw-closed-list li { font-size: 12px; color: var(--text-2); display: flex; align-items: center; gap: 7px; }
+.uw-langbar { display: flex; justify-content: flex-end; gap: 4px; margin: -4px 0 8px; }
+.uw-langpill { padding: 3px 10px; font-size: 11px; }
+.uw-langpill.active { background: var(--brand-soft); color: var(--brand-deep); font-weight: 600; border-color: color-mix(in srgb, var(--brand) 35%, transparent); }
+.uw-tracker-stand { margin-left: auto; font-size: 12px; color: var(--text-2); }
+.uw-daybar.none .uw-daybar-fill { background: color-mix(in srgb, var(--brand) 20%, var(--border)); }
+.uw-daybar.future .uw-daybar-lbl { opacity: .5; }
+.uw-tiles { display: flex; flex-wrap: wrap; margin: 0 0 20px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.uw-tile { flex: 1 1 190px; padding: 12px 16px; display: flex; flex-direction: column; gap: 1px; border-left: 1px solid var(--border); }
+.uw-tile:first-child { border-left: 0; }
+.uw-tile-lbl { font-size: 12px; color: var(--text-2); }
+.uw-tile-val { font-size: 24px; font-weight: 700; line-height: 1.25; color: var(--brand-deep); font-variant-numeric: tabular-nums; }
+.uw-tile-val.empty { font-size: 20px; font-weight: 400; color: var(--text-3); }
+.uw-tile-hint { font-size: 12px; color: var(--text-2); }
+#pane-upwork .uw-batch-btn { margin-left: auto; background: var(--brand); color: #fff; font-weight: 600; border-color: var(--brand); }
+#pane-upwork .uw-batch-btn:hover { background: var(--brand-deep); border-color: var(--brand-deep); }
+#pane-upwork .uw-batch-btn.done { background: var(--brand-deep); border-color: var(--brand-deep); }
+.uw-score-legend { font-size: 12px; color: var(--text-2); margin: -4px 0 10px; }
+.uw-me { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px 12px; margin: 0 0 14px; background: var(--card); }
+.uw-me-head { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+.uw-me-sub { font-weight: 400; color: var(--text-2); margin-left: 8px; font-size: 12px; }
+.uw-me-stats { display: flex; flex-wrap: wrap; gap: 8px 26px; }
+.uw-me-stat { display: flex; flex-direction: column; gap: 1px; }
+.uw-me-val { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.uw-me-lbl { font-size: 11.5px; color: var(--text-2); }
+.uw-me-notes { margin: 12px 0 0; padding: 10px 0 0 18px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-2); line-height: 1.5; }
+.uw-me-notes li + li { margin-top: 5px; }
+.uw-comp-n { font-variant-numeric: tabular-nums; font-size: 13px; }
+.uw-comp-n.low { color: var(--ok, #1a7f4b); font-weight: 600; }
+.uw-comp-n.high { color: var(--text-2); }
+.uw-comp-inv { display: block; font-size: 11px; color: var(--text-2); margin-top: 2px; }
+.uw-due-inline { display: block; margin-top: 4px; }
+.uw-excluded { font-size: 12px; color: var(--text-2); margin: 10px 0 0; }
+.uw-clienthist, .uw-questions { margin: 6px 0 0; padding-left: 18px; font-size: 12.5px; color: var(--text-2); line-height: 1.6; }
+.uw-clienthist { list-style: none; padding-left: 0; }
+.uw-clienthist li { display: flex; justify-content: space-between; gap: 12px; }
+.uw-hist-fb { color: var(--text-2); flex: none; font-variant-numeric: tabular-nums; }
+.uw-stagechip, .uw-duechip { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.uw-stagechip.closed { background: var(--bg); color: var(--text-2); }
+.uw-duechip.over { background: var(--red-soft); color: var(--red-deep); }
+.uw-duechip.soon { background: var(--amber-soft, #FDF0E3); color: var(--amber-deep, #8A3A06); }
+.uw-due-none { color: var(--text-3); }
+.uw-stage-cell, .uw-due-cell { white-space: nowrap; }
+/* nowrap, because the flag sits at the end of a title that wraps: without it
+   "full time" breaks across two lines and lands on top of the title's own
+   second line. */
+.uw-flag { display: inline-block; margin-left: 7px; padding: 1px 7px; border-radius: 999px; font-size: 10.5px; font-weight: 600; vertical-align: middle; white-space: nowrap; }
+.uw-flag.gone { background: var(--bg); color: var(--text-2); }
+.uw-flag.bar { background: var(--red-soft); color: var(--red-deep); }
+.uw-flag.soft { background: var(--amber-soft, #FDF0E3); color: var(--amber-deep, #8A3A06); }
+.uw-connects { display: block; font-size: 11.5px; color: var(--text-2); margin-top: 2px; }
+.uw-lage { margin: 4px 0 0; display: flex; flex-direction: column; gap: 4px; }
+.uw-lage-row { display: flex; gap: 10px; font-size: 13.5px; }
+.uw-lage dt { color: var(--text-2); min-width: 132px; flex: none; }
+.uw-lage dd { margin: 0; }
+.uw-nodata { font-size: 13px; color: var(--text-2); }
+.uw-screening { margin: 10px 0 0; padding: 9px 11px; border-radius: 8px; font-size: 13px; background: var(--amber-soft, #FDF0E3); color: var(--amber-deep, #8A3A06); }
+.uw-card, .uw-row { cursor: pointer; }
+.uw-modal-close { position: absolute; top: 12px; right: 12px; border: 0; background: transparent; font-size: 15px; line-height: 1; cursor: pointer; color: var(--text-3); padding: 6px; border-radius: 6px; }
+.uw-modal-close:hover { color: var(--text); background: var(--bg); }
+.uw-detail-head { display: flex; align-items: flex-start; gap: 10px; margin: 0 26px 6px 0; }
+.uw-detail-head h3 { margin: 0; font-size: 18px; line-height: 1.3; }
+.uw-detail-meta { margin: 0 0 14px; font-size: 12.5px; color: var(--text-2); }
+.uw-modal-body h4 { margin: 16px 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-2); }
+.uw-modal-body p { margin: 0; font-size: 14px; line-height: 1.55; }
+.uw-hist { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.uw-hist li { display: flex; gap: 10px; font-size: 13px; }
+.uw-hist-when { color: var(--text-2); font-variant-numeric: tabular-nums; min-width: 78px; }
+.uw-modal .uw-actions { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 6px; }
+.uw-viewbar .uw-viewpill { border: 0; border-left: 1px solid var(--border); border-radius: 0; padding: 6px 14px; }
+.uw-viewbar .uw-viewpill:first-child { border-left: 0; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Automatable OS</h1>
+  <div class="sub">Saturday, 22 August 2026 · Sam</div>
+</header>
+<div class="wrap">
+<div class="demo-banner"><b>This is example data.</b> You have none of your own yet, so the dashboard is showing the demo/ folder to give you something to look at. The setup deletes it, or you can, with <code>rm -rf demo/</code></div>
+  <nav class="tabs" id="tabs">
+    <button class="tab" data-tab="today">Today</button>
+    <button class="tab" data-tab="projects">Projects</button>
+    <button class="tab" data-tab="upwork">Upwork</button>
+    <button class="tab" data-tab="tooling">Tooling</button>
+    <button class="tab" data-tab="onboarding">Onboarding</button>
+    <button class="tab" data-tab="system">System</button>
+  </nav>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <g id="i-open" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 12l5 5L20 6"/></g>
+      <g id="i-cmd" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M7 10l3 2.5-3 2.5M12.5 15.5H17"/></g>
+      <g id="i-cli" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 6l5 6-5 6M12 18h8"/></g>
+      <g id="i-plug" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 01-12 0zM12 17v4"/></g>
+      <g id="i-puzzle" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 4h4v2.5a2 2 0 104 0V9h2v4h-2.5a2 2 0 100 4H20v3h-6v-2.5a2 2 0 10-4 0V20H4v-6h2.5a2 2 0 100-4H4V6h6z"/></g>
+      <g id="i-key" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="8" cy="12" r="3.5"/><path d="M11.5 12H21M18 12v3M15 12v2.5"/></g>
+      <g id="i-repo" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 4.5A1.5 1.5 0 016.5 3H19v14H6.5A1.5 1.5 0 005 18.5zM5 18.5V21h14v-4"/></g>
+      <g id="i-clock" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="8.5"/><path d="M12 7v5.2l3.2 2"/></g>
+    </defs>
+  </svg>
+
+  <div class="tabpane" id="pane-today" hidden>
+    <p class="hint">This view is read-only. Every action runs through your Claude Code chat — buttons here just copy a ready sentence to paste. Tasks come from <code>context/STATUS.md</code>.</p>
+<div class="bf"><p class="bf-lead">One project just landed, and two proposals are waiting on other people.</p><p class="bf-text">The <strong>dental clinic audit</strong> came through, so today starts with the scope call rather
+than with acquisition. Everything they sent is already in the project&#x27;s <code>inputs/</code>
+folder, including the pitch page they clicked through twice before saying yes.</p><p class="bf-text">The <strong>media-manager proposal</strong> has gone quiet. The follow-up was due yesterday, and
+it has been viewed twice since it went out, which is usually budget rather than fit.
+One short message today, not three next week.</p><p class="bf-text">Two new jobs came in overnight, the stronger one at 84 with a client who hires
+almost everything they post. Neither is urgent, and both will still be there after
+the call.</p><details class="bf-sec" open><summary>Waiting on<span class="bf-count">2</span></summary><ul><li>Media-manager client, since 2026-08-11 (4 days). If nothing comes by Monday the slot goes to the analytics job.</li><li>Conversion-tracking client, since 2026-08-14 (1 day). The offer is out, no answer yet.</li></ul></details><details class="bf-sec"><summary>Since yesterday<span class="bf-count">2</span></summary><ul><li>Won the dental clinic audit. Project created, proposal and pitch page moved in.</li><li>Conversion-tracking client asked for an offer and got one.</li></ul></details></div>
+    <h2 class="pane-h2">Open to-dos</h2>
+    <div class="uw-filterbar t-filterbar"><button type="button" class="pill t-filterpill active" data-tfilter="all" title="All">All</button><button type="button" class="pill t-filterpill" data-tfilter="due" title="Due">Due</button><button type="button" class="pill t-filterpill" data-tfilter="q1" title="Q1">Q1</button><button type="button" class="pill t-filterpill" data-tfilter="q2" title="Q2">Q2</button><button type="button" class="pill t-filterpill" data-tfilter="q3" title="Q3">Q3</button><button type="button" class="pill t-filterpill" data-tfilter="p:Bright Smile Google Ads audit" title="Bright Smile Google Ads audit">Bright Smile Google Ads audit</button><button type="button" class="pill t-filterpill" data-tfilter="p:Upwork" title="Upwork">Upwork</button></div><ul class="task-list"><li data-quadrant="q1" data-proj="Bright Smile Google Ads audit" data-due="1"><span class="c-quad q1" title="urgent + important">Q1</span><span class="t-text">Confirm scope and first deliverable with the client</span><span class="c-proj">Bright Smile Google Ads audit</span><span class="c-cat">Preparation</span><span class="c-status">open</span><span class="c-due">2026-08-16</span><div class="t-note">Everything they sent is in <code>projects/bright-smile-google-ads-audit/inputs/</code>. Read it before replying.</div></li><li data-quadrant="q2" data-proj="Bright Smile Google Ads audit" data-due=""><span class="c-quad q2" title="not urgent + important">Q2</span><span class="t-text">Pull the last 90 days of search-term data</span><span class="c-proj">Bright Smile Google Ads audit</span><span class="c-cat">Deep Work</span><span class="c-status">open</span><span class="c-due"></span><div class="t-note">Nothing the audit says about wasted spend is provable without it.</div></li><li data-quadrant="q2" data-proj="Upwork" data-due=""><span class="c-quad q2" title="not urgent + important">Q2</span><span class="t-text">Refresh the portfolio section on the profile</span><span class="c-proj">Upwork</span><span class="c-cat">Admin</span><span class="c-status">open</span><span class="c-due"></span><div class="t-note">Two of the four entries are from 2024.</div></li><li data-quadrant="q3" data-proj="Upwork" data-due="1"><span class="c-quad q3" title="urgent + not important">Q3</span><span class="t-text">Follow up on the media-manager proposal</span><span class="c-proj">Upwork</span><span class="c-cat">Communication</span><span class="c-status">open</span><span class="c-due">2026-08-14</span><div class="t-note">Sent four days ago, viewed twice, then quiet. One short message, not three next week.</div></li></ul>
+  </div><!-- /pane-today -->
+
+  <div class="tabpane" id="pane-projects" hidden>
+    <p class="hint">How each project stands, from <code>context/PROJECTS.md</code>. The open to-dos live on the Today tab; this is the state, not the work.</p>
+    <div class="pr-grid"><div class="pr-card"><div class="pr-head"><span class="pr-name">Bright Smile Google Ads audit</span><span class="pr-meta">Planning</span></div><p class="pr-purpose">Six clinics on one ad account, and spend doubled without more bookings. We find out where it goes.</p><p class="pr-status">Just won, nothing delivered yet. The scope call is the first step.</p><p class="pr-foot">Bright Smile Group · Upwork job <code>demo-6</code></p></div></div>
+  </div><!-- /pane-projects -->
+
+  <div class="tabpane" id="pane-upwork" hidden>
+    <p class="hint">Pipeline: Applied → In contact → Offer sent → Won. The buttons on a row or card only copy a chat sentence — pasting it and sending it is what actually moves the job, or run <code>python3 reference/scripts/upwork_status.py set &lt;id&gt; &lt;status&gt;</code> yourself.</p>
+<div class="uw-tracker"><div class="uw-tracker-head"><span class="uw-tracker-title">Today</span><span class="uw-tracker-count"><b>0</b> / 5 proposals</span><span class="uw-tracker-meta">0-day streak · this week 0</span><span class="uw-tracker-stand">as of 15 Aug 14:24</span></div><div class="uw-progress"><span class="uw-progress-fill" style="width:0%"></span></div><div class="uw-days"><span class="uw-daybar none" title="2026-08-17: 0"><span class="uw-daybar-fill" style="height:0%"></span><span class="uw-daybar-lbl">Mon</span></span><span class="uw-daybar none" title="2026-08-18: 0"><span class="uw-daybar-fill" style="height:0%"></span><span class="uw-daybar-lbl">Tue</span></span><span class="uw-daybar none" title="2026-08-19: 0"><span class="uw-daybar-fill" style="height:0%"></span><span class="uw-daybar-lbl">Wed</span></span><span class="uw-daybar none" title="2026-08-20: 0"><span class="uw-daybar-fill" style="height:0%"></span><span class="uw-daybar-lbl">Thu</span></span><span class="uw-daybar none" title="2026-08-21: 0"><span class="uw-daybar-fill" style="height:0%"></span><span class="uw-daybar-lbl">Fri</span></span><span class="uw-daybar none" title="2026-08-22: 0"><span class="uw-daybar-fill" style="height:0%"></span><span class="uw-daybar-lbl">Sat</span></span><span class="uw-daybar future" title="2026-08-23: 0"><span class="uw-daybar-lbl">Sun</span></span></div><div class="uw-next"><span class="uw-next-lbl">Up next:</span><a href="https://www.upwork.com/nx/search/jobs/?q=Google%20Ads%20specialist%20audit%20and%20optimisation" target="_blank" rel="noopener">Google Ads specialist, audit and optimisation</a><span class="uw-score strong">84</span><button type="button" class="say-btn" data-say="Generate the pitch page for Upwork job demo-1 (&quot;Google Ads specialist, audit and optimisation&quot;)">Yes, generate it</button><button type="button" class="say-btn uw-batch-btn" data-say="Work through my Upwork goal for today: 5 applications, one after the other. demo-1 &quot;Google Ads specialist, audit and optimisation&quot; · demo-4 &quot;Rebuild reporting so the weekly numbers land in Slack&quot; · demo-7 &quot;SEO content plan for a B2B software company&quot; · demo-2 &quot;Digital analytics implementation specialist&quot; · demo-5 &quot;Conversion tracking across three landing pages&quot;. For each job check briefly whether it really fits, then the proposal, then show it to me before anything goes out.">Start today&#x27;s batch (5)</button></div></div><div class="uw-viewbar"><button type="button" class="pill uw-viewpill active" data-uwview="list">List</button><button type="button" class="pill uw-viewpill" data-uwview="board">Pipeline</button><button type="button" class="pill uw-viewpill" data-uwview="stats">Insights</button></div><div class="uw-view uw-view-list"><div class="uw-me"><div class="uw-me-head">Where you stand<span class="uw-me-sub">the numbers client minimums test against</span></div><div class="uw-me-stats"><div class="uw-me-stat"><span class="uw-me-val">142</span><span class="uw-me-lbl">Connects</span></div><div class="uw-me-stat"><span class="uw-me-val">6–20 proposals</span><span class="uw-me-lbl">buys you</span></div><div class="uw-me-stat"><span class="uw-me-val">88%</span><span class="uw-me-lbl">Job Success</span></div><div class="uw-me-stat"><span class="uw-me-val">$24,150</span><span class="uw-me-lbl">earned</span></div><div class="uw-me-stat"><span class="uw-me-val">310 h</span><span class="uw-me-lbl">billed</span></div><div class="uw-me-stat"><span class="uw-me-val">$55.00</span><span class="uw-me-lbl">hourly rate</span></div></div><ul class="uw-me-notes"><li>Profile is set to America/New_York while you work from Europe. Clients read availability off this.</li></ul></div><div class="uw-filterbar"><button type="button" class="pill uw-filterpill active" data-uwfilter="all">All</button><button type="button" class="pill uw-filterpill" data-uwfilter="stage:offen">Not applied</button><button type="button" class="pill uw-filterpill" data-uwfilter="stage:outreach">Applied</button><button type="button" class="pill uw-filterpill" data-uwfilter="stage:in_kontakt">In contact</button><button type="button" class="pill uw-filterpill" data-uwfilter="stage:angebot">Offer sent</button><button type="button" class="pill uw-filterpill" data-uwfilter="todo">Has a to-do</button><button type="button" class="pill uw-filterpill" data-uwfilter="due">Due today</button><button type="button" class="pill uw-filterpill" data-uwfilter="stage:closed">Closed</button></div><p class="uw-score-legend">Score 0 to 100 from niche fit, client quality, deal size and recency. 70 and up is strong.</p><table class="rt-table uw-table"><colgroup><col style="width:6%"><col style="width:34%"><col style="width:13%"><col style="width:11%"><col style="width:12%"><col style="width:9%"><col style="width:15%"></colgroup><thead><tr><th>Score</th><th>Job</th><th>Client</th><th>Competition</th><th>Budget</th><th>Posted</th><th>Stage</th></tr></thead><tbody><tr class="uw-row due" data-uwstatus="interviewing" data-uwstage="in_kontakt" data-uwtodo="1" data-uwdue="1" tabindex="0"><td><span class="uw-score strong">79</span></td><td class="rt-td-name"><span class="rt-td-title">Rebuild reporting so the weekly numbers land in Slack</span><span class="rt-td-desc">Every Monday someone assembles the week&#x27;s performance numbers by hand in a spreadsheet and pastes them into Slack. They want that to happen without a person in the middle, and they named the exact stack it has to read from.</span><span class='rt-td-why'>They named the tools, so the scope is real rather than a wish.</span><div class="uw-detail" hidden><div class="uw-detail-head"><span class="uw-score strong">79</span><h3><a href="https://www.upwork.com/nx/search/jobs/?q=Rebuild%20reporting%20weekly%20numbers%20Slack" target="_blank" rel="noopener">Rebuild reporting so the weekly numbers land in Slack</a></h3></div><p class="uw-detail-meta">4.8★ · 22/25 hires · $1,200 fixed · 13 days ago · In contact</p><span class="uw-due-badge">Follow-up due (2026-08-17)</span><h4>Why this job</h4><p>They named the tools, so the scope is real rather than a wish.</p><h4>Description</h4><p>Every Monday someone assembles the week&#x27;s performance numbers by hand in a spreadsheet and pastes them into Slack. They want that to happen without a person in the middle, and they named the exact stack it has to read from.</p><h4>Where this application stands</h4><dl class="uw-lage"><div class="uw-lage-row"><dt>Costs</dt><dd>12 connects</dd></div><div class="uw-lage-row"><dt>Competing bids</dt><dd>$54.0 average bid, $30–95 range</dd></div><div class="uw-lage-row"><dt>Proposals so far</dt><dd>9</dd></div><div class="uw-lage-row"><dt>Client status</dt><dd>1 invitations sent</dd></div><div class="uw-lage-row"><dt>Minimum bar</dt><dd>JSS ≥ 75% · 100 hrs experience · $$1K++</dd></div><div class="uw-lage-row"><dt>Fit</dt><dd>You clear the bar</dd></div><div class="uw-lage-row"><dt>Engagement</dt><dd>part time · Intermediate</dd></div><div class="uw-lage-row"><dt>Client is in</dt><dd>Hamburg, Germany · Europe/Berlin</dd></div></dl><h4>Required screening questions</h4><ol class="uw-questions"><li>Which reporting tools have you connected to Slack before?</li></ol><h4>History</h4><ul class="uw-hist"><li><span class="uw-hist-when">2026-08-09</span><span>New</span></li><li><span class="uw-hist-when">2026-08-09</span><span>Proposal sent</span></li><li><span class="uw-hist-when">2026-08-14</span><span>In contact</span></li></ul><div class="uw-actions"><button type="button" class="say-btn" data-say="Set Upwork job demo-4 to &quot;Offer sent&quot;.">Offer sent →</button><button type="button" class="say-btn uw-task-btn" data-say="Add a task: follow up on Upwork job &quot;Rebuild reporting so the weekly numbers land in Slack&quot; (due 2026-08-17).">+ Add task</button></div></div></td><td class="uw-client">4.8★ · 22/25 hires</td><td class="uw-comp"><span class="uw-comp-n">9 bids</span><span class="uw-comp-inv">1 invited</span></td><td class="uw-budget">$1,200 fixed<span class="uw-connects">12 connects</span></td><td class="uw-ago">13 days ago</td><td class="uw-stage-cell"><span class="uw-stagechip" style="background:color-mix(in srgb, var(--brand) 74%, var(--card)); color:color-mix(in srgb, var(--brand) 55%, var(--text))">In contact</span><span class="uw-due-inline"><span class="uw-duechip over">5d overdue</span></span></td></tr><tr class="uw-row due" data-uwstatus="proposal_sent" data-uwstage="outreach" data-uwtodo="1" data-uwdue="1" tabindex="0"><td><span class="uw-score strong">74</span></td><td class="rt-td-name"><span class="rt-td-title">SEO content plan for a B2B software company</span><span class="rt-td-desc">They rank for their own brand name and nothing else, and want a twelve-month plan rather than someone writing articles. Decision maker is the founder, which usually means a short chain to yes.</span><span class='rt-td-why'>Strategy rather than production work, and the founder is the one deciding.</span><div class="uw-detail" hidden><div class="uw-detail-head"><span class="uw-score strong">74</span><h3><a href="https://www.upwork.com/nx/search/jobs/?q=SEO%20content%20plan%20B2B%20software" target="_blank" rel="noopener">SEO content plan for a B2B software company</a></h3></div><p class="uw-detail-meta">4.95★ · 58/64 hires · $1,800 fixed · 10 days ago · Proposal sent</p><span class="uw-due-badge">Follow-up due (2026-08-16)</span><h4>Why this job</h4><p>Strategy rather than production work, and the founder is the one deciding.</p><h4>Description</h4><p>They rank for their own brand name and nothing else, and want a twelve-month plan rather than someone writing articles. Decision maker is the founder, which usually means a short chain to yes.</p><h4>Where this application stands</h4><dl class="uw-lage"><div class="uw-lage-row"><dt>Costs</dt><dd>13 connects</dd></div><div class="uw-lage-row"><dt>Competing bids</dt><dd>$58.9 average bid, $32–110 range</dd></div><div class="uw-lage-row"><dt>Proposals so far</dt><dd>18</dd></div><div class="uw-lage-row"><dt>Client status</dt><dd>2 invitations sent</dd></div><div class="uw-lage-row"><dt>Minimum bar</dt><dd>JSS ≥ 80% · $$1K++</dd></div><div class="uw-lage-row"><dt>Fit</dt><dd>You clear the bar</dd></div><div class="uw-lage-row"><dt>Engagement</dt><dd>part time · Expert</dd></div><div class="uw-lage-row"><dt>Client is in</dt><dd>Toronto, Canada</dd></div></dl><h4>Required screening questions</h4><ol class="uw-questions"><li>Link one content plan you have written that shipped.</li><li>How do you decide what not to write about?</li></ol><h4>History</h4><ul class="uw-hist"><li><span class="uw-hist-when">2026-08-12</span><span>New</span></li><li><span class="uw-hist-when">2026-08-12</span><span>Proposal sent</span></li></ul><div class="uw-actions"><button type="button" class="say-btn" data-say="Generate the pitch page for Upwork job demo-7 (&quot;SEO content plan for a B2B software company&quot;)">Yes, generate it</button><button type="button" class="apply-btn" data-url="https://www.upwork.com/nx/search/jobs/?q=SEO%20content%20plan%20B2B%20software">Apply</button><button type="button" class="say-btn" data-say="Set Upwork job demo-7 to &quot;In contact&quot;, the client replied.">Got a reply →</button><button type="button" class="say-btn uw-task-btn" data-say="Add a task: follow up on Upwork job &quot;SEO content plan for a B2B software company&quot; (due 2026-08-16).">+ Add task</button></div></div></td><td class="uw-client">4.95★ · 58/64 hires</td><td class="uw-comp"><span class="uw-comp-n">18 bids</span><span class="uw-comp-inv">2 invited</span></td><td class="uw-budget">$1,800 fixed<span class="uw-connects">13 connects</span></td><td class="uw-ago">10 days ago</td><td class="uw-stage-cell"><span class="uw-stagechip" style="background:color-mix(in srgb, var(--brand) 48%, var(--card)); color:color-mix(in srgb, var(--brand) 55%, var(--text))">Applied</span><span class="uw-due-inline"><span class="uw-duechip over">6d overdue</span></span></td></tr><tr class="uw-row due" data-uwstatus="proposal_sent" data-uwstage="outreach" data-uwtodo="1" data-uwdue="1" tabindex="0"><td><span class="uw-score">66</span></td><td class="rt-td-name"><span class="rt-td-title">Media manager for Google Ads and Meta campaigns<span class="uw-flag soft">full time</span></span><span class="rt-td-desc">An agency subcontracting media buying across Google and Meta, posting new roles constantly. Full-time engagement, intermediate level, and they have invited 11 people already.</span><span class='rt-td-why'>Huge hire count, but the budget field reads like a placeholder. Worth one follow-up.</span><div class="uw-detail" hidden><div class="uw-detail-head"><span class="uw-score">66</span><h3><a href="https://www.upwork.com/nx/search/jobs/?q=Media%20manager%20for%20Google%20Ads%20and%20Meta%20campaigns" target="_blank" rel="noopener">Media manager for Google Ads and Meta campaigns</a></h3></div><p class="uw-detail-meta">4.98★ · 634/676 hires · $10 fixed, likely a placeholder · 11 days ago · Proposal sent</p><span class="uw-due-badge">Follow-up due (2026-08-14)</span><h4>Why this job</h4><p>Huge hire count, but the budget field reads like a placeholder. Worth one follow-up.</p><h4>Description</h4><p>An agency subcontracting media buying across Google and Meta, posting new roles constantly. Full-time engagement, intermediate level, and they have invited 11 people already.</p><h4>Where this application stands</h4><dl class="uw-lage"><div class="uw-lage-row"><dt>Costs</dt><dd>8 connects</dd></div><div class="uw-lage-row"><dt>Competing bids</dt><dd>$18.4 average bid, $10–60 range</dd></div><div class="uw-lage-row"><dt>Proposals so far</dt><dd>34</dd></div><div class="uw-lage-row"><dt>Client status</dt><dd>11 invitations sent</dd></div><div class="uw-lage-row"><dt>Fit</dt><dd>You clear the bar</dd></div><div class="uw-lage-row"><dt>Engagement</dt><dd>full time · Intermediate</dd></div><div class="uw-lage-row"><dt>Client is in</dt><dd>Austin, United States · America/Chicago</dd></div></dl><h4>What this client hires for</h4><ul class="uw-clienthist"><li>Meta ads buyer, ongoing retainer<span class="uw-hist-fb">4.9★</span></li><li>Google Ads account manager<span class="uw-hist-fb">5.0★</span></li><li>Creative testing sprint<span class="uw-hist-fb">4.8★</span></li></ul><h4>History</h4><ul class="uw-hist"><li><span class="uw-hist-when">2026-08-11</span><span>New</span></li><li><span class="uw-hist-when">2026-08-11</span><span>Proposal sent</span></li></ul><div class="uw-actions"><button type="button" class="say-btn" data-say="Generate the pitch page for Upwork job demo-3 (&quot;Media manager for Google Ads and Meta campaigns&quot;)">Yes, generate it</button><button type="button" class="apply-btn" data-url="https://www.upwork.com/nx/search/jobs/?q=Media%20manager%20for%20Google%20Ads%20and%20Meta%20campaigns">Apply</button><button type="button" class="say-btn" data-say="Set Upwork job demo-3 to &quot;In contact&quot;, the client replied.">Got a reply →</button><button type="button" class="say-btn uw-task-btn" data-say="Add a task: follow up on Upwork job &quot;Media manager for Google Ads and Meta campaigns&quot; (due 2026-08-14).">+ Add task</button></div></div></td><td class="uw-client">4.98★ · 634/676 hires</td><td class="uw-comp"><span class="uw-comp-n high">34 bids</span><span class="uw-comp-inv">11 invited</span></td><td class="uw-budget">$10 fixed, likely a placeholder<span class="uw-connects">8 connects</span></td><td class="uw-ago">11 days ago</td><td class="uw-stage-cell"><span class="uw-stagechip" style="background:color-mix(in srgb, var(--brand) 48%, var(--card)); color:color-mix(in srgb, var(--brand) 55%, var(--text))">Applied</span><span class="uw-due-inline"><span class="uw-duechip over">8d overdue</span></span></td></tr><tr class="uw-row" data-uwstatus="hired" data-uwstage="closed" data-uwtodo="0" data-uwdue="0" tabindex="0"><td><span class="uw-score strong">88</span></td><td class="rt-td-name"><span class="rt-td-title">Audit a Google Ads account for a dental clinic group<span class="uw-flag gone">taken</span></span><span class="rt-td-desc">Six clinic locations running out of a single ad account, no split by location, and a cost per booking nobody in the group can explain. They want the audit first and the rebuild quoted separately.</span><span class='rt-td-why'>Six locations, one account. Exactly the shape of the last two wins.</span><div class="uw-detail" hidden><div class="uw-detail-head"><span class="uw-score strong">88</span><h3><a href="https://www.upwork.com/nx/search/jobs/?q=Audit%20Google%20Ads%20account%20dental%20clinic%20group" target="_blank" rel="noopener">Audit a Google Ads account for a dental clinic group</a></h3></div><p class="uw-detail-meta">4.9★ · 31/38 hires · $2,400 fixed · 21 days ago · Won</p><h4>Why this job</h4><p>Six locations, one account. Exactly the shape of the last two wins.</p><h4>Description</h4><p>Six clinic locations running out of a single ad account, no split by location, and a cost per booking nobody in the group can explain. They want the audit first and the rebuild quoted separately.</p><h4>Where this application stands</h4><dl class="uw-lage"><div class="uw-lage-row"><dt>Costs</dt><dd>16 connects</dd></div><div class="uw-lage-row"><dt>Competing bids</dt><dd>$72.0 average bid, $40–150 range</dd></div><div class="uw-lage-row"><dt>Proposals so far</dt><dd>6</dd></div><div class="uw-lage-row"><dt>Client status</dt><dd>someone already hired · an offer is out · 3 invitations sent</dd></div><div class="uw-lage-row"><dt>Minimum bar</dt><dd>JSS ≥ 80% · $$1K++</dd></div><div class="uw-lage-row"><dt>Fit</dt><dd>You clear the bar</dd></div><div class="uw-lage-row"><dt>Engagement</dt><dd>part time · Expert</dd></div><div class="uw-lage-row"><dt>Client is in</dt><dd>Leeds, United Kingdom · Europe/London</dd></div></dl><h4>History</h4><ul class="uw-hist"><li><span class="uw-hist-when">2026-08-01</span><span>New</span></li><li><span class="uw-hist-when">2026-08-01</span><span>Proposal sent</span></li><li><span class="uw-hist-when">2026-08-04</span><span>In contact</span></li><li><span class="uw-hist-when">2026-08-06</span><span>Offer sent</span></li><li><span class="uw-hist-when">2026-08-07</span><span>Won</span></li></ul><div class="uw-actions"></div></div></td><td class="uw-client">4.9★ · 31/38 hires</td><td class="uw-comp"><span class="uw-comp-n">6 bids</span><span class="uw-comp-inv">3 invited</span></td><td class="uw-budget">$2,400 fixed<span class="uw-connects">16 connects</span></td><td class="uw-ago">21 days ago</td><td class="uw-stage-cell"><span class="uw-stagechip closed">Won</span></td></tr><tr class="uw-row" data-uwstatus="new" data-uwstage="offen" data-uwtodo="0" data-uwdue="0" tabindex="0"><td><span class="uw-score strong">84</span></td><td class="rt-td-name"><span class="rt-td-title">Google Ads specialist, audit and optimisation</span><span class="rt-td-desc">A six-figure ad account that has run unattended for a year. They want a written audit plus a call that says plainly what is wasting money, before anyone touches a setting. Two screening questions, one of them about accounts above $50k a month.</span><span class='rt-td-why'>Audit-shaped and scoped, and the client hires almost everything they post.</span><div class="uw-detail" hidden><div class="uw-detail-head"><span class="uw-score strong">84</span><h3><a href="https://www.upwork.com/nx/search/jobs/?q=Google%20Ads%20specialist%20audit%20and%20optimisation" target="_blank" rel="noopener">Google Ads specialist, audit and optimisation</a></h3></div><p class="uw-detail-meta">5.0★ · 137/139 hires · $1,500 fixed · 7 days ago · New</p><h4>Why this job</h4><p>Audit-shaped and scoped, and the client hires almost everything they post.</p><h4>Description</h4><p>A six-figure ad account that has run unattended for a year. They want a written audit plus a call that says plainly what is wasting money, before anyone touches a setting. Two screening questions, one of them about accounts above $50k a month.</p><h4>Where this application stands</h4><dl class="uw-lage"><div class="uw-lage-row"><dt>Costs</dt><dd>14 connects</dd></div><div class="uw-lage-row"><dt>Competing bids</dt><dd>$61.5 average bid, $35–120 range</dd></div><div class="uw-lage-row"><dt>Proposals so far</dt><dd>7</dd></div><div class="uw-lage-row"><dt>Client status</dt><dd>2 invitations sent</dd></div><div class="uw-lage-row"><dt>Minimum bar</dt><dd>JSS ≥ 80% · $$1K++</dd></div><div class="uw-lage-row"><dt>Fit</dt><dd>You clear the bar</dd></div><div class="uw-lage-row"><dt>Engagement</dt><dd>part time · Intermediate</dd></div><div class="uw-lage-row"><dt>Client is in</dt><dd>Melbourne, Australia</dd></div></dl><p class="uw-screening">⚠ Screening instruction in the text: Tell us in one line which single change you would make first.</p><h4>Required screening questions</h4><ol class="uw-questions"><li>Which single change would you make first, and why that one?</li><li>Have you worked on an account spending over $50k a month?</li></ol><h4>What this client hires for</h4><ul class="uw-clienthist"><li>Google Ads management, ongoing<span class="uw-hist-fb">5.0★</span></li><li>Landing page conversion rebuild<span class="uw-hist-fb">4.9★</span></li><li>GA4 migration and event tracking<span class="uw-hist-fb">5.0★</span></li></ul><h4>History</h4><ul class="uw-hist"><li><span class="uw-hist-when">2026-08-15</span><span>New</span></li></ul><div class="uw-actions"><button type="button" class="say-btn" data-say="Generate the pitch page for Upwork job demo-1 (&quot;Google Ads specialist, audit and optimisation&quot;)">Yes, generate it</button><button type="button" class="apply-btn" data-url="https://www.upwork.com/nx/search/jobs/?q=Google%20Ads%20specialist%20audit%20and%20optimisation">Apply</button><button type="button" class="say-btn" data-say="Set Upwork job demo-1 to &quot;In contact&quot;, the client replied.">Got a reply →</button></div></div></td><td class="uw-client">5.0★ · 137/139 hires</td><td class="uw-comp"><span class="uw-comp-n">7 bids</span><span class="uw-comp-inv">2 invited</span></td><td class="uw-budget">$1,500 fixed<span class="uw-connects">14 connects</span></td><td class="uw-ago">7 days ago</td><td class="uw-stage-cell"><span class="uw-stagechip" style="background:color-mix(in srgb, var(--brand) 22%, var(--card)); color:color-mix(in srgb, var(--brand) 55%, var(--text))">Not applied</span></td></tr><tr class="uw-row" data-uwstatus="rejected" data-uwstage="closed" data-uwtodo="0" data-uwdue="0" tabindex="0"><td><span class="uw-score strong">72</span></td><td class="rt-td-name"><span class="rt-td-title">Automate lead handover between forms and the CRM<span class="uw-flag gone">taken</span></span><span class="rt-td-desc">Form submissions were being retyped into the CRM by hand. Clear scope, fair budget. They went with someone who had built on their exact CRM before.</span><span class='rt-td-why'>Lost to a specialist in their CRM. The proposal was fine, the overlap was not.</span><div class="uw-detail" hidden><div class="uw-detail-head"><span class="uw-score strong">72</span><h3><a href="https://www.upwork.com/nx/search/jobs/?q=Automate%20lead%20handover%20forms%20CRM" target="_blank" rel="noopener">Automate lead handover between forms and the CRM</a></h3></div><p class="uw-detail-meta">4.7★ · 12/19 hires · $950 fixed · 18 days ago · Declined</p><h4>Why this job</h4><p>Lost to a specialist in their CRM. The proposal was fine, the overlap was not.</p><h4>Description</h4><p>Form submissions were being retyped into the CRM by hand. Clear scope, fair budget. They went with someone who had built on their exact CRM before.</p><h4>Where this application stands</h4><dl class="uw-lage"><div class="uw-lage-row"><dt>Costs</dt><dd>11 connects</dd></div><div class="uw-lage-row"><dt>Competing bids</dt><dd>$44.5 average bid, $25–88 range</dd></div><div class="uw-lage-row"><dt>Proposals so far</dt><dd>21</dd></div><div class="uw-lage-row"><dt>Client status</dt><dd>someone already hired · an offer is out</dd></div><div class="uw-lage-row"><dt>Fit</dt><dd>You clear the bar</dd></div><div class="uw-lage-row"><dt>Engagement</dt><dd>as needed · Intermediate</dd></div><div class="uw-lage-row"><dt>Client is in</dt><dd>Denver, United States</dd></div></dl><h4>History</h4><ul class="uw-hist"><li><span class="uw-hist-when">2026-08-04</span><span>New</span></li><li><span class="uw-hist-when">2026-08-04</span><span>Proposal sent</span></li><li><span class="uw-hist-when">2026-08-08</span><span>In contact</span></li><li><span class="uw-hist-when">2026-08-13</span><span>Declined</span></li></ul><div class="uw-actions"></div></div></td><td class="uw-client">4.7★ · 12/19 hires</td><td class="uw-comp"><span class="uw-comp-n">21 bids</span></td><td class="uw-budget">$950 fixed<span class="uw-connects">11 connects</span></td><td class="uw-ago">18 days ago</td><td class="uw-stage-cell"><span class="uw-stagechip closed">Declined</span></td></tr><tr class="uw-row" data-uwstatus="new" data-uwstage="offen" data-uwtodo="0" data-uwdue="0" tabindex="0"><td><span class="uw-score strong">71</span></td><td class="rt-td-name"><span class="rt-td-title">Digital analytics implementation specialist</span><span class="rt-td-desc">Ecommerce brand wants server-side tracking set up properly after two previous contractors failed at it. Hourly and open-ended rather than a fixed deliverable.</span><span class='rt-td-why'>Ongoing rather than one-off, which is worth more than the rate suggests.</span><div class="uw-detail" hidden><div class="uw-detail-head"><span class="uw-score strong">71</span><h3><a href="https://www.upwork.com/nx/search/jobs/?q=Digital%20analytics%20implementation%20specialist" target="_blank" rel="noopener">Digital analytics implementation specialist</a></h3></div><p class="uw-detail-meta">5.0★ · 16/9 hires · $hourly, platform default range/hr · 7 days ago · New</p><h4>Why this job</h4><p>Ongoing rather than one-off, which is worth more than the rate suggests.</p><h4>Description</h4><p>Ecommerce brand wants server-side tracking set up properly after two previous contractors failed at it. Hourly and open-ended rather than a fixed deliverable.</p><h4>Where this application stands</h4><dl class="uw-lage"><div class="uw-lage-row"><dt>Costs</dt><dd>9 connects</dd></div><div class="uw-lage-row"><dt>Competing bids</dt><dd>$42.0/hr average, $25–85 range</dd></div><div class="uw-lage-row"><dt>Proposals so far</dt><dd>3</dd></div><div class="uw-lage-row"><dt>Client status</dt><dd>open, nobody hired yet</dd></div><div class="uw-lage-row"><dt>Fit</dt><dd>You clear the bar</dd></div><div class="uw-lage-row"><dt>Engagement</dt><dd>as needed · Expert</dd></div><div class="uw-lage-row"><dt>Client is in</dt><dd>Barcelona, Spain · Europe/Madrid</dd></div></dl><h4>History</h4><ul class="uw-hist"><li><span class="uw-hist-when">2026-08-15</span><span>New</span></li></ul><div class="uw-actions"><button type="button" class="say-btn" data-say="Generate the pitch page for Upwork job demo-2 (&quot;Digital analytics implementation specialist&quot;)">Yes, generate it</button><button type="button" class="apply-btn" data-url="https://www.upwork.com/nx/search/jobs/?q=Digital%20analytics%20implementation%20specialist">Apply</button><button type="button" class="say-btn" data-say="Set Upwork job demo-2 to &quot;In contact&quot;, the client replied.">Got a reply →</button></div></div></td><td class="uw-client">5.0★ · 16/9 hires</td><td class="uw-comp"><span class="uw-comp-n low">3 bids</span></td><td class="uw-budget">$hourly, platform default range/hr<span class="uw-connects">9 connects</span></td><td class="uw-ago">7 days ago</td><td class="uw-stage-cell"><span class="uw-stagechip" style="background:color-mix(in srgb, var(--brand) 22%, var(--card)); color:color-mix(in srgb, var(--brand) 55%, var(--text))">Not applied</span></td></tr><tr class="uw-row" data-uwstatus="offer_sent" data-uwstage="angebot" data-uwtodo="0" data-uwdue="0" tabindex="0"><td><span class="uw-score">68</span></td><td class="rt-td-name"><span class="rt-td-title">Conversion tracking across three landing pages</span><span class="rt-td-desc">Three landing pages, no reliable conversion tracking on any of them, and a product launch four weeks out. Fixed scope, no screening questions.</span><span class='rt-td-why'>Small and clean. New client, but everything they posted they hired for.</span><div class="uw-detail" hidden><div class="uw-detail-head"><span class="uw-score">68</span><h3><a href="https://www.upwork.com/nx/search/jobs/?q=Conversion%20tracking%20across%20three%20landing%20pages" target="_blank" rel="noopener">Conversion tracking across three landing pages</a></h3></div><p class="uw-detail-meta">5.0★ · 4/4 hires · $800 fixed · 16 days ago · Offer sent</p><h4>Why this job</h4><p>Small and clean. New client, but everything they posted they hired for.</p><h4>Description</h4><p>Three landing pages, no reliable conversion tracking on any of them, and a product launch four weeks out. Fixed scope, no screening questions.</p><h4>Where this application stands</h4><dl class="uw-lage"><div class="uw-lage-row"><dt>Costs</dt><dd>10 connects</dd></div><div class="uw-lage-row"><dt>Competing bids</dt><dd>$47.2 average bid, $28–90 range</dd></div><div class="uw-lage-row"><dt>Proposals so far</dt><dd>12</dd></div><div class="uw-lage-row"><dt>Client status</dt><dd>an offer is out</dd></div><div class="uw-lage-row"><dt>Fit</dt><dd>You clear the bar</dd></div><div class="uw-lage-row"><dt>Engagement</dt><dd>as needed · Intermediate</dd></div><div class="uw-lage-row"><dt>Client is in</dt><dd>Utrecht, Netherlands · Europe/Amsterdam</dd></div></dl><h4>History</h4><ul class="uw-hist"><li><span class="uw-hist-when">2026-08-06</span><span>New</span></li><li><span class="uw-hist-when">2026-08-06</span><span>Proposal sent</span></li><li><span class="uw-hist-when">2026-08-10</span><span>In contact</span></li><li><span class="uw-hist-when">2026-08-14</span><span>Offer sent</span></li></ul><div class="uw-actions"><button type="button" class="say-btn" data-say="Set Upwork job demo-5 to &quot;Hired&quot;.">Won</button><button type="button" class="say-btn" data-say="Set Upwork job demo-5 to &quot;Rejected&quot;.">Declined</button></div></div></td><td class="uw-client">5.0★ · 4/4 hires</td><td class="uw-comp"><span class="uw-comp-n">12 bids</span></td><td class="uw-budget">$800 fixed<span class="uw-connects">10 connects</span></td><td class="uw-ago">16 days ago</td><td class="uw-stage-cell"><span class="uw-stagechip" style="background:color-mix(in srgb, var(--brand) 100%, var(--card)); color:color-mix(in srgb, var(--brand) 55%, var(--text))">Offer sent</span></td></tr></tbody></table><p class="uw-excluded">3 jobs filtered out, so not in the list: 1 below the bar · 1 already taken · 1 other</p></div><div class="uw-view uw-view-board" hidden><div class="uw-board"><div class="uw-col"><div class="uw-col-head" style="border-top-color: color-mix(in srgb, var(--brand) 22%, var(--card))"><div><div class="uw-col-title">Not applied</div><div class="uw-col-hint">found and scored, still sitting</div></div><span class="uw-col-count" style="color: color-mix(in srgb, var(--brand) 22%, var(--card)); background: color-mix(in srgb, color-mix(in srgb, var(--brand) 22%, var(--card)) 16%, transparent)">2</span></div><ul class="uw-col-body"><li class="uw-card" data-uwdue="0" tabindex="0" role="button"><div class="uw-card-top"><span class="uw-score strong">84</span><span class="uw-card-title">Google Ads specialist, audit and optimisation</span></div><div class="uw-card-meta">5.0★ · 137/139 hires · $1,500 fixed · 7 days ago · New</div><div class="uw-card-rationale">A six-figure ad account that has run unattended for a year. They want a written audit plus a call that says plainly what is wasting money, before anyone touches a setting. Two screening questions, one of them about accounts above $50k a month.</div><div class="uw-detail" hidden><div class="uw-detail-head"><span class="uw-score strong">84</span><h3><a href="https://www.upwork.com/nx/search/jobs/?q=Google%20Ads%20specialist%20audit%20and%20optimisation" target="_blank" rel="noopener">Google Ads specialist, audit and optimisation</a></h3></div><p class="uw-detail-meta">5.0★ · 137/139 hires · $1,500 fixed · 7 days ago · New</p><h4>Why this job</h4><p>Audit-shaped and scoped, and the client hires almost everything they post.</p><h4>Description</h4><p>A six-figure ad account that has run unattended for a year. They want a written audit plus a call that says plainly what is wasting money, before anyone touches a setting. Two screening questions, one of them about accounts above $50k a month.</p><h4>Where this application stands</h4><dl class="uw-lage"><div class="uw-lage-row"><dt>Costs</dt><dd>14 connects</dd></div><div class="uw-lage-row"><dt>Competing bids</dt><dd>$61.5 average bid, $35–120 range</dd></div><div class="uw-lage-row"><dt>Proposals so far</dt><dd>7</dd></div><div class="uw-lage-row"><dt>Client status</dt><dd>2 invitations sent</dd></div><div class="uw-lage-row"><dt>Minimum bar</dt><dd>JSS ≥ 80% · $$1K++</dd></div><div class="uw-lage-row"><dt>Fit</dt><dd>You clear the bar</dd></div><div class="uw-lage-row"><dt>Engagement</dt><dd>part time · Intermediate</dd></div><div class="uw-lage-row"><dt>Client is in</dt><dd>Melbourne, Australia</dd></div></dl><p class="uw-screening">⚠ Screening instruction in the text: Tell us in one line which single change you would make first.</p><h4>Required screening questions</h4><ol class="uw-questions"><li>Which single change would you make first, and why that one?</li><li>Have you worked on an account spending over $50k a month?</li></ol><h4>What this client hires for</h4><ul class="uw-clienthist"><li>Google Ads management, ongoing<span class="uw-hist-fb">5.0★</span></li><li>Landing page conversion rebuild<span class="uw-hist-fb">4.9★</span></li><li>GA4 migration and event tracking<span class="uw-hist-fb">5.0★</span></li></ul><h4>History</h4><ul class="uw-hist"><li><span class="uw-hist-when">2026-08-15</span><span>New</span></li></ul><div class="uw-actions"><button type="button" class="say-btn" data-say="Generate the pitch page for Upwork job demo-1 (&quot;Google Ads specialist, audit and optimisation&quot;)">Yes, generate it</button><button type="button" class="apply-btn" data-url="https://www.upwork.com/nx/search/jobs/?q=Google%20Ads%20specialist%20audit%20and%20optimisation">Apply</button><button type="button" class="say-btn" data-say="Set Upwork job demo-1 to &quot;In contact&quot;, the client replied.">Got a reply →</button></div></div></li><li class="uw-card" data-uwdue="0" tabindex="0" role="button"><div class="uw-card-top"><span class="uw-score strong">71</span><span class="uw-card-title">Digital analytics implementation specialist</span></div><div class="uw-card-meta">5.0★ · 16/9 hires · $hourly, platform default range/hr · 7 days ago · New</div><div class="uw-card-rationale">Ecommerce brand wants server-side tracking set up properly after two previous contractors failed at it. Hourly and open-ended rather than a fixed deliverable.</div><div class="uw-detail" hidden><div class="uw-detail-head"><span class="uw-score strong">71</span><h3><a href="https://www.upwork.com/nx/search/jobs/?q=Digital%20analytics%20implementation%20specialist" target="_blank" rel="noopener">Digital analytics implementation specialist</a></h3></div><p class="uw-detail-meta">5.0★ · 16/9 hires · $hourly, platform default range/hr · 7 days ago · New</p><h4>Why this job</h4><p>Ongoing rather than one-off, which is worth more than the rate suggests.</p><h4>Description</h4><p>Ecommerce brand wants server-side tracking set up properly after two previous contractors failed at it. Hourly and open-ended rather than a fixed deliverable.</p><h4>Where this application stands</h4><dl class="uw-lage"><div class="uw-lage-row"><dt>Costs</dt><dd>9 connects</dd></div><div class="uw-lage-row"><dt>Competing bids</dt><dd>$42.0/hr average, $25–85 range</dd></div><div class="uw-lage-row"><dt>Proposals so far</dt><dd>3</dd></div><div class="uw-lage-row"><dt>Client status</dt><dd>open, nobody hired yet</dd></div><div class="uw-lage-row"><dt>Fit</dt><dd>You clear the bar</dd></div><div class="uw-lage-row"><dt>Engagement</dt><dd>as needed · Expert</dd></div><div class="uw-lage-row"><dt>Client is in</dt><dd>Barcelona, Spain · Europe/Madrid</dd></div></dl><h4>History</h4><ul class="uw-hist"><li><span class="uw-hist-when">2026-08-15</span><span>New</span></li></ul><div class="uw-actions"><button type="button" class="say-btn" data-say="Generate the pitch page for Upwork job demo-2 (&quot;Digital analytics implementation specialist&quot;)">Yes, generate it</button><button type="button" class="apply-btn" data-url="https://www.upwork.com/nx/search/jobs/?q=Digital%20analytics%20implementation%20specialist">Apply</button><button type="button" class="say-btn" data-say="Set Upwork job demo-2 to &quot;In contact&quot;, the client replied.">Got a reply →</button></div></div></li></ul></div><div class="uw-col"><div class="uw-col-head" style="border-top-color: color-mix(in srgb, var(--brand) 48%, var(--card))"><div><div class="uw-col-title">Applied</div><div class="uw-col-hint">sent, no reply yet</div></div><span class="uw-col-count" style="color: color-mix(in srgb, var(--brand) 48%, var(--card)); background: color-mix(in srgb, color-mix(in srgb, var(--brand) 48%, var(--card)) 16%, transparent)">2</span></div><ul class="uw-col-body"><li class="uw-card due" data-uwdue="1" tabindex="0" role="button"><div class="uw-card-top"><span class="uw-score strong">74</span><span class="uw-card-title">SEO content plan for a B2B software company</span></div><div class="uw-card-meta">4.95★ · 58/64 hires · $1,800 fixed · 10 days ago · Proposal sent</div><span class="uw-due-badge">Follow-up due (2026-08-16)</span><div class="uw-card-rationale">They rank for their own brand name and nothing else, and want a twelve-month plan rather than someone writing articles. Decision maker is the founder, which usually means a short chain to yes.</div><div class="uw-detail" hidden><div class="uw-detail-head"><span class="uw-score strong">74</span><h3><a href="https://www.upwork.com/nx/search/jobs/?q=SEO%20content%20plan%20B2B%20software" target="_blank" rel="noopener">SEO content plan for a B2B software company</a></h3></div><p class="uw-detail-meta">4.95★ · 58/64 hires · $1,800 fixed · 10 days ago · Proposal sent</p><span class="uw-due-badge">Follow-up due (2026-08-16)</span><h4>Why this job</h4><p>Strategy rather than production work, and the founder is the one deciding.</p><h4>Description</h4><p>They rank for their own brand name and nothing else, and want a twelve-month plan rather than someone writing articles. Decision maker is the founder, which usually means a short chain to yes.</p><h4>Where this application stands</h4><dl class="uw-lage"><div class="uw-lage-row"><dt>Costs</dt><dd>13 connects</dd></div><div class="uw-lage-row"><dt>Competing bids</dt><dd>$58.9 average bid, $32–110 range</dd></div><div class="uw-lage-row"><dt>Proposals so far</dt><dd>18</dd></div><div class="uw-lage-row"><dt>Client status</dt><dd>2 invitations sent</dd></div><div class="uw-lage-row"><dt>Minimum bar</dt><dd>JSS ≥ 80% · $$1K++</dd></div><div class="uw-lage-row"><dt>Fit</dt><dd>You clear the bar</dd></div><div class="uw-lage-row"><dt>Engagement</dt><dd>part time · Expert</dd></div><div class="uw-lage-row"><dt>Client is in</dt><dd>Toronto, Canada</dd></div></dl><h4>Required screening questions</h4><ol class="uw-questions"><li>Link one content plan you have written that shipped.</li><li>How do you decide what not to write about?</li></ol><h4>History</h4><ul class="uw-hist"><li><span class="uw-hist-when">2026-08-12</span><span>New</span></li><li><span class="uw-hist-when">2026-08-12</span><span>Proposal sent</span></li></ul><div class="uw-actions"><button type="button" class="say-btn" data-say="Generate the pitch page for Upwork job demo-7 (&quot;SEO content plan for a B2B software company&quot;)">Yes, generate it</button><button type="button" class="apply-btn" data-url="https://www.upwork.com/nx/search/jobs/?q=SEO%20content%20plan%20B2B%20software">Apply</button><button type="button" class="say-btn" data-say="Set Upwork job demo-7 to &quot;In contact&quot;, the client replied.">Got a reply →</button><button type="button" class="say-btn uw-task-btn" data-say="Add a task: follow up on Upwork job &quot;SEO content plan for a B2B software company&quot; (due 2026-08-16).">+ Add task</button></div></div></li><li class="uw-card due" data-uwdue="1" tabindex="0" role="button"><div class="uw-card-top"><span class="uw-score">66</span><span class="uw-card-title">Media manager for Google Ads and Meta campaigns</span></div><div class="uw-card-meta">4.98★ · 634/676 hires · $10 fixed, likely a placeholder · 11 days ago · Proposal sent</div><span class="uw-due-badge">Follow-up due (2026-08-14)</span><div class="uw-card-rationale">An agency subcontracting media buying across Google and Meta, posting new roles constantly. Full-time engagement, intermediate level, and they have invited 11 people already.</div><div class="uw-detail" hidden><div class="uw-detail-head"><span class="uw-score">66</span><h3><a href="https://www.upwork.com/nx/search/jobs/?q=Media%20manager%20for%20Google%20Ads%20and%20Meta%20campaigns" target="_blank" rel="noopener">Media manager for Google Ads and Meta campaigns</a></h3></div><p class="uw-detail-meta">4.98★ · 634/676 hires · $10 fixed, likely a placeholder · 11 days ago · Proposal sent</p><span class="uw-due-badge">Follow-up due (2026-08-14)</span><h4>Why this job</h4><p>Huge hire count, but the budget field reads like a placeholder. Worth one follow-up.</p><h4>Description</h4><p>An agency subcontracting media buying across Google and Meta, posting new roles constantly. Full-time engagement, intermediate level, and they have invited 11 people already.</p><h4>Where this application stands</h4><dl class="uw-lage"><div class="uw-lage-row"><dt>Costs</dt><dd>8 connects</dd></div><div class="uw-lage-row"><dt>Competing bids</dt><dd>$18.4 average bid, $10–60 range</dd></div><div class="uw-lage-row"><dt>Proposals so far</dt><dd>34</dd></div><div class="uw-lage-row"><dt>Client status</dt><dd>11 invitations sent</dd></div><div class="uw-lage-row"><dt>Fit</dt><dd>You clear the bar</dd></div><div class="uw-lage-row"><dt>Engagement</dt><dd>full time · Intermediate</dd></div><div class="uw-lage-row"><dt>Client is in</dt><dd>Austin, United States · America/Chicago</dd></div></dl><h4>What this client hires for</h4><ul class="uw-clienthist"><li>Meta ads buyer, ongoing retainer<span class="uw-hist-fb">4.9★</span></li><li>Google Ads account manager<span class="uw-hist-fb">5.0★</span></li><li>Creative testing sprint<span class="uw-hist-fb">4.8★</span></li></ul><h4>History</h4><ul class="uw-hist"><li><span class="uw-hist-when">2026-08-11</span><span>New</span></li><li><span class="uw-hist-when">2026-08-11</span><span>Proposal sent</span></li></ul><div class="uw-actions"><button type="button" class="say-btn" data-say="Generate the pitch page for Upwork job demo-3 (&quot;Media manager for Google Ads and Meta campaigns&quot;)">Yes, generate it</button><button type="button" class="apply-btn" data-url="https://www.upwork.com/nx/search/jobs/?q=Media%20manager%20for%20Google%20Ads%20and%20Meta%20campaigns">Apply</button><button type="button" class="say-btn" data-say="Set Upwork job demo-3 to &quot;In contact&quot;, the client replied.">Got a reply →</button><button type="button" class="say-btn uw-task-btn" data-say="Add a task: follow up on Upwork job &quot;Media manager for Google Ads and Meta campaigns&quot; (due 2026-08-14).">+ Add task</button></div></div></li></ul></div><div class="uw-col"><div class="uw-col-head" style="border-top-color: color-mix(in srgb, var(--brand) 74%, var(--card))"><div><div class="uw-col-title">In contact</div><div class="uw-col-hint">client replied</div></div><span class="uw-col-count" style="color: color-mix(in srgb, var(--brand) 74%, var(--card)); background: color-mix(in srgb, color-mix(in srgb, var(--brand) 74%, var(--card)) 16%, transparent)">1</span></div><ul class="uw-col-body"><li class="uw-card due" data-uwdue="1" tabindex="0" role="button"><div class="uw-card-top"><span class="uw-score strong">79</span><span class="uw-card-title">Rebuild reporting so the weekly numbers land in Slack</span></div><div class="uw-card-meta">4.8★ · 22/25 hires · $1,200 fixed · 13 days ago · In contact</div><span class="uw-due-badge">Follow-up due (2026-08-17)</span><div class="uw-card-rationale">Every Monday someone assembles the week&#x27;s performance numbers by hand in a spreadsheet and pastes them into Slack. They want that to happen without a person in the middle, and they named the exact stack it has to read from.</div><div class="uw-detail" hidden><div class="uw-detail-head"><span class="uw-score strong">79</span><h3><a href="https://www.upwork.com/nx/search/jobs/?q=Rebuild%20reporting%20weekly%20numbers%20Slack" target="_blank" rel="noopener">Rebuild reporting so the weekly numbers land in Slack</a></h3></div><p class="uw-detail-meta">4.8★ · 22/25 hires · $1,200 fixed · 13 days ago · In contact</p><span class="uw-due-badge">Follow-up due (2026-08-17)</span><h4>Why this job</h4><p>They named the tools, so the scope is real rather than a wish.</p><h4>Description</h4><p>Every Monday someone assembles the week&#x27;s performance numbers by hand in a spreadsheet and pastes them into Slack. They want that to happen without a person in the middle, and they named the exact stack it has to read from.</p><h4>Where this application stands</h4><dl class="uw-lage"><div class="uw-lage-row"><dt>Costs</dt><dd>12 connects</dd></div><div class="uw-lage-row"><dt>Competing bids</dt><dd>$54.0 average bid, $30–95 range</dd></div><div class="uw-lage-row"><dt>Proposals so far</dt><dd>9</dd></div><div class="uw-lage-row"><dt>Client status</dt><dd>1 invitations sent</dd></div><div class="uw-lage-row"><dt>Minimum bar</dt><dd>JSS ≥ 75% · 100 hrs experience · $$1K++</dd></div><div class="uw-lage-row"><dt>Fit</dt><dd>You clear the bar</dd></div><div class="uw-lage-row"><dt>Engagement</dt><dd>part time · Intermediate</dd></div><div class="uw-lage-row"><dt>Client is in</dt><dd>Hamburg, Germany · Europe/Berlin</dd></div></dl><h4>Required screening questions</h4><ol class="uw-questions"><li>Which reporting tools have you connected to Slack before?</li></ol><h4>History</h4><ul class="uw-hist"><li><span class="uw-hist-when">2026-08-09</span><span>New</span></li><li><span class="uw-hist-when">2026-08-09</span><span>Proposal sent</span></li><li><span class="uw-hist-when">2026-08-14</span><span>In contact</span></li></ul><div class="uw-actions"><button type="button" class="say-btn" data-say="Set Upwork job demo-4 to &quot;Offer sent&quot;.">Offer sent →</button><button type="button" class="say-btn uw-task-btn" data-say="Add a task: follow up on Upwork job &quot;Rebuild reporting so the weekly numbers land in Slack&quot; (due 2026-08-17).">+ Add task</button></div></div></li></ul></div><div class="uw-col"><div class="uw-col-head" style="border-top-color: color-mix(in srgb, var(--brand) 100%, var(--card))"><div><div class="uw-col-title">Offer sent</div><div class="uw-col-hint">offer out, awaiting their call</div></div><span class="uw-col-count" style="color: color-mix(in srgb, var(--brand) 100%, var(--card)); background: color-mix(in srgb, color-mix(in srgb, var(--brand) 100%, var(--card)) 16%, transparent)">1</span></div><ul class="uw-col-body"><li class="uw-card" data-uwdue="0" tabindex="0" role="button"><div class="uw-card-top"><span class="uw-score">68</span><span class="uw-card-title">Conversion tracking across three landing pages</span></div><div class="uw-card-meta">5.0★ · 4/4 hires · $800 fixed · 16 days ago · Offer sent</div><div class="uw-card-rationale">Three landing pages, no reliable conversion tracking on any of them, and a product launch four weeks out. Fixed scope, no screening questions.</div><div class="uw-detail" hidden><div class="uw-detail-head"><span class="uw-score">68</span><h3><a href="https://www.upwork.com/nx/search/jobs/?q=Conversion%20tracking%20across%20three%20landing%20pages" target="_blank" rel="noopener">Conversion tracking across three landing pages</a></h3></div><p class="uw-detail-meta">5.0★ · 4/4 hires · $800 fixed · 16 days ago · Offer sent</p><h4>Why this job</h4><p>Small and clean. New client, but everything they posted they hired for.</p><h4>Description</h4><p>Three landing pages, no reliable conversion tracking on any of them, and a product launch four weeks out. Fixed scope, no screening questions.</p><h4>Where this application stands</h4><dl class="uw-lage"><div class="uw-lage-row"><dt>Costs</dt><dd>10 connects</dd></div><div class="uw-lage-row"><dt>Competing bids</dt><dd>$47.2 average bid, $28–90 range</dd></div><div class="uw-lage-row"><dt>Proposals so far</dt><dd>12</dd></div><div class="uw-lage-row"><dt>Client status</dt><dd>an offer is out</dd></div><div class="uw-lage-row"><dt>Fit</dt><dd>You clear the bar</dd></div><div class="uw-lage-row"><dt>Engagement</dt><dd>as needed · Intermediate</dd></div><div class="uw-lage-row"><dt>Client is in</dt><dd>Utrecht, Netherlands · Europe/Amsterdam</dd></div></dl><h4>History</h4><ul class="uw-hist"><li><span class="uw-hist-when">2026-08-06</span><span>New</span></li><li><span class="uw-hist-when">2026-08-06</span><span>Proposal sent</span></li><li><span class="uw-hist-when">2026-08-10</span><span>In contact</span></li><li><span class="uw-hist-when">2026-08-14</span><span>Offer sent</span></li></ul><div class="uw-actions"><button type="button" class="say-btn" data-say="Set Upwork job demo-5 to &quot;Hired&quot;.">Won</button><button type="button" class="say-btn" data-say="Set Upwork job demo-5 to &quot;Rejected&quot;.">Declined</button></div></div></li></ul></div></div></div><div class="uw-view uw-view-stats" hidden><div class="uw-tiles"><div class="uw-tile"><span class="uw-tile-lbl">Reply rate</span><span class="uw-tile-val">67%</span><span class="uw-tile-hint">4 of 6 replied</span></div><div class="uw-tile"><span class="uw-tile-lbl">Time to reply</span><span class="uw-tile-val">4 days</span><span class="uw-tile-hint">median of 4</span></div><div class="uw-tile"><span class="uw-tile-lbl">Proposals per week</span><span class="uw-tile-val">1.5</span><span class="uw-tile-hint">average of the last four weeks</span></div></div><div class="uw-funnel"><div class="uw-funnel-row"><span class="uw-funnel-label">Found</span><span class="uw-funnel-track"><span class="uw-funnel-bar" style="width:100%"></span></span><span class="uw-funnel-count">11</span><span class="uw-funnel-pct">100%</span></div><div class="uw-funnel-row"><span class="uw-funnel-label">Applied</span><span class="uw-funnel-track"><span class="uw-funnel-bar" style="width:55%"></span></span><span class="uw-funnel-count">6</span><span class="uw-funnel-pct">55% · 55% of previous</span></div><div class="uw-funnel-row"><span class="uw-funnel-label">In contact</span><span class="uw-funnel-track"><span class="uw-funnel-bar" style="width:36%"></span></span><span class="uw-funnel-count">4</span><span class="uw-funnel-pct">36% · 67% of previous</span></div><div class="uw-funnel-row"><span class="uw-funnel-label">Offer sent</span><span class="uw-funnel-track"><span class="uw-funnel-bar" style="width:18%"></span></span><span class="uw-funnel-count">2</span><span class="uw-funnel-pct">18% · 50% of previous</span></div><div class="uw-funnel-row"><span class="uw-funnel-label">Won</span><span class="uw-funnel-track"><span class="uw-funnel-bar" style="width:9%"></span></span><span class="uw-funnel-count">1</span><span class="uw-funnel-pct">9% · 50% of previous</span></div></div><p class="uw-funnel-note">A real cohort: each job counts at the highest stage it ever reached, taken from its history, so declined and archived jobs count where they got to. Jobs found before the first run that wrote history only have a reconstructed history.</p></div>
+  </div><!-- /pane-upwork -->
+  <div class="tabpane" id="pane-tooling" hidden>
+    <p class="hint">The Tooling tab reads this machine on every render, so it shows something
+    different for everyone. There is nothing meaningful to freeze into an example, and the
+    original was scrubbed because it listed the tools and connections of the machine this copy
+    was taken from.</p>
+  </div><!-- /pane-tooling -->
+
+  <div class="tabpane" id="pane-onboarding" hidden>
+<p class="sysnote">What the first run does: the five phases, which tools get connected and why, and where the keys end up.</p><iframe class="sysframe" src="../ONBOARDING.html" title="Onboarding" loading="lazy"></iframe>
+  </div><!-- /pane-onboarding -->
+
+  <div class="tabpane" id="pane-system" hidden>
+<p class="sysnote">What this system does and why each step is shaped the way it is. The same page sits in the folder as SYSTEM.html.</p><iframe class="sysframe" src="../SYSTEM.html" title="System" loading="lazy"></iframe>
+  </div><!-- /pane-system -->
+
+  <!-- Native <dialog>: Escape, the focus trap and the top stacking layer come for
+       free, and none of them are worth reimplementing. -->
+  <dialog class="uw-modal" id="uw-modal">
+    <button type="button" class="uw-modal-x" id="uw-modal-x" aria-label="Close">&times;</button>
+    <div class="uw-modal-body" id="uw-modal-body"></div>
+  </dialog>
+</div>
+
+<script>
+  const panes = { today: document.getElementById('pane-today'), projects: document.getElementById('pane-projects'), upwork: document.getElementById('pane-upwork'), tooling: document.getElementById('pane-tooling'), onboarding: document.getElementById('pane-onboarding'), system: document.getElementById('pane-system') };
+  function showTab(name) {
+    if (!panes[name]) name = 'today';
+    Object.entries(panes).forEach(([k, p]) => p.hidden = k !== name);
+    document.querySelectorAll('#tabs .tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    sessionStorage.setItem('uwc-tab', name);
+  }
+  document.querySelectorAll('#tabs .tab').forEach(t => t.addEventListener('click', () => showTab(t.dataset.tab)));
+
+  // Task filters: one attribute per row, one active pill. Deliberately the same
+  // shape as the Upwork filter below, so a change to how filtering feels is one
+  // change and not two.
+  // Job detail. The panel already exists inside the row, so this clones rather than
+  // rebuilds: one source for the markup, and nothing to keep in sync.
+  (function () {
+    const dlg = document.getElementById('uw-modal');
+    const body = document.getElementById('uw-modal-body');
+    if (!dlg) return;
+    function open(scope) {
+      const panel = scope && scope.querySelector('.uw-detail');
+      if (!panel) return;
+      const clone = panel.cloneNode(true);
+      clone.hidden = false;
+      body.replaceChildren(clone);
+      dlg.showModal();
+    }
+    // The whole row opens it, not only the title. A row that highlights on hover
+    // and does nothing when you click it is the more annoying of the two options.
+    document.querySelectorAll('.uw-row, .uw-card').forEach(el => {
+      el.classList.add('is-openable');
+      el.addEventListener('click', e => {
+        // Anything with its own job stays its own job: the say-buttons copy a
+        // sentence, and swallowing that click would break the actual workflow.
+        if (e.target.closest('button, a, summary, details')) return;
+        open(el);
+      });
+    });
+    document.getElementById('uw-modal-x').addEventListener('click', () => dlg.close());
+    // Clicking the backdrop closes it: the dialog element itself is the click target
+    // when the press lands outside the box.
+    dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  })();
+
+  document.querySelectorAll('.t-filterpill').forEach(btn => btn.addEventListener('click', () => {
+    const f = btn.dataset.tfilter;
+    document.querySelectorAll('.task-list > li').forEach(li => {
+      let show = true;
+      if (f === 'due') show = li.dataset.due === '1';
+      else if (f.startsWith('p:')) show = li.dataset.proj === f.slice(2);
+      else if (f !== 'all') show = li.dataset.quadrant === f;
+      li.hidden = !show;
+    });
+    document.querySelectorAll('.t-filterpill').forEach(b => b.classList.toggle('active', b === btn));
+  }));
+  showTab(location.hash ? location.hash.slice(1) : (sessionStorage.getItem('uwc-tab') || 'today'));
+
+  // Every action button just copies a sentence to the clipboard — this page
+  // changes nothing on its own, Claude Code does the actual work when you
+  // paste the sentence into chat.
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('.say-btn');
+    if (!b) return;
+    e.preventDefault();
+    const text = b.dataset.say || '';
+    const done = () => {
+      const before = b.textContent;
+      b.textContent = 'copied'; b.classList.add('done');
+      setTimeout(() => { b.textContent = before; b.classList.remove('done'); }, 1400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, () => fallback(text, done));
+    } else fallback(text, done);
+    function fallback(t, cb) {
+      const ta = document.createElement('textarea');
+      ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); cb(); } catch (err) {}
+      ta.remove();
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('.apply-btn');
+    if (!b) return;
+    e.preventDefault();
+    const url = b.dataset.url;
+    if (url && url !== '#') window.open(url, '_blank');
+  });
+
+  // Upwork: List/Pipeline/Stats view switcher, 1:1 borrowed from the
+  // Automatable tracker (there: List/Pipeline/Calendar). List stays default.
+  (function () {
+    const views = { list: document.querySelector('.uw-view-list'), board: document.querySelector('.uw-view-board'),
+                     stats: document.querySelector('.uw-view-stats') };
+    if (!views.list) return;
+    document.querySelectorAll('.uw-viewpill').forEach(btn => btn.addEventListener('click', () => {
+      const v = btn.dataset.uwview;
+      Object.entries(views).forEach(([k, el]) => { if (el) el.hidden = k !== v; });
+      document.querySelectorAll('.uw-viewpill').forEach(b => b.classList.toggle('active', b === btn));
+    }));
+
+    // Status/due filter, clientside only — hides rows via data-uwstatus/data-uwdue
+    // instead of re-rendering. Filter values are the same status values shown in
+    // the Status column, no separate grouping vocabulary.
+    const rows = document.querySelectorAll('.uw-view-list .uw-row');
+    document.querySelectorAll('.uw-filterpill').forEach(btn => btn.addEventListener('click', () => {
+      const f = btn.dataset.uwfilter;
+      rows.forEach(r => {
+        const show = f === 'all' ? true : f === 'due' ? r.dataset.uwdue === '1' : r.dataset.uwstatus === f;
+        r.style.display = show ? '' : 'none';
+      });
+      document.querySelectorAll('.uw-filterpill').forEach(b => b.classList.toggle('active', b === btn));
+    }));
+  })();
+</script>
+</body>
+</html>

@@ -7,11 +7,6 @@
 
 name: "Sam"
 
-# "de" or "en" — controls the whole dashboard (labels, dates) AND the chat
-# sentences the "copy" buttons produce, since those get pasted into your own
-# Claude Code chat and should match the language you work in.
-language: "en"
-
 # Your Upwork account/org identifier, needed for the screener's find_jobs
 # calls. The setup skill fetches this for you automatically via the Upwork
 # MCP connection — you shouldn't need to find it yourself.

@@ -38,16 +38,16 @@
      and both were wrong for the same reason: a reader treats anything outside
      the frame as caption, something to skim past. Inside the frame they are
      part of the plan, and they pan, zoom, fullscreen and export with it. */
-  /* Schmal und kurz gehalten, und das ist keine Kosmetik: die Kartengroesse
-     bestimmt die Ausdehnung des Boards, die Ausdehnung bestimmt den
-     Fit-Zoom, und der Zoom bestimmt, ob die Notiz ueberhaupt lesbar ankommt.
-     Lange Notizen haben sich am 14.08.2026 selbst unlesbar gemacht. Ein Satz
-     pro Notiz haelt beides zusammen. */
+  /* Kept narrow and short, and that is not cosmetics: card size determines the
+     extent of the board, the extent determines the fit zoom, and the zoom
+     determines whether the note arrives readable at all. Long notes made
+     themselves unreadable on 14 Aug 2026. One sentence per note holds both
+     ends together. */
   var NOTE_W = 196, NOTE_FS = 12.6, NOTE_LH = 16, NOTE_PAD = 12;
   var ILLUS_W = 460, ILLUS_H = 0, ILLUS_GAP = 78;
   var ILLUSTRATION = '{{ILLUSTRATION_SRC}}';
 
-  // Vom Generator eingesetzt: slug -> innerer SVG-Inhalt der Marke.
+  // Injected by the generator: slug -> the brand's inner SVG content.
   var LOGOS = {{LOGOS_JSON}};
 
   var state, view = { k: 1, x: 0, y: 0 }, sel = [], edited = false;
@@ -152,8 +152,8 @@
     var keys = Object.keys(cols).map(Number).sort(function (a, b) { return a - b; });
     var tallest = 1;
     keys.forEach(function (k) { tallest = Math.max(tallest, cols[k].length); });
-    // Innerhalb eines Rangs nach Phase sortieren, sonst zerfaellt ein
-    // Phasen-Rahmen in ein Band, das quer durch fremde Knoten laeuft.
+    // Sort by phase within a rank, otherwise a phase frame falls apart into a
+    // band running straight through nodes that belong to another phase.
     var groupOf = {};
     (state.groups || []).forEach(function (g2, gi) {
       (g2.nodes || []).forEach(function (id) { groupOf[id] = gi; });
@@ -164,9 +164,9 @@
       });
     });
 
-    // Der Sketch sitzt links NEBEN dem Band, also faengt das Band erst hinter
-    // ihm an. Verschoben wird beim Layout, nicht beim Zeichnen -- sonst waeren
-    // Kanten, Ziehen und die Minimap gegen andere Koordinaten gerechnet.
+    // The sketch sits to the LEFT of the flow, so the flow only starts behind
+    // it. The shift happens during layout, not while drawing, otherwise edges,
+    // dragging and the minimap would be computed against other coordinates.
     var xShift = ILLUSTRATION ? ILLUS_W + ILLUS_GAP : 0;
     keys.forEach(function (k, ci) {
       var col = cols[k], span = col.length;
@@ -177,14 +177,13 @@
     });
   }
 
-  /* Die Nummer eines Knotens ist die Bruecke zu seiner Notizkarte unter dem
-     Board. Erst standen die Notizen als Zettel auf dem Canvas selbst -- sah
-     als Whiteboard gut aus, war aber bei der Zoomstufe, auf die ein Board mit
-     Sketch plus zwoelf Knoten zwangslaeufig faellt, schlicht nicht mehr
-     lesbar (gemessen 14.08.2026: Fit landete bei 0.37, also 4px Schrift).
-     Eine Erklaerung, die man erst heranzoomen muss, erklaert nichts. Jetzt
-     traegt der Knoten nur die Nummer, und die Karte darunter den Text in
-     voller Lesegroesse. */
+  /* A node's number is the bridge to its note card below the board. At first
+     the notes sat as stickies on the canvas itself, which looked good as a
+     whiteboard but was simply no longer readable at the zoom level a board with
+     a sketch plus twelve nodes inevitably falls to (measured 14 Aug 2026: fit
+     landed at 0.37, so 4px type). An explanation you have to zoom into explains
+     nothing. Now the node carries only the number, and the card below carries
+     the text at full reading size. */
   function noteIndex(d) {
     var n = 0;
     for (var i = 0; i < state.nodes.length; i++) {
@@ -194,16 +193,16 @@
     return 0;
   }
 
-  /* Die Zettel haengen unter dem Band, nicht unter ihrem eigenen Knoten: in
-     einem Rang mit mehreren Knoten uebereinander waere darunter kein Platz,
-     und ein Zettel ueber einem Knoten kostet mehr als er erklaert. Die
-     gepunktete Linie stellt die Zuordnung wieder her.
+  /* The cards hang below the flow rather than below their own node: in a rank
+     with several nodes stacked above each other there would be no room, and a
+     sticky sitting on top of a node costs more than it explains. The dotted
+     line restores the connection.
 
-     Zwei versetzte Reihen, weil eine Karte breiter ist als der Abstand zweier
-     Raenge: in einer Reihe schoebe jede Karte die naechste weiter nach
-     rechts, bis die letzte hinter dem Flow endet und auf nichts mehr zeigt
-     (gemessen bei neun Notizen). Ueber zwei Reihen hat jede Karte den
-     doppelten Rangabstand zur naechsten in derselben Reihe. */
+     Two staggered rows, because a card is wider than the distance between two
+     ranks: in a single row each card would push the next one further right
+     until the last ends up behind the flow and points at nothing (measured with
+     nine notes). Across two rows each card has twice the rank spacing to the
+     next one in the same row. */
   function noteCards() {
     var withNotes = state.nodes.filter(function (d) { return d.note; });
     if (!withNotes.length) return [];
@@ -294,10 +293,10 @@
     var fill = P.card;
 
     // What you build is tinted -- across EVERY kind, not just
-    // source/sink/milestone. Das war der Bug: step/datastore/actor blieben
-    // immer schlicht weiss, selbst mit owner "you" -- das Diagramm sah dann
-    // monoton aus (nur die Decision-Node hatte je Farbe), obwohl das genau
-    // die Knoten sind, die den groessten Teil des eigentlichen Baus zeigen.
+    // source/sink/milestone. That was the bug: step/datastore/actor always
+    // stayed plain white, even with owner "you", which made the diagram look
+    // monotonous (only the decision node ever had colour) even though those are
+    // exactly the nodes showing most of the actual build.
     if (d.owner !== 'client' && d.owner !== 'thirdparty') {
       fill = P.tint; if (!on) stroke = P.tintStroke;
     }
@@ -362,8 +361,8 @@
   // ---------------------------------------------------------------- render
   function render() {
     readTokens();
-    // Nur die eigene Zeichnung ersetzen: ein textContent='' nahm die Minimap
-    // gleich mit, die als Kind der Buehne liegt.
+    // Replace only our own drawing: a textContent='' took the minimap with it,
+    // since the minimap is a child of the stage.
     stage.querySelectorAll('.dg-edit, svg.dg-canvas, .dg-fallback').forEach(function (n) { n.remove(); });
 
     var w = stage.clientWidth || 800, h = stage.clientHeight || 380;
@@ -394,18 +393,17 @@
     scene = el('g');
     scene.appendChild(el('rect', { x: -4000, y: -4000, width: 8000, height: 8000, fill: 'url(#dgGrid)' }));
     gGroups = el('g'); gEdges = el('g'); gNodes = el('g'); gTemp = el('g');
-    // Sketch und Notizen sind Beiwerk auf dem Board: sie fangen keine Klicks,
-    // damit Ziehen, Verbinden und Auswaehlen genau so bleiben wie vorher.
+    // Sketch and notes are accessories on the board: they catch no clicks, so
+    // dragging, connecting and selecting behave exactly as before.
     gAside = el('g', { 'pointer-events': 'none' });
     scene.appendChild(gGroups); scene.appendChild(gEdges);
     scene.appendChild(gNodes); scene.appendChild(gAside); scene.appendChild(gTemp);
     svg.appendChild(scene);
     stage.insertBefore(svg, stage.firstChild);
 
-    /* Phasen-Rahmen. Sie umfassen, was ihre Mitglieder gerade einnehmen,
-       statt eine eigene gespeicherte Geometrie zu haben -- damit sitzt der
-       Rahmen auch dann noch richtig, wenn der Leser einen Knoten
-       herauszieht, und kann gar nicht veralten. */
+    /* Phase frames. They span whatever their members currently occupy instead
+       of carrying their own stored geometry, so the frame still sits correctly
+       when the reader drags a node out, and it cannot go stale. */
     (state.groups || []).forEach(function (grp) {
       var mem = (grp.nodes || []).map(byId).filter(Boolean);
       if (!mem.length) return;
@@ -517,14 +515,14 @@
     drawMini();
   }
 
-  /* Der Sketch und die Notizzettel. Beides gehoert zum Board, beides faengt
-     keine Klicks, und beides wird aus denselben Koordinaten gerechnet wie der
-     Flow -- damit zoomt, pannt und exportiert es mit. */
+  /* The sketch and the sticky notes. Both belong to the board, both catch no
+     clicks, and both are computed from the same coordinates as the flow, so
+     they zoom, pan and export along with it. */
   function drawAside() {
     var ir = illusRect();
     if (ir) {
-      // Papierflaeche unter dem Sketch, sonst schwimmt eine freigestellte
-      // Illustration ohne Kante auf dem gepunkteten Raster.
+      // A paper surface under the sketch, otherwise a cut-out illustration
+      // floats edgeless on the dotted grid.
       gAside.appendChild(el('rect', {
         x: ir.x - 14, y: ir.y - 14, width: ir.w + 28, height: ir.h + 28, rx: 14,
         fill: P.card, stroke: P.border, 'stroke-width': 1.2, filter: 'url(#dgNodeShadow)'
@@ -552,8 +550,8 @@
       }));
       g.appendChild(el('circle', { cx: fromX, cy: fromY, r: 3, fill: P.noteStroke }));
 
-      // Leicht gekippt, wie von Hand angepinnt -- der Unterschied zwischen
-      // "Notiz" und "noch ein Kasten".
+      // Tilted slightly, as if pinned by hand: the difference between "a note"
+      // and "another box".
       var card = el('g', { transform: 'rotate(-0.8,' + (c.x + c.w / 2) + ',' + (c.y + c.h / 2) + ')' });
       card.appendChild(el('rect', { x: c.x, y: c.y, width: c.w, height: c.h, rx: 8,
         fill: P.note, stroke: P.noteStroke, 'stroke-width': 1.2, filter: 'url(#dgNodeShadow)' }));
@@ -701,9 +699,9 @@
 
   // ---------------------------------------------------------------- pointer
   var drag = null, conn = null, panning = null;
-  /* Zwei-Finger-Zoom. Vorher gab es nur das Mausrad, also auf dem Telefon gar
-     keinen Zoom -- bei einem Dokument, das Kunden ueberwiegend am Telefon
-     oeffnen, ist das keine fehlende Feinheit, sondern die halbe Bedienung. */
+  /* Two-finger zoom. Before there was only the mouse wheel, so no zoom at all
+     on a phone. For a document clients mostly open on a phone, that is not a
+     missing nicety, it is half the controls. */
   var touches = {}, pinch = null;
   function pinchDist() {
     var k = Object.keys(touches);
@@ -1012,10 +1010,10 @@
     render();
     fit();
 
-    /* Die Hoehe des Sketches kommt aus dem Bild selbst, nicht aus einer im
-       Generator mitgeschriebenen Zahl -- die waere beim naechsten Austausch
-       des Bildes still falsch. Bis das Bild geladen ist, rechnet das Layout
-       ohne es; danach einmal neu setzen. */
+    /* The sketch height comes from the image itself rather than from a number
+       written into the generator, which would be silently wrong the next time
+       the image is swapped. Until the image has loaded the layout computes
+       without it, then sets it once. */
     if (ILLUSTRATION) {
       var probe = new Image();
       probe.onload = function () {

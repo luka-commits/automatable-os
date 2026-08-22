@@ -6,10 +6,19 @@ an empty one for you).
 
 ## Tasks (open)
 
+### Your first project
+
+- [ ] **Say what you're working on** #admin
+  One line per project in PROJECTS.md, and the tasks under it here. The setup writes
+  both from your answers, so this is only for when you add one later.
+
+<!-- The group below belongs to the Upwork add-on. If you said no to Upwork during
+     setup, delete it: an empty group for a channel you don't use is worse than none. -->
+
 ### Upwork
 
 - [ ] **Fill in context/expertise.md** #admin
-  Nothing else runs well until this exists — search tracks and scoring both read it.
+  Nothing else runs well until this exists, since search tracks and scoring both read it.
 - [ ] **Run the screener for the first time** #deep-work
   Say "check upwork" once expertise.md is filled in.
 

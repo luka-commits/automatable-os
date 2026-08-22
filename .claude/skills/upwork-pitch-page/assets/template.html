@@ -282,13 +282,12 @@
     padding: 11px 14px 12px 18px; border-top: 1px solid var(--border-soft); background: var(--bg); }
   .dg-hint { font-size: 12.5px; color: var(--text-3); flex: 1; min-width: 180px; }
 
-  /* Das Board ist das Kernstueck der Seite und bekommt deshalb echte Breite,
-     statt in der 720px-Lesespalte zu stecken. Fliesstext bleibt schmal --
-     eine 1140px breite Zeile liest sich schlecht, ein 1140px breiter Plan
-     dagegen deutlich besser. */
-  /* Der Beweis-Streifen: was wirklich gebaut wurde, anklickbar. Bewusst
-     kraeftiger als ein Textlink -- er ist der Unterschied zwischen "so wuerde
-     ich es bauen" und "hier ist es". */
+  /* The board is the centrepiece of the page and gets real width instead of
+     being stuck in the 720px reading column. Body copy stays narrow: a 1140px
+     line of text reads badly, while a 1140px plan reads considerably better. */
+  /* The proof strip: what was actually built, clickable. Deliberately louder
+     than a text link, because it is the difference between "this is how I would
+     build it" and "here it is". */
   .live-artifacts { max-width: 1140px; margin: 18px auto 0; padding: 16px 20px 18px;
     background: color-mix(in srgb, var(--accent) 9%, var(--card));
     border: 1px solid var(--dg-tint-stroke); border-radius: 14px; }
@@ -522,10 +521,10 @@
   .proof-link:hover .arrow { transform: translateX(4px); }
   .plan-item:hover { border-color: rgba(224,138,92,.4); transform: translateY(-3px); }
 
-  /* Bild oben im Kasten, Text darunter. Die Bilder sind fuer diesen dunklen
-     Grund gemacht (dunkler Bildhintergrund, warmes Licht als Motiv) -- ein
-     cremefarbenes Bild wuerde hier als heller Klotz reinknallen und den einen
-     dunklen Moment der Seite zerstoeren. Ohne Bild bleibt das SVG-Glyph. */
+  /* Image on top of the box, text underneath. The illustrations are made for
+     this dark ground (dark image background, warm light as the subject); a
+     cream-coloured image would land here as a bright slab and destroy the one
+     dark moment of the page. Without an image the SVG glyph stays. */
   .plan-img { margin: -22px -22px 16px; border-radius: 15px 15px 0 0; overflow: hidden; }
   /* 16:9, because that is the shape the illustrations are generated in. A fixed
      132px strip meant cover kept a middle band and threw away the rest: the

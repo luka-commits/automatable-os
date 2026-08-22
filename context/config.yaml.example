@@ -7,10 +7,11 @@
 
 name: "Your Name"
 
-# "de" or "en" — controls the whole dashboard (labels, dates) AND the chat
-# sentences the "copy" buttons produce, since those get pasted into your own
-# Claude Code chat and should match the language you work in.
-language: "en"
+# ---------------------------------------------------------------------------
+# The Upwork add-on. Everything from here to the end of this block belongs to it.
+# Say no during setup and this line goes to false, the dashboard drops its tab,
+# the morning skill skips its Upwork pass, and none of the fields below matter.
+upwork_enabled: true
 
 # Your Upwork account/org identifier, needed for the screener's find_jobs
 # calls. The setup skill fetches this for you automatically via the Upwork

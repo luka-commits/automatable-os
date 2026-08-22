@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
-"""Fetches real brand SVGs once into assets/logos/, so the page can embed them
-eingebettet ausliefern kann -- eine Pitch-Page darf keine externen Requests
-machen, also kann sie nicht zur Laufzeit an ein CDN.
+"""Fetches real brand SVGs once into assets/logos/, so the page can embed them.
+A pitch page must not make external requests, so it cannot reach a CDN at runtime.
 
-Warum echte Logos statt generierter Symbole: ein Kunde erkennt das
-GoHighLevel- oder n8n-Zeichen, bevor er die Beschriftung liest. Ein
-nachgezeichnetes Symbol erkennt er nie.
+Why real logos instead of generated symbols: a client recognises the GoHighLevel
+or n8n mark before reading the label. A redrawn symbol they never recognise.
 
-Nicht alle Marken sind zu haben. Slack und OpenAI haben ihre Logos aus der
-Sammlung nehmen lassen (404) -- fuer die faellt der Knoten auf sein
-Formen-Symbol zurueck, statt ein falsches Logo zu zeigen.
+Not every brand is available. Slack and OpenAI had their logos pulled from the
+collection (404), and for those the node falls back to its shape symbol rather
+than showing a wrong logo.
 
-    python3 fetch_logos.py            # holt die Standardliste
+    python3 fetch_logos.py            # fetches the default list
     python3 fetch_logos.py --check    # meldet nur, was fehlt
 """
 import pathlib
@@ -46,8 +44,8 @@ def fetch(slug):
             return r.read().decode('utf-8')
     except urllib.error.HTTPError:
         return None
-    except Exception as e:                      # Netz weg: laut sein, nicht raten
-        print(f'  {slug}: Netzwerkfehler {e}', file=sys.stderr)
+    except Exception as e:                      # network gone: be loud, do not guess
+        print(f'  {slug}: network error {e}', file=sys.stderr)
         return None
 
 

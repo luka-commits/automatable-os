@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
-"""PreToolUse-Hook: faengt das In-Place-Editieren von Dateien per python3-Heredoc ab.
+"""PreToolUse hook: catches in-place file edits made through a python3 heredoc.
 
-Warum es diesen Hook gibt: die haeufigste Fehlerquelle in diesem Workspace war ein
-`python3 - <<EOF` mit `read_text()` + `re.sub()` + `write_text()`. Trifft das re.sub
-nichts, ist es ein STILLER No-op: das Skript meldet Erfolg, die Datei ist unveraendert,
-niemand merkt es. Das Edit-Tool schlaegt in genau diesem Fall fehl. Gemessen am 23.07.:
-dieser Handgriff kam 134-mal vor (die drei haeufigsten Muster im Audit).
+Why this hook exists: the most common source of errors in this workspace was a
+`python3 - <<EOF` with `read_text()` + `re.sub()` + `write_text()`. If the re.sub
+matches nothing, it is a SILENT no-op: the script reports success, the file is
+unchanged, and nobody notices. The Edit tool fails loudly in exactly that case.
+Measured on 23 July: this move showed up 134 times (the three most frequent
+patterns in the audit).
 
-Was blockiert wird: ein python-Aufruf, der eine Datei liest UND zurueckschreibt
-(read-modify-write) — die Edit-in-place-Signatur.
-Was durchgeht:
-  - `assert` im Body → die bewusste Massen-Ersetzung mit Treffer-Garantie (CLAUDE.md-Ausnahme)
-  - nur lesen, oder nur eine NEUE Datei schreiben (kein In-Place-Edit)
-  - alles, was kein python ist
+What gets blocked: a python call that reads a file AND writes it back
+(read-modify-write), which is the edit-in-place signature.
+What passes:
+  - `assert` in the body, the deliberate mass replacement with a guaranteed hit count
+  - reading only, or writing a NEW file only (no in-place edit)
+  - anything that is not python
 
-ponytail: bewusst eine schmale Heuristik auf dem Kommando-String, kein Python-Parser.
-Faelle, die durchrutschen, faengt weiterhin die Regel im Kopf; Faelle, die zu Unrecht
-blocken, loest `assert` oder der Weg ueber ein Skript in reference/scripts/.
+Deliberately a narrow heuristic on the command string rather than a python parser.
+Cases that slip through are still caught by the rule in CLAUDE.md; cases that block
+wrongly are solved by `assert` or by going through a script in reference/scripts/.
 """
 import json
 import re
@@ -26,10 +27,10 @@ import sys
 def is_inplace_python_edit(cmd: str) -> bool:
     if not re.search(r'\bpython3?\b', cmd):
         return False
-    # Nur Heredoc oder -c; ein `python3 script.py` ist ein Skript, kein Inline-Edit.
+    # Heredoc or -c only; a `python3 script.py` is a script, not an inline edit.
     if '<<' not in cmd and ' -c' not in cmd:
         return False
-    # Die bewusste, abgesicherte Massen-Ersetzung ist erlaubt (CLAUDE.md-Ausnahme).
+    # The deliberate, guarded mass replacement is allowed (the CLAUDE.md exception).
     if 'assert' in cmd:
         return False
     reads = bool(re.search(r'read_text\(|\.read\(|open\([^)]*[\'"]r', cmd))

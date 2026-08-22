@@ -87,7 +87,7 @@ const OWN_DOCS = DOCS.filter((f) => !SELF_DISCOVERED.test('/' + f.rel));
 const isDoc = (rel) => {
   const base = path.basename(rel);
   if (/\d{4}-\d{2}-\d{2}/.test(base)) return false;              // datierte Artefakte
-  if (/(^|\/)\.|backup|\.bak$/i.test(rel)) return false;          // Backups und Verstecktes
+  if (/(^|\/)\.|backup|\.bak$/i.test(rel)) return false;          // backups and hidden files
   return rel.split('/').length <= 2
     || /^(README|CLAUDE|AGENTS?|CONTRIBUTING|SETUP|VERSION|ONBOARDING)\.md$/i.test(base);
 };
@@ -303,9 +303,21 @@ const worst = (findings, base) => {
 // Scheduled jobs at the operating-system level. One finding sat exactly here: the config
 // said "0 routines" while a launchd job ran daily and died silently.
 // "Not listed" and "does not exist" are two different things.
+// Things this run could not look at on this platform. Reported as unchecked rather
+// than passed over in silence: an empty result and "not measured" look identical in
+// a report, and only one of them is an all-clear.
+const UNCHECKED = [];
+
 function scheduledJobs() {
   const jobs = [];
   if (FOREIGN_ROOT) return jobs;
+  // launchctl and crontab do not exist on Windows. Returning an empty list there
+  // would read as "nothing is scheduled", which is a claim this cannot make: the
+  // Task Scheduler is simply not being looked at. Say unchecked instead.
+  if (process.platform === 'win32') {
+    UNCHECKED.push('Scheduled jobs: no launchctl or crontab on Windows, so the Task Scheduler was not looked at.');
+    return jobs;
+  }
   try {
     const out = execSync('launchctl list', { stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1e7 }).toString();
     for (const line of out.split('\n')) {
@@ -382,14 +394,14 @@ function scheduledJobs() {
         'Other accounts on this machine can read the keys.',
         'chmod 600 ~/.config/credentials.env'));
     }
-  } catch { /* keine Datei, kein Befund */ }
+  } catch { /* no file, no finding */ }
 
   // Secrets in tracked files: real key patterns only, no placeholders
   let tracked = [];
   try {
     tracked = execSync('git ls-files', { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1e8 })
       .toString().split('\n').filter(Boolean);
-  } catch { /* kein Repo */ }
+  } catch { /* no repo */ }
   const SECRET = /(sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}|-----BEGIN (RSA |OPENSSH )?PRIVATE KEY-----)/;
   const hits = [];
   for (const rel of tracked.slice(0, 4000)) {
@@ -428,7 +440,7 @@ function scheduledJobs() {
       const p = JSON.parse(read(f) || '{}').permissions || {};
       allow = allow.concat(p.allow || []);
       deny = deny.concat(p.deny || []);
-    } catch { /* keine oder kaputte Datei */ }
+    } catch { /* missing or broken file */ }
   }
   const denySet = new Set(deny);
   const risky = allow.filter((r) => DANGER.test(r) && !denySet.has(r));
@@ -698,7 +710,7 @@ function scheduledJobs() {
   } else {
     const t = ENTRY_TEXT.toLowerCase();
     const missing = [];
-    if (!/(ordner|struktur|folder|structure|verzeichnis)/.test(t)) missing.push('the folder structure');
+    if (!/(folder|structure|directory)/.test(t)) missing.push('the folder structure');
     if (!/(skill|kommando|command|\/[a-z-]{3,})/.test(t)) missing.push('the available commands');
     if (!/(zweck|purpose|wofuer|ziel|was ist)/.test(t)) missing.push('the purpose of the folder');
     if (missing.length) {
@@ -780,7 +792,7 @@ function scheduledJobs() {
     dirty = execSync('git status --porcelain', { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1e8 })
       .toString().split('\n').filter(Boolean);
     lastPush = execSync('git log -1 --format=%ct', { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
-  } catch { /* kein Repo */ }
+  } catch { /* no repo */ }
 
   // A subfolder of a larger repo is backed up, just not on its own account.
   let parentRepo = null;
@@ -900,7 +912,10 @@ const result = {
   usage: { available: USAGE.available, sessions: USAGE.sessions, windowDays: USAGE.windowDays,
            skills: USAGE.skills, bins: USAGE.bins, mcp: USAGE.mcp },
   dimensions: dims,
-  judgement: null,      // wird vom /audit-Skill gefüllt
+  judgement: null,      // filled in by the /audit skill
+  // What this platform would not let the run measure. The /audit skill reports it
+  // as unchecked instead of implying it looked and found nothing.
+  unchecked: UNCHECKED,
 };
 
 if (args.includes('--render')) {

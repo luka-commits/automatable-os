@@ -19,10 +19,39 @@ silently overwrite a real file with a blank template.
 
 ## Step 1: Verify the Upwork connection
 
-Call `list_accounts` (Upwork MCP). If it fails or returns nothing usable, stop here and tell the
-user plainly: they need to connect the Upwork app for Claude first (Settings → Connectors, or
-whatever the current path is in their client), then come back. Don't try to work around a missing
-connection — every other skill in this repo depends on it.
+Call `list_accounts` (Upwork MCP).
+
+**If the tool isn't there at all, walk them through connecting it — this is the single most common
+place a first run dies, so treat it as part of setup, not as a prerequisite they should have
+handled.** Give them the first route in one message, and only the first:
+
+> *"Upwork isn't connected yet. Open <https://claude.ai/directory/connectors/upwork> (or in the
+> Claude app: Customize → Connectors → Add → Browse connectors → Upwork), click Connect and log
+> in. Then restart this session — close the Claude panel and reopen it, or quit and type `claude`
+> — and say 'go on'. A connection made mid-session is invisible to that same session, which is why
+> the restart isn't optional."*
+
+**The connector route is the recommended one** because it belongs to their Claude account rather
+than to one program, so it works in the app and in Claude Code, terminal and VS Code alike.
+
+**Only if that route is blocked** — Upwork does not appear (a Team or Enterprise account where an
+owner has to release connectors first), or the free plan's single custom-connector slot is taken —
+switch to the second route and run it for them:
+`claude mcp add --transport http upwork https://mcp.upwork.com/mcp -s user`, confirm with
+`claude mcp list`, then the same restart and `/mcp` → upwork → **Authenticate**.
+
+**When they come back saying it still isn't there**, ask two things before anything else, in this
+order: did the session actually restart, and where did they enter it. VS Code has an MCP
+configuration of its own for its own AI features, and a server entered there is invisible here
+while looking perfectly set up from the outside.
+
+The full walkthrough is [`reference/mcp.md`](../../../reference/mcp.md) § Upwork. Point there
+rather than re-explaining it.
+
+**If the call fails for any other reason** (returns nothing usable, auth expired, an error from the
+server), stop here too and say which of the three it looks like. Don't work around a missing
+connection — every other skill in this repo depends on it, and a half-connected setup is worse than
+an honest stop.
 
 From the result, find their **Freelancer** account and its `org_uid`. This is the value that goes
 into `context/config.yaml` under `upwork_org_uid` — the user doesn't need to find this themselves,
@@ -68,14 +97,11 @@ Three things no API knows, and they are the whole interview:
 2. **What they would turn down today.** The regret: the job that looked right and was not.
    Partly derivable from a low feedback score or a withdrawn proposal, but the reason behind
    it is theirs alone — and the reason is what makes the rule reusable.
-3. **Name, language, Slack.** Small, and nothing returns them.
+3. **Name and Slack.** Small, and nothing returns them.
 
 Details on the last one:
 
 - **Name** — for the dashboard header and proposal sign-offs.
-- **Language** — `de` or `en`. This sets the dashboard's language AND the wording of the chat
-  sentences its buttons copy (they get pasted into this same chat, so they should match how
-  the user actually talks to you).
 - **Slack notifications** — optional. If they want a DM when the screener finds a strong
   match, ask for their Slack user ID (in Slack: profile → "Copy member ID"). If they say no or
   have no Slack, leave it empty; the screener still logs everything to the dashboard.
@@ -120,7 +146,7 @@ their first message ("I do SEO and Google Ads for local businesses"), don't re-a
 Copy every `.example` file that doesn't have a real counterpart yet, then fill in what the
 interview produced:
 
-- `context/config.yaml` (name, language, upwork_org_uid, slack_channel_id)
+- `context/config.yaml` (name, upwork_org_uid, slack_channel_id)
 - `context/expertise.md`
 - `context/experience.md`
 - `context/testimonials.json` (leave as `[]` if skipped)

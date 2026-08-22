@@ -56,6 +56,56 @@ The order, and it matters:
 
 **Ask about the industry system, do not wait for it to come up.** The six slots cover what everyone has; what actually runs a business is often the seventh thing — the practice software, the booking system, the ERP, the tool the whole team lives in. It rarely gets mentioned when someone is asked about "mail and calendar", and it is usually the most valuable connection of all. So it gets its own question, once, in their language: *"Is there a system your work runs through every day that we haven't talked about — bookings, patients, projects, orders?"* Whatever comes back goes into `tools_in_use` with its purpose, even when no route exists — a named gap can be closed later, an unnamed one never comes up again.
 
+## Upwork — the one connection this package cannot do without
+
+Everything in the acquisition half runs through this: the screener, the proposal writer, the profile audit, the inbox. Without it those skills have nothing to read. **It is also the step most first runs stall on**, so here is the whole thing rather than a pointer.
+
+There are two routes and they end in the same place. **Take the first one.**
+
+### Route A: the connector, in the Claude app (recommended)
+
+Upwork is in the connector directory, so this is clicking, not configuring:
+
+1. Open <https://claude.ai/directory/connectors/upwork>, or in the desktop app **Customize → Connectors → Add → Browse connectors**, and search for Upwork.
+2. Click **Connect**, log in to Upwork, approve the access.
+
+**That connection belongs to your Claude account, not to one program.** Which is the whole reason to prefer it: connect once and it is there in the web app, in the desktop app, in Claude Code in the terminal and in Claude Code inside VS Code, without repeating anything. Nothing is installed on your machine.
+
+Two situations where the button does not do what you expect:
+
+- **A work account (Team or Enterprise).** An owner has to release the connector once under **Organization Settings → Connectors**; after that everyone connects individually. If Upwork does not appear for you, this is usually why, and it is a message to your admin, not a fault on your side.
+- **The free plan** allows exactly one custom connector. If you already have one, either free the slot or take route B, which does not touch that limit.
+
+### Route B: add the server yourself
+
+For a blocked connector, a used-up free slot, or simply a preference for having it in the folder. Claude can run this for you, you do not have to find a terminal:
+
+```
+claude mcp add --transport http upwork https://mcp.upwork.com/mcp -s user
+```
+
+`-s user` means the connection follows you rather than the folder: set it up once, and it is there in every window you open. Leave the flag off and it exists for this one folder, so the next project starts from nothing.
+
+Then type `/mcp`, pick **upwork**, choose **Authenticate**. The browser opens, you log in to Upwork and approve. Back in the chat `/mcp` shows `✔ connected`.
+
+### Whichever route you took: restart, then check
+
+**Restart the Claude session.** A connection made mid-session does not appear in the session that made it. In VS Code: close the Claude panel and open it again. In the terminal: quit and type `claude`. Skipping this is what produces "I don't have that tool" two minutes after a successful setup, and it is the single most common false alarm.
+
+**Then check it instead of assuming.** Ask: *"which Upwork accounts can you see?"* A list with your name and an `org_uid` means it is live and `setup-automatable-os` takes it from there. Anything else means it is not, and setup stops rather than inventing an account.
+
+### The VS Code trap
+
+Both routes work in the VS Code extension — it is the same Claude Code, reading the same account and the same configuration as the terminal.
+
+**What does not work is VS Code's own MCP settings.** VS Code has an MCP configuration for its own AI features, and it is a different place. A server entered there is invisible to Claude Code, while looking entirely set up from the outside. If someone insists it is connected and the tools are not there, ask where they entered it before asking anything else.
+
+### What it gives you, and what happens without it
+
+Reading the account is where nearly all the value sits: [`upwork-mcp.md`](upwork-mcp.md) has what the API can and cannot do, measured, and [`upwork-regeln.md`](upwork-regeln.md) has what you are allowed to do with it.
+
+Without it the day loop, projects, dashboard and drafts all still work; only the Upwork half goes dark. And if you do not work on Upwork at all, `upwork_enabled: false` in `context/config.yaml` switches that half off for good and nothing mentions it again.
+
 ## Which connectors this package uses
 
 ### Mail

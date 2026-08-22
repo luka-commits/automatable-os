@@ -1,13 +1,13 @@
 ---
 name: setup
-description: "One-time first-run personalization of a freshly copied workspace: asks language, name, email, role, projects, daily tools and Claude plan, fills context/, creates project folders, then archives itself. Runs automatically on first start or via /setup, 'ersteinrichtung'. NOT for daily use. An existing folder uses /adopt."
+description: "One-time first-run personalization of a freshly copied workspace: asks name, email, role, projects, daily tools and Claude plan, fills context/, creates project folders, then archives itself. Runs automatically on first start or via /setup, 'ersteinrichtung'. NOT for daily use. An existing folder uses /adopt."
 ---
 
 # Setup Skill — One-Time Workspace Personalization
 
 ## Core Principle
 
-**Detect state, pick the language, ask once, write ONE config file, fill templates, archive itself.**
+**Detect state, ask once, write ONE config file, fill templates, archive itself.**
 
 **And: the user must never wait into the void.** After their answers you work for several minutes straight. Before every longer block, one short line in the chat — `⚙️ Creating your project folders …`, `📄 Filing your documents …`, `✉️ Looking through your sent mail …`. One line, not a status report.
 
@@ -66,26 +66,11 @@ Personal values live only in `context/config.yaml` — skills read them from the
 
 Read `context/config.yaml`.
 
-- **Contains `[YOUR NAME]`** → fresh, unpersonalized package. Proceed straight to Step 0.5 — nothing to lose here.
+- **Contains `[YOUR NAME]`** → fresh, unpersonalized package. Proceed straight to Step 0.6 — nothing to lose here.
 - **A real name is already filled in** → **an earlier run was interrupted.** No "already set up": Step 8 archives this skill away when it finishes, so the fact that you are running at all means the last run broke off somewhere between Step 3 (writes the name) and Step 8. Say that honestly and continue where things are missing instead of overwriting everything: check what still carries placeholders (`context/PROJECTS.md` → `[First project`, `context/STATUS.md` → `[YYYY-MM-DD]`, project folders in `projects/`, is `context/EMAIL_STYLE.md` there?) and only make up the gap. Pattern: *"Your setup didn't run all the way through last time — name and location are in, but your projects are still missing. I'll catch that up, takes 5 minutes."* Only overwrite everything if the user explicitly wants to start over.
 - **File missing entirely** → the copy is incomplete and cannot be reconstructed: `config.yaml` is the only place that knows the expected schema, and `/morning` reads exact keys from it. Don't invent anything, say it: the folder has to be cloned fresh (see `VERSION.md`).
 
-## Step 0.5: Ask the Working Language (FIRST — before anything else)
-
-Before the greeting and the intake questions, ask exactly one bilingual line — because everything the skill says from here on has to already be in the chosen language:
-
-> **Which language should I work in? / In welcher Sprache soll ich arbeiten?**
-> **English** or **Deutsch** — just hit enter for English. / **Englisch** oder **Deutsch** — mit Enter nimmst du Englisch.
-
-Nothing else in this message: no greeting, no explanation, no questions. The real greeting comes in Step 1, in their language.
-
-**From the answer onwards, the ENTIRE rest of the setup runs in that language.** That means every word the user sees: the fresh-start question (Step 0.6), the greeting and the six intake questions (Step 1), the model question (Step 3.5), the project and task proposals (Step 4), the document question (Step 6), the mail-style question and the derived profile (Step 7), every question in the equipment steps (7.1–7.4), and the whole closing summary including the mini-briefing (Step 8). No mixing, no "just this one line in English".
-
-**The step contents in this SKILL.md stay English regardless** — they are instructions for you, not user output. The example wordings quoted in the steps below are English because this file is English; if the user picked German, you translate them as you speak them. Never paste an English example verbatim into a German conversation.
-
-Store the answer as `"en"` or `"de"` and write it to `config.yaml → language` in Step 3. Anything other than a clear German choice (empty answer, enter, unclear) means `"en"`.
-
-## Step 0.6: Fresh Start, or Is There Already Something? (one question, right after the language)
+## Step 0.6: Fresh Start, or Is There Already Something? (one question, before anything else)
 
 Before any intake question, ask this one — because the answer decides which of two different jobs this is:
 
@@ -172,11 +157,10 @@ Four checks. **Do NOT report the results individually** — they flow into ONE l
 
 ## Step 3: Write `context/config.yaml`
 
-Fill every section of `context/config.yaml` from Step 0.5 + Step 1 + Step 2:
+Fill every section of `context/config.yaml` from Step 1 + Step 2:
 
 **Every section of the template stays in place** — only fill in values, never delete blocks (the skills read all of them):
 
-- `language:` result from Step 0.5 (`en` or `de`) — controls everything the user sees from now on: briefings, dashboard text, mail drafts, entries written into `context/` files, chat.
 - `user:` name, first_name (from the name), email, role
 - `location:` office_abbreviation, office_room_patterns (the abbreviation plus "Office"), other_office_patterns (only if mentioned), office_days, timezone (default Europe/Berlin)
 - `calendar:` `noise_subjects` stays empty (it fills up once the user notices calendar noise — mention it in the Step 8 summary)
@@ -610,12 +594,11 @@ on: _"Then nothing leaves this machine except your own backup."_
 
 - **No silent fabrication:** if an answer leaves a gap, say so in the summary — don't invent a plausible default.
 - **Re-runs ask first:** never overwrite an already-personalized config silently.
-- **One language, from the first answer on:** once Step 0.5 is answered, nothing the user sees switches back. If you catch yourself writing a proposal, a summary or a briefing line in the other language, rewrite it before sending.
+- **English throughout:** the system has one language. Everything the user sees, from the greeting to the closing briefing, is English.
 
 ## Test Drive
 
-1. First session in a fresh copy → CLAUDE.md's first-run rule triggers this skill automatically, straight to the Step 0.5 language line — one bilingual line, nothing else.
-1b. Answer "Deutsch" → everything from the greeting on is German: the six questions, the model question, the task proposal, the closing mini-briefing. Answer with enter/"English" → everything is English. `context/config.yaml` carries `language: "de"` resp. `"en"` at the top.
+1. First session in a fresh copy → CLAUDE.md's first-run rule triggers this skill automatically, straight to the Step 0.6 question.
 2. Answer the questions → config.yaml written, context files filled, every named project scaffolded. **Tasks do NOT appear in STATUS.md immediately** — first comes the proposal in the chat (1–3 real actions per project, milestones as `Timeline:` in PROJECTS.md), only after the OK is anything written, every task with a self-explanatory context line.
 3. Grep `context/` for `[YOUR NAME]` → zero hits. **Only `context/`**: the documentation and the skills quote the placeholder as text (`CLAUDE.md`, `reference/self-test.md`, `email/SKILL.md`), so a workspace-wide grep fails on a perfectly good run and makes the acceptance test lie.
 4. `context/PROJECTS.md` shows exactly the new user's real projects, dated today; ingested documents are reflected there and filed in the owning project's `projects/<slug>/inputs/` (only project-less material lands in `inbox/processed/`).

@@ -465,7 +465,7 @@
   <nav class="tabs" id="tabs">
     <button class="tab" data-tab="today">{{TAB_TODAY}}</button>
     <button class="tab" data-tab="projects">{{TAB_PROJECTS}}</button>
-    <button class="tab" data-tab="upwork">{{TAB_UPWORK}}</button>
+{{ADDON_TABS}}
     <button class="tab" data-tab="tooling">{{TAB_TOOLING}}</button>
     <button class="tab" data-tab="onboarding">{{TAB_ONBOARDING}}</button>
     <button class="tab" data-tab="system">{{TAB_SYSTEM}}</button>
@@ -504,11 +504,7 @@
     {{PROJECTS}}
   </div><!-- /pane-projects -->
 
-  <div class="tabpane" id="pane-upwork" hidden>
-    <p class="hint">{{UPWORK_HINT}}</p>
-    {{UPWORK_ITEMS}}
-  </div><!-- /pane-upwork -->
-
+{{ADDON_PANES}}
   <div class="tabpane" id="pane-tooling" hidden>
     <p class="hint">{{TOOLING_HINT}}</p>
 {{TOOLING}}
