@@ -26,7 +26,11 @@ import sys
 W = pathlib.Path(__file__).resolve().parents[2]
 RENDERED = W / 'context/today.html'
 FROZEN = W / 'examples/dashboard.html'
-PAGE = W / 'WHAT-WORKS-BASE.html'
+PAGES = {
+    # page -> the tab it should land on, or None for whatever the dashboard opens with
+    W / 'WHAT-WORKS-BASE.html': None,
+    W / 'WHAT-WORKS-UPWORK.html': 'upwork',
+}
 START = '<!-- DEMO-FRAME-START'
 END = '<!-- DEMO-FRAME-END -->'
 
@@ -52,6 +56,20 @@ def scrub(html: str) -> str:
         raise SystemExit(f'ABORT: {home} still appears in the copy after scrubbing. '
                          'Something outside the tooling pane carries an absolute path.')
     return html
+
+
+def open_on(dashboard: str, tab: str) -> str:
+    """Make the embedded copy land on one particular tab.
+
+    The add-on page is about the Upwork tab, so opening the demo on Today would
+    make the reader hunt for the thing being described. showTab() is the
+    dashboard's own function, called after its script has run.
+    """
+    if not tab:
+        return dashboard
+    hook = f"<script>document.addEventListener('DOMContentLoaded',()=>showTab('{tab}'))</script>"
+    assert '</body>' in dashboard, 'dashboard has no </body> to hook into'
+    return dashboard.replace('</body>', hook + '</body>', 1)
 
 
 def embed(page_html: str, dashboard: str) -> str:
@@ -86,16 +104,17 @@ def main() -> int:
     old = FROZEN.read_text(encoding='utf-8') if FROZEN.is_file() else ''
 
     def sync_page(dashboard):
-        if not PAGE.is_file():
-            return
-        page = PAGE.read_text(encoding='utf-8')
-        if START not in page:
-            raise SystemExit('ABORT: WHAT-WORKS-BASE.html has no DEMO-FRAME slot any more.')
-        updated = embed(page, dashboard)
-        if updated != page:
-            PAGE.write_text(updated, encoding='utf-8')
-            print(f'WHAT-WORKS-BASE.html: embedded dashboard refreshed '
-                  f'({len(updated) // 1024} KB total).')
+        for page_path, tab in PAGES.items():
+            if not page_path.is_file():
+                continue
+            page = page_path.read_text(encoding='utf-8')
+            if START not in page:
+                raise SystemExit(f'ABORT: {page_path.name} has no DEMO-FRAME slot any more.')
+            updated = embed(page, open_on(dashboard, tab))
+            if updated != page:
+                page_path.write_text(updated, encoding='utf-8')
+                print(f'{page_path.name}: embedded dashboard refreshed '
+                      f'({len(updated) // 1024} KB total).')
 
     if fresh == old:
         # Same bytes, older timestamp. check_repo.py compares mtimes, so without this
