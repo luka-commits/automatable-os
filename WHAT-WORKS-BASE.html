@@ -146,15 +146,16 @@
   details > p{margin-top:12px;font-size:14.5px;max-width:68ch}
   details > p + p{margin-top:9px}
 
-  /* A picture that always renders beats a frame that sometimes does: Chrome treats
-     every local file as its own origin, so an embedded one can come up blank. The
-     link next to it goes to the real, clickable copy. */
-  .shot{margin:18px 0 0;padding:0}
-  .shot img{
-    display:block; width:100%; height:auto;
-    border:1px solid var(--border-strong); border-radius:12px;
+  /* The dashboard runs inside the page, clickable, via srcdoc rather than src.
+     A src pointing at a local file can come up blank, because Chrome treats every
+     file:// URL as its own origin; srcdoc inherits this page's, so it always runs.
+     freeze_example.py keeps the content in sync with examples/dashboard.html. */
+  .demo{margin:18px 0 0;padding:0}
+  .demo-frame{
+    display:block; width:100%; height:min(78vh,720px);
+    border:1px solid var(--border-strong); border-radius:12px; background:var(--card);
   }
-  .shot figcaption{font-size:13.5px;color:var(--text-3);margin-top:11px;max-width:64ch}
+  .demo figcaption{font-size:13.5px;color:var(--text-3);margin-top:11px;max-width:64ch}
 
   .rows{margin-top:6px}
   /* Plugins carry their origin instead of a status: where a thing comes from is
@@ -872,6 +873,672 @@
     <p>All of it plain files on your machine. No account, no server, no login.</p>
   </div>
 
+<figure class="demo" id="demo">
+  <!-- DEMO-FRAME-START: filled by reference/scripts/freeze_example.py, do not hand-edit -->
+          <iframe class="demo-frame" title="Example dashboard, with made-up data" srcdoc="&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;title&gt;Automatable OS&lt;/title&gt;
+&lt;style&gt;
+  /* Same palette as the pitch pages this system generates, so what a client sees
+     and what you work in are recognisably one thing. Contrast is measured, not
+     estimated, and the ratio sits next to the token so it survives the next
+     person who finds a lighter shade prettier. */
+  :root {
+    --bg: #f3efe6;            /* warm paper, not a cool near-white */
+    --bg-band: #ece5d7;       /* a shade down, for header and rails */
+    --card: #fbf9f4;
+    --ink: #1c1712;           /* warm near-black, for inverted surfaces */
+    --on-ink: #f3efe6;        /* 15.5:1 on --ink */
+    --text: #262019;          /* 14.0:1 on --bg */
+    --text-2: #5c5347;        /*  6.6:1 on --bg */
+    --text-3: #6f6656;        /*  4.9:1 on --bg, 5.4:1 on --card */
+    --accent: #c1663e;        /* 3.5:1 — large text, borders and dots only */
+    --accent-deep: #a24f2e;   /* 5.0:1 — anything small, and white sits on it */
+    --accent-soft: #f3e4db;
+    --on-accent: #ffffff;
+    --border: #e2d9c8; --border-strong: #cfc2ab; --border-soft: #eae3d3;
+    /* Warning levels, tuned to the warm ground. Defined here rather than left
+       to a fallback in each rule: an undefined var() without one voids the whole
+       declaration, silently, which is how the amber date marker rendered as
+       ordinary grey text for a while without anyone seeing a thing. */
+    --sev-amber: #a2540f; --amber-soft: #f7ecd9; --amber-border: #e3caa0;
+    --sev-red: #a3271c; --red-soft: #f7e3df; --red-border: #e6bfb7; --red-deep: #822017;
+    --shadow-1: 0 1px 2px rgba(28, 23, 18, .05);
+    --shadow-2: 0 6px 20px rgba(28, 23, 18, .09);
+    --ease: cubic-bezier(.16, 1, .3, 1);
+    --serif: Georgia, &quot;Iowan Old Style&quot;, &quot;Times New Roman&quot;, ui-serif, serif;
+    --gap: 14px; --radius: 14px; --radius-lg: 16px; --radius-sm: 8px;
+
+    /* The old green names still resolve, because skills and this template refer
+       to them in a dozen places and a rename would be churn without a reader. */
+    --brand: var(--accent); --brand-deep: var(--accent-deep); --brand-soft: var(--accent-soft);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.55 -apple-system, BlinkMacSystemFont, &#x27;Segoe UI&#x27;, Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+  a { color: var(--brand); text-decoration: none; font-weight: 500; }
+  a:hover { text-decoration: underline; }
+  code { font-family: ui-monospace, &#x27;SF Mono&#x27;, Menlo, Consolas, monospace; font-size: 12px;
+    background: var(--bg-band); border-radius: var(--radius-sm); padding: 1px 6px;
+    color: var(--text-2); }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 20px 22px 60px; }
+  header.top { background: var(--bg-band); border-bottom: 1px solid var(--border); padding: 20px 22px; }
+  header.top h1 { margin: 0; font-family: var(--serif); font-size: 27px; font-weight: 400;
+    letter-spacing: -.02em; color: var(--text); }
+  header.top .sub { margin-top: 3px; font-size: 12.5px; color: var(--text-3); }
+  /* The briefing, in the pitch pages&#x27; voice: serif lead, then prose, then the
+     lists folded away. It is the one place on the dashboard that is written
+     rather than generated, so it gets the typographic treatment writing earns. */
+  .bf { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+        padding: 22px 24px; box-shadow: var(--shadow-1); margin: 0 0 var(--gap); }
+  .bf-lead { font-family: var(--serif); font-size: 20px; line-height: 1.35; font-weight: 400;
+             letter-spacing: -.012em; color: var(--text); margin: 0 0 12px; max-width: 46ch;
+             text-wrap: balance; }
+  .bf-text { font-size: 14px; line-height: 1.65; color: var(--text-2); margin: 0 0 10px;
+             max-width: 68ch; }
+  .bf-text strong { color: var(--text); font-weight: 600; }
+  .bf-sec { border-top: 1px solid var(--border-soft); }
+  .bf-sec summary { cursor: pointer; list-style: none; padding: 11px 0 10px; font-size: 12.5px;
+                    font-weight: 600; color: var(--text-2); display: flex; align-items: center; gap: 8px; }
+  .bf-sec summary::-webkit-details-marker { display: none; }
+  .bf-sec summary:hover { color: var(--accent-deep); }
+  .bf-count { font-size: 11px; font-weight: 500; color: var(--text-3); background: var(--bg-band);
+              border-radius: 999px; padding: 1px 8px; }
+  .bf-sec ul { margin: 0 0 12px; padding-left: 18px; }
+  .bf-sec li { font-size: 13.5px; line-height: 1.55; color: var(--text-2); margin-bottom: 5px; }
+  .bf-none { font-style: italic; }
+
+  /* Task filters. Same pills as the Upwork tab so there is one filter idiom. */
+  .pane-h2 { font-family: var(--serif); font-size: 17px; font-weight: 400;
+             letter-spacing: -.012em; color: var(--text); margin: 4px 0 10px; }
+  .t-filterbar { margin-bottom: 12px; }
+  /* A project name can be a whole sentence on Upwork. The chip keeps the start,
+     which is the part that distinguishes it, and the full name is the tooltip. */
+  .t-filterpill { max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .t-filterpill.active { background: var(--accent-soft); color: var(--accent-deep);
+                         border-color: var(--border-strong); font-weight: 600; }
+
+  /* Tooling tab. inventory.js emits this markup; it arrived in the repo without
+     the styles or the icons it needs, so it would have rendered as a wall of
+     unstyled text with eight empty boxes. */
+  .kpigrid { display: grid; gap: 10px; }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+         box-shadow: var(--shadow-1); overflow: hidden; }
+  .kpi[open] { border-color: var(--border-strong); box-shadow: var(--shadow-2); }
+  .kpi &gt; summary { list-style: none; cursor: pointer; padding: 14px 18px;
+                   display: grid; grid-template-columns: 30px 62px 1fr; gap: 14px;
+                   align-items: center; transition: background .18s var(--ease); }
+  .kpi &gt; summary::-webkit-details-marker { display: none; }
+  .kpi &gt; summary:hover { background: var(--bg-band); }
+  .kpi-ico { color: var(--text-3); display: grid; place-items: center; }
+  .kpi-ico svg { width: 19px; height: 19px; }
+  .kpi-num { font-family: var(--serif); font-size: 23px; font-weight: 400; color: var(--text);
+             letter-spacing: -.02em; text-align: right; }
+  .kpi-lab { font-weight: 600; font-size: 13.5px; color: var(--text); grid-column: 3; }
+  .kpi-sub { grid-column: 3; font-size: 12px; color: var(--text-3); margin-top: 1px; }
+  .kpi-bar { grid-column: 3; height: 4px; border-radius: 999px; background: var(--bg-band);
+             margin-top: 8px; overflow: hidden; }
+  .kpi-bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+  .kpi-body { padding: 4px 18px 16px; border-top: 1px solid var(--border-soft); }
+
+  .ivrow { padding: 9px 0; border-bottom: 1px solid var(--border-soft); }
+  .ivrow:last-child { border-bottom: 0; }
+  .ivname { display: flex; align-items: baseline; gap: 8px; font-size: 13.5px; color: var(--text); }
+  .ivname b { font-weight: 600; }
+  .ivrow p { margin: 2px 0 0 22px; font-size: 12.5px; color: var(--text-3); }
+  .ivtick { color: var(--accent-deep); font-size: 12px; width: 14px; flex: none; }
+  .ivrow.done .ivtick { color: var(--accent-deep); }
+  .ivrow:not(.done) .ivtick { color: var(--text-3); opacity: .5; }
+  .ivempty { font-size: 12.5px; color: var(--text-3); font-style: italic; padding: 8px 0; }
+  .ivmeta, .ivmet { font-size: 12px; color: var(--text-3); }
+  .ivpill, .ivpne, .inv-badge, .inv-bdge { display: inline-block; font-size: 11px; padding: 1px 8px;
+         border-radius: 999px; background: var(--bg-band); color: var(--text-3); }
+  .xref { font-size: 11.5px; color: var(--text-3); }
+  .invrow { border-bottom: 1px solid var(--border-soft); }
+  .invrow &gt; summary { list-style: none; cursor: pointer; padding: 10px 2px;
+                      display: grid; grid-template-columns: 26px 40px 1fr auto 16px;
+                      gap: 12px; align-items: center; }
+  .invrow &gt; summary::-webkit-details-marker { display: none; }
+  .invrow &gt; summary:hover { background: var(--bg-band); }
+  .invrow-ico, .invrow-io { color: var(--text-3); display: grid; place-items: center; }
+  .invrow-ico svg, .invrow-io svg { width: 17px; height: 17px; }
+  .invrow-num { font-family: var(--serif); font-size: 18px; color: var(--text); text-align: right;
+                letter-spacing: -.02em; }
+  .invrow-lab { font-size: 13.5px; font-weight: 600; color: var(--text); }
+  .invrow-sub { font-size: 12px; color: var(--text-3); text-align: right; }
+  .invrow-body { padding: 2px 0 14px 40px; }
+  /* State belongs on the number, not on the row. design.md: a coloured dot or a
+     coloured edge, never a coloured block — and .ok on the container tinted the
+     label and the subtitle along with it, which made half the rows read as links. */
+  .invrow.ok .invrow-num, .kpi.ok .kpi-num { color: var(--accent-deep); }
+  .invrow.none .invrow-num, .kpi.none .kpi-num { color: var(--text-3); }
+  .invrow.none .invrow-lab { color: var(--text-2); }
+
+  /* Demo banner. Loud rather than subtle: someone mistaking these jobs for their
+     own concludes the tool invents work, which is a worse first impression than
+     an empty page would have been. */
+  .demo-banner { background: var(--amber-soft); border: 1px solid var(--amber-border);
+    border-radius: var(--radius); padding: 11px 15px; margin: 16px 0 0; font-size: 13px;
+    color: var(--text-2); }
+  .demo-banner b { color: var(--sev-amber); }
+  .demo-banner code { background: var(--card); }
+
+  nav.tabs { display: flex; gap: 4px; margin: 18px 0 var(--gap); border-bottom: 1px solid var(--border); }
+  /* The System tab embeds SYSTEM.html rather than restating it. One source, and
+     the iframe keeps that page&#x27;s CSS from colliding with the dashboard&#x27;s. */
+  .sysframe { width: 100%; height: calc(100vh - 190px); min-height: 460px; border: 1px solid var(--border);
+              border-radius: 10px; background: var(--card); display: block; }
+  .sysnote { font-size: 12.5px; color: var(--text-3); margin: 0 0 10px; }
+  .tab { font: inherit; font-size: 13.5px; font-weight: 500; color: var(--text-3); background: none;
+    border: none; border-bottom: 2px solid transparent; cursor: pointer; padding: 9px 4px; margin-right: 18px; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--brand); border-bottom-color: var(--brand); font-weight: 600; }
+  .tabpane[hidden] { display: none; }
+  .hint { font-size: 12px; color: var(--text-3); margin: 0 0 var(--gap); line-height: 1.5; }
+  .sub { color: var(--text-3); font-size: 13px; }
+  /* Project cards. One per block in PROJECTS.md, and every line is optional —
+     a project with only a name still renders as a card rather than a gap. */
+  .pr-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .pr-card { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
+    background: var(--card); }
+  .pr-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 0 0 6px; }
+  .pr-name { font-weight: 600; font-size: 15px; }
+  .pr-meta { font-size: 12px; color: var(--text-2); }
+  .pr-purpose { margin: 0 0 6px; font-size: 13.5px; line-height: 1.5; }
+  .pr-foot { font-size: 11.5px; color: var(--text-3); margin: 8px 0 0; }
+  .pr-status { margin: 0; font-size: 13px; color: var(--text-2); line-height: 1.5; }
+  .pr-blocker { margin-top: 9px; padding: 8px 11px; border-radius: var(--radius-sm); font-size: 12.5px;
+    background: var(--red-soft); color: var(--red-deep); }
+  .pill { font: inherit; font-size: 12px; font-weight: 500; cursor: pointer;
+    color: var(--text-2); background: var(--card); border: 1px solid var(--border);
+    border-radius: 999px; padding: 4px 12px; }
+  .pill:hover { border-color: var(--brand); }
+
+  /* Task list */
+  .task-list { list-style: none; margin: 0; padding: 0; background: var(--card);
+    border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-1); overflow: hidden; }
+  .task-list li { display: grid; grid-template-columns: 30px minmax(0,1fr) 140px 110px 100px 70px;
+    align-items: center; gap: 10px; padding: 10px 14px; border-top: 1px solid var(--border); font-size: 13px; }
+  .task-list li:first-child { border-top: none; }
+  .c-quad { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 20px;
+    border-radius: 5px; font-size: 10px; font-weight: 700; background: var(--bg); color: var(--text-3); }
+  .c-quad.q1 { background: var(--red-soft); color: var(--sev-red); }
+  .c-quad.q2 { background: var(--accent-soft); color: var(--accent-deep); }
+  .c-quad.q3 { background: var(--amber-soft); color: var(--sev-amber); }
+  .c-proj, .c-cat, .c-status, .c-due { font-size: 11.5px; color: var(--text-3); }
+  /* A due date the renderer could not read. Amber rather than blank, because a
+     blank cell reads as &quot;no deadline&quot; and that is the wrong conclusion. */
+  .c-due-bad { color: var(--sev-amber); border-bottom: 1px dotted var(--amber-border); cursor: help; }
+  .t-note { grid-column: 2 / -1; font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+  @media (max-width: 720px) {
+    .task-list li { grid-template-columns: 24px 1fr; }
+    .c-proj, .c-cat, .c-status, .c-due { display: none; }
+  }
+
+  /* say-btn / apply-btn — every action is &quot;copy a sentence for chat&quot;, the
+     dashboard itself never writes anything (see CLAUDE.md in this repo). */
+  .say-btn { font: inherit; font-size: 11.5px; font-weight: 500; cursor: pointer;
+    color: var(--brand-deep); background: var(--brand-soft); border: 1px solid transparent;
+    border-radius: 6px; padding: 3px 10px; }
+  .say-btn:hover { border-color: var(--brand); }
+  .say-btn.done { background: var(--bg); color: var(--text-3); }
+  .apply-btn { font: inherit; font-size: 11.5px; font-weight: 500; cursor: pointer;
+    color: var(--text-2); background: var(--card); border: 1px solid var(--border);
+    border-radius: 6px; padding: 3px 10px; }
+  .apply-btn:hover { border-color: var(--brand); color: var(--text); }
+
+  /* rt-table — generic table shell, shared by the Upwork list view */
+  .rt-table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-1); }
+  .rt-table th { text-align: left; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-3); padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .rt-table td { padding: 11px 14px; border-top: 1px solid var(--border); vertical-align: middle; }
+  .rt-td-name { display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; color: var(--text); }
+  .rt-td-title { display: flex; align-items: center; gap: 7px; }
+  .rt-td-desc { font-size: 11.5px; font-weight: 400; color: var(--text-3); }
+  @media (max-width: 720px) {
+    .rt-table, .rt-table thead, .rt-table tbody, .rt-table th, .rt-table td, .rt-table tr { display: block; }
+    .rt-table thead { display: none; }
+    .rt-table tr { border-top: 1px solid var(--border); padding: 10px 14px; }
+    .rt-table td { border-top: none; padding: 2px 0; }
+  }
+
+  /* Upwork tab: Stage-Board, 1:1 borrowed from the Automatable tracker&#x27;s
+     PipelineBoard — columns per stage, one accent that deepens, a follow-up
+     chip on the card. */
+  .uw-viewbar { display: flex; gap: 6px; margin: 0 0 10px; }
+  .uw-viewpill.active { background: var(--brand-soft); color: var(--brand-deep); font-weight: 600;
+    border-color: color-mix(in srgb, var(--brand) 35%, transparent); }
+  .uw-filterbar { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 10px; }
+  .uw-filterpill.active { background: var(--brand-soft); color: var(--brand-deep); font-weight: 600;
+    border-color: color-mix(in srgb, var(--brand) 35%, transparent); }
+  .uw-task-btn { color: var(--brand-deep); border-color: color-mix(in srgb, #B0143C 35%, transparent); }
+  /* 250px rather than 280: the board has four stages, and at a typical 1440px
+   window the content column is ~1156px — at 280px the fourth stage wrapped
+   under the first, which is the one thing a pipeline board must not do. */
+.uw-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--gap); align-items: start; }
+  .uw-col { display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: var(--shadow-1); overflow: hidden; }
+  .uw-col-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+    padding: 11px 13px; border-top: 3px solid var(--border); border-bottom: 1px solid var(--border); }
+  .uw-col-title { font-size: 13.5px; font-weight: 700; letter-spacing: -.01em; }
+  .uw-col-hint { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .uw-col-count { flex: none; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums;
+    border-radius: 999px; padding: 2px 8px; }
+  .uw-col-body { list-style: none; margin: 0; padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+  .uw-empty { list-style: none; text-align: center; padding: 14px 0; font-size: 12px; color: var(--text-3); }
+  .uw-card { list-style: none; border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; background: var(--bg); }
+  .uw-card.due { background: color-mix(in srgb, #B0143C 7%, var(--bg));
+    border-color: color-mix(in srgb, #B0143C 30%, var(--border)); }
+  .uw-row.due { background: color-mix(in srgb, #B0143C 7%, transparent); }
+  .uw-card-top { display: flex; align-items: baseline; gap: 7px; }
+  .uw-card-title { font-size: 12.5px; font-weight: 600; line-height: 1.3; }
+  .uw-card-meta { margin-top: 3px; font-size: 11px; color: var(--text-3); }
+  .uw-card-rationale { margin-top: 4px; font-size: 11.5px; color: var(--text-2); line-height: 1.4; }
+  .uw-score { display: inline-flex; align-items: center; justify-content: center; min-width: 26px;
+    font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; border-radius: 6px;
+    padding: 1px 5px; color: var(--brand-deep); background: var(--brand-soft); }
+  .uw-score.strong { color: #fff; background: var(--brand); }
+  /* Job detail. The panel is rendered inside its row and hidden; opening clones it
+     into the dialog, so the markup has one source and the table stays the truth. */
+  .is-openable { cursor: pointer; }
+  .uw-row.is-openable:hover { background: var(--bg-band); }
+  .uw-open { font: inherit; color: var(--accent-deep); background: none; border: 0;
+    padding: 0; cursor: pointer; text-align: left; font-weight: 500; }
+  .uw-open:hover { text-decoration: underline; }
+  .uw-modal { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0;
+    max-width: 640px; width: calc(100% - 40px); background: var(--card);
+    box-shadow: var(--shadow-2); color: var(--text-2); position: relative; }
+  .uw-modal::backdrop { background: rgba(28, 23, 18, .38); }
+  .uw-modal-body { padding: 26px 28px 24px; }
+  .uw-modal-body h3 { font-family: var(--serif); font-weight: 400; font-size: 21px;
+    letter-spacing: -.015em; color: var(--text); margin: 0 0 16px; padding-right: 30px; }
+  .uw-modal-x { position: absolute; top: 12px; right: 14px; font-size: 22px; line-height: 1;
+    background: none; border: 0; color: var(--text-3); cursor: pointer; padding: 4px 8px; }
+  .uw-modal-x:hover { color: var(--text); }
+  .uw-d-grid { margin: 0; display: grid; gap: 0; }
+  .uw-d-row { display: grid; grid-template-columns: 150px 1fr; gap: 14px;
+    padding: 9px 0; border-top: 1px solid var(--border-soft); }
+  .uw-d-row:first-child { border-top: 0; }
+  .uw-d-row.wide { grid-template-columns: 1fr; gap: 4px; }
+  .uw-d-row dt { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-3); padding-top: 2px; }
+  .uw-d-row dd { margin: 0; font-size: 14px; color: var(--text); }
+  .uw-d-note { color: var(--text-3); font-size: 12.5px; }
+  .uw-d-screen { background: var(--amber-soft); border: 1px solid var(--amber-border);
+    border-radius: var(--radius-sm); padding: 9px 11px; font-size: 13.5px; }
+  .uw-d-empty { font-size: 13.5px; color: var(--text-3); font-style: italic; margin: 0; }
+  .uw-d-desc { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-soft); }
+  .uw-d-desc summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--accent-deep); }
+  .uw-d-desc p { margin-top: 9px; font-size: 13.5px; white-space: pre-wrap; color: var(--text-2); }
+
+  /* The daily tracker. Sits above the views because it is the daily handle, and
+     anything behind a click does not get looked at. */
+  .uw-tracker { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 18px 20px 16px; box-shadow: var(--shadow-1); margin-bottom: var(--gap); }
+  .uw-tracker-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .uw-tracker-title { font-family: var(--serif); font-size: 17px; color: var(--text);
+    letter-spacing: -.012em; }
+  .uw-tracker-count { font-size: 14px; color: var(--text-2); }
+  .uw-tracker-count b { font-family: var(--serif); font-size: 21px; color: var(--text);
+    letter-spacing: -.02em; }
+  .uw-tracker-meta { margin-left: auto; font-size: 12px; color: var(--text-3); }
+  .uw-progress { height: 6px; border-radius: 999px; background: var(--bg-band);
+    margin: 12px 0 14px; overflow: hidden; }
+  /* scaleX rather than width, same reason as the onboarding page: width forces a
+     layout pass per frame, transform does not touch layout. */
+  .uw-progress-fill { display: block; height: 100%; width: 100%; background: var(--accent);
+    border-radius: 999px; transform-origin: left; transition: transform .3s var(--ease); }
+  .uw-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  /* Every day gets a track, so an empty day reads as empty and not as missing. A bar
+     at 2% of the height was 0.8px in the palest colour on the page, which is to say
+     it was not there at all. */
+  .uw-daybar { position: relative; height: 42px; border-radius: var(--radius-sm);
+    background: var(--bg-band); display: flex; align-items: flex-end; justify-content: center; }
+  /* The fill was --accent-soft on a --bg-band track: 1.01:1, which is not &quot;faint&quot;,
+     it is the same colour. Measured, not eyeballed. Both states use a fill that
+     clears 3:1 against the track, and the difference between a partial day and a
+     met one is carried by height plus the darker tone, not by tint alone. */
+  .uw-daybar-fill { display: block; width: 100%; border-radius: var(--radius-sm);
+    background: var(--accent); min-height: 5px; }        /* 3.20:1 on the track */
+  .uw-daybar.hit .uw-daybar-fill { background: var(--accent-deep); }  /* 4.54:1 */
+  .uw-daybar.future { opacity: .45; }
+  .uw-daybar-lbl { position: absolute; bottom: -17px; left: 0; right: 0; text-align: center;
+    font-size: 10px; color: var(--text-3); }
+  .uw-next { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-top: 28px; padding-top: 12px; border-top: 1px solid var(--border-soft); font-size: 13px; }
+  .uw-next-lbl { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-3); }
+  .uw-next-title { color: var(--text); font-weight: 600; }
+  .uw-batch-btn { font-weight: 600; }
+
+  .uw-project { font-size: 11.5px; color: var(--text-3); }
+  .uw-project code { font-size: 11px; }
+  /* A pipeline is a progression, so the badge reads as one: nothing has happened
+     yet is quiet, you acted gets an edge, they replied gets the tint, done is
+     filled. One flat grey for every stage said nothing and looked washed out. */
+  .uw-status { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-3); background: var(--bg-band); border: 1px solid var(--border);
+    border-radius: 999px; padding: 3px 9px; white-space: nowrap; display: inline-block; }
+  .uw-status.new, .uw-status.notified { color: var(--text-2); }
+  .uw-status.proposal_sent { color: var(--accent-deep); border-color: var(--border-strong);
+    background: var(--card); }
+  .uw-status.interviewing { color: var(--accent-deep); background: var(--accent-soft);
+    border-color: var(--accent-soft); }
+  .uw-status.offer_sent { color: var(--on-accent); background: var(--accent-deep);
+    border-color: var(--accent-deep); }
+  .uw-status.hired { color: var(--on-ink); background: var(--ink); border-color: var(--ink); }
+  .uw-status.rejected, .uw-status.archived, .uw-status.ignored {
+    color: var(--text-3); background: transparent; border-style: dashed; }
+  .uw-due-badge { display: inline-block; margin-top: 3px; font-size: 10.5px; font-weight: 700;
+    color: var(--sev-red); }
+  .uw-desc { margin-top: 4px; font-size: 11.5px; }
+  .uw-desc summary { cursor: pointer; color: var(--brand-deep); font-weight: 600; }
+  .uw-desc p { margin-top: 4px; color: var(--text-2); white-space: pre-wrap; }
+  .uw-budget { font-size: 12.5px; color: var(--text-2); max-width: 130px; line-height: 1.35; }
+  .uw-client { font-size: 11.5px; color: var(--text-3); }
+  .uw-ago { font-size: 10.5px; color: var(--text-3); font-weight: 400; white-space: nowrap; }
+  .uw-status-cell { white-space: nowrap; }
+  .uw-actions { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+  .uw-actions .say-btn, .uw-actions .apply-btn { padding: 2px 7px; font-size: 10.5px; }
+  .uw-funnel { display: flex; flex-direction: column; gap: 7px; margin: 0 0 4px; }
+  .uw-funnel-row { display: grid; grid-template-columns: 120px 1fr 32px 150px; align-items: center; gap: 10px; }
+  .uw-funnel-label { font-size: 12px; color: var(--text-2); font-weight: 500; }
+  .uw-funnel-track { height: 16px; border-radius: 5px; background: var(--bg); overflow: hidden; }
+  .uw-funnel-bar { display: block; height: 100%; border-radius: 5px; background: var(--brand); }
+  .uw-funnel-count { font-size: 13px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+  .uw-funnel-pct { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .uw-funnel-note { margin: 2px 0 14px; font-size: 10.5px; color: var(--text-3); }
+  @media (max-width: 640px) { .uw-funnel-row { grid-template-columns: 90px 1fr 28px; } .uw-funnel-pct { display: none; } }
+
+/* ── Upwork tab: rules carried over with the screener block ── */
+.uw-desc-src { margin-top: 4px; font-size: 10px; font-family: ui-monospace, monospace; color: var(--text-3); opacity: .6; }
+.uw-status.notified { color: var(--brand-deep); border-color: var(--brand); }
+.uw-closed { margin-top: var(--gap); }
+.uw-closed summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--text-2); padding: 6px 2px; }
+.uw-closed-list { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.uw-closed-list li { font-size: 12px; color: var(--text-2); display: flex; align-items: center; gap: 7px; }
+.uw-langbar { display: flex; justify-content: flex-end; gap: 4px; margin: -4px 0 8px; }
+.uw-langpill { padding: 3px 10px; font-size: 11px; }
+.uw-langpill.active { background: var(--brand-soft); color: var(--brand-deep); font-weight: 600; border-color: color-mix(in srgb, var(--brand) 35%, transparent); }
+.uw-tracker-stand { margin-left: auto; font-size: 12px; color: var(--text-2); }
+.uw-daybar.none .uw-daybar-fill { background: color-mix(in srgb, var(--brand) 20%, var(--border)); }
+.uw-daybar.future .uw-daybar-lbl { opacity: .5; }
+.uw-tiles { display: flex; flex-wrap: wrap; margin: 0 0 20px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.uw-tile { flex: 1 1 190px; padding: 12px 16px; display: flex; flex-direction: column; gap: 1px; border-left: 1px solid var(--border); }
+.uw-tile:first-child { border-left: 0; }
+.uw-tile-lbl { font-size: 12px; color: var(--text-2); }
+.uw-tile-val { font-size: 24px; font-weight: 700; line-height: 1.25; color: var(--brand-deep); font-variant-numeric: tabular-nums; }
+.uw-tile-val.empty { font-size: 20px; font-weight: 400; color: var(--text-3); }
+.uw-tile-hint { font-size: 12px; color: var(--text-2); }
+#pane-upwork .uw-batch-btn { margin-left: auto; background: var(--brand); color: #fff; font-weight: 600; border-color: var(--brand); }
+#pane-upwork .uw-batch-btn:hover { background: var(--brand-deep); border-color: var(--brand-deep); }
+#pane-upwork .uw-batch-btn.done { background: var(--brand-deep); border-color: var(--brand-deep); }
+.uw-score-legend { font-size: 12px; color: var(--text-2); margin: -4px 0 10px; }
+.uw-me { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px 12px; margin: 0 0 14px; background: var(--card); }
+.uw-me-head { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+.uw-me-sub { font-weight: 400; color: var(--text-2); margin-left: 8px; font-size: 12px; }
+.uw-me-stats { display: flex; flex-wrap: wrap; gap: 8px 26px; }
+.uw-me-stat { display: flex; flex-direction: column; gap: 1px; }
+.uw-me-val { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.uw-me-lbl { font-size: 11.5px; color: var(--text-2); }
+.uw-me-notes { margin: 12px 0 0; padding: 10px 0 0 18px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-2); line-height: 1.5; }
+.uw-me-notes li + li { margin-top: 5px; }
+.uw-comp-n { font-variant-numeric: tabular-nums; font-size: 13px; }
+.uw-comp-n.low { color: var(--ok, #1a7f4b); font-weight: 600; }
+.uw-comp-n.high { color: var(--text-2); }
+.uw-comp-inv { display: block; font-size: 11px; color: var(--text-2); margin-top: 2px; }
+.uw-due-inline { display: block; margin-top: 4px; }
+.uw-excluded { font-size: 12px; color: var(--text-2); margin: 10px 0 0; }
+.uw-clienthist, .uw-questions { margin: 6px 0 0; padding-left: 18px; font-size: 12.5px; color: var(--text-2); line-height: 1.6; }
+.uw-clienthist { list-style: none; padding-left: 0; }
+.uw-clienthist li { display: flex; justify-content: space-between; gap: 12px; }
+.uw-hist-fb { color: var(--text-2); flex: none; font-variant-numeric: tabular-nums; }
+.uw-stagechip, .uw-duechip { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.uw-stagechip.closed { background: var(--bg); color: var(--text-2); }
+.uw-duechip.over { background: var(--red-soft); color: var(--red-deep); }
+.uw-duechip.soon { background: var(--amber-soft, #FDF0E3); color: var(--amber-deep, #8A3A06); }
+.uw-due-none { color: var(--text-3); }
+.uw-stage-cell, .uw-due-cell { white-space: nowrap; }
+/* nowrap, because the flag sits at the end of a title that wraps: without it
+   &quot;full time&quot; breaks across two lines and lands on top of the title&#x27;s own
+   second line. */
+.uw-flag { display: inline-block; margin-left: 7px; padding: 1px 7px; border-radius: 999px; font-size: 10.5px; font-weight: 600; vertical-align: middle; white-space: nowrap; }
+.uw-flag.gone { background: var(--bg); color: var(--text-2); }
+.uw-flag.bar { background: var(--red-soft); color: var(--red-deep); }
+.uw-flag.soft { background: var(--amber-soft, #FDF0E3); color: var(--amber-deep, #8A3A06); }
+.uw-connects { display: block; font-size: 11.5px; color: var(--text-2); margin-top: 2px; }
+.uw-lage { margin: 4px 0 0; display: flex; flex-direction: column; gap: 4px; }
+.uw-lage-row { display: flex; gap: 10px; font-size: 13.5px; }
+.uw-lage dt { color: var(--text-2); min-width: 132px; flex: none; }
+.uw-lage dd { margin: 0; }
+.uw-nodata { font-size: 13px; color: var(--text-2); }
+.uw-screening { margin: 10px 0 0; padding: 9px 11px; border-radius: 8px; font-size: 13px; background: var(--amber-soft, #FDF0E3); color: var(--amber-deep, #8A3A06); }
+.uw-card, .uw-row { cursor: pointer; }
+.uw-modal-close { position: absolute; top: 12px; right: 12px; border: 0; background: transparent; font-size: 15px; line-height: 1; cursor: pointer; color: var(--text-3); padding: 6px; border-radius: 6px; }
+.uw-modal-close:hover { color: var(--text); background: var(--bg); }
+.uw-detail-head { display: flex; align-items: flex-start; gap: 10px; margin: 0 26px 6px 0; }
+.uw-detail-head h3 { margin: 0; font-size: 18px; line-height: 1.3; }
+.uw-detail-meta { margin: 0 0 14px; font-size: 12.5px; color: var(--text-2); }
+.uw-modal-body h4 { margin: 16px 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-2); }
+.uw-modal-body p { margin: 0; font-size: 14px; line-height: 1.55; }
+.uw-hist { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.uw-hist li { display: flex; gap: 10px; font-size: 13px; }
+.uw-hist-when { color: var(--text-2); font-variant-numeric: tabular-nums; min-width: 78px; }
+.uw-modal .uw-actions { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 6px; }
+.uw-viewbar .uw-viewpill { border: 0; border-left: 1px solid var(--border); border-radius: 0; padding: 6px 14px; }
+.uw-viewbar .uw-viewpill:first-child { border-left: 0; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;header class=&quot;top&quot;&gt;
+  &lt;h1&gt;Automatable OS&lt;/h1&gt;
+  &lt;div class=&quot;sub&quot;&gt;Sunday, 23 August 2026 · Sam&lt;/div&gt;
+&lt;/header&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+&lt;div class=&quot;demo-banner&quot;&gt;&lt;b&gt;This is example data.&lt;/b&gt; You have none of your own yet, so the dashboard is showing the demo/ folder to give you something to look at. The setup deletes it, or you can, with &lt;code&gt;rm -rf demo/&lt;/code&gt;&lt;/div&gt;
+  &lt;nav class=&quot;tabs&quot; id=&quot;tabs&quot;&gt;
+    &lt;button class=&quot;tab&quot; data-tab=&quot;today&quot;&gt;Today&lt;/button&gt;
+    &lt;button class=&quot;tab&quot; data-tab=&quot;projects&quot;&gt;Projects&lt;/button&gt;
+    &lt;button class=&quot;tab&quot; data-tab=&quot;upwork&quot;&gt;Upwork&lt;/button&gt;
+    &lt;button class=&quot;tab&quot; data-tab=&quot;tooling&quot;&gt;Tooling&lt;/button&gt;
+    &lt;button class=&quot;tab&quot; data-tab=&quot;onboarding&quot;&gt;Onboarding&lt;/button&gt;
+    &lt;button class=&quot;tab&quot; data-tab=&quot;system&quot;&gt;System&lt;/button&gt;
+  &lt;/nav&gt;
+
+  &lt;svg width=&quot;0&quot; height=&quot;0&quot; style=&quot;position:absolute&quot; aria-hidden=&quot;true&quot; focusable=&quot;false&quot;&gt;
+    &lt;defs&gt;
+      &lt;g id=&quot;i-open&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.6&quot; fill=&quot;none&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;
+        &lt;path d=&quot;M4 12l5 5L20 6&quot;/&gt;&lt;/g&gt;
+      &lt;g id=&quot;i-cmd&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.6&quot; fill=&quot;none&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;
+        &lt;rect x=&quot;3&quot; y=&quot;4&quot; width=&quot;18&quot; height=&quot;16&quot; rx=&quot;2.5&quot;/&gt;&lt;path d=&quot;M7 10l3 2.5-3 2.5M12.5 15.5H17&quot;/&gt;&lt;/g&gt;
+      &lt;g id=&quot;i-cli&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.6&quot; fill=&quot;none&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;
+        &lt;path d=&quot;M4 6l5 6-5 6M12 18h8&quot;/&gt;&lt;/g&gt;
+      &lt;g id=&quot;i-plug&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.6&quot; fill=&quot;none&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;
+        &lt;path d=&quot;M9 3v5M15 3v5M6 8h12v3a6 6 0 01-12 0zM12 17v4&quot;/&gt;&lt;/g&gt;
+      &lt;g id=&quot;i-puzzle&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.6&quot; fill=&quot;none&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;
+        &lt;path d=&quot;M10 4h4v2.5a2 2 0 104 0V9h2v4h-2.5a2 2 0 100 4H20v3h-6v-2.5a2 2 0 10-4 0V20H4v-6h2.5a2 2 0 100-4H4V6h6z&quot;/&gt;&lt;/g&gt;
+      &lt;g id=&quot;i-key&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.6&quot; fill=&quot;none&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;
+        &lt;circle cx=&quot;8&quot; cy=&quot;12&quot; r=&quot;3.5&quot;/&gt;&lt;path d=&quot;M11.5 12H21M18 12v3M15 12v2.5&quot;/&gt;&lt;/g&gt;
+      &lt;g id=&quot;i-repo&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.6&quot; fill=&quot;none&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;
+        &lt;path d=&quot;M5 4.5A1.5 1.5 0 016.5 3H19v14H6.5A1.5 1.5 0 005 18.5zM5 18.5V21h14v-4&quot;/&gt;&lt;/g&gt;
+      &lt;g id=&quot;i-clock&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.6&quot; fill=&quot;none&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;
+        &lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;8.5&quot;/&gt;&lt;path d=&quot;M12 7v5.2l3.2 2&quot;/&gt;&lt;/g&gt;
+    &lt;/defs&gt;
+  &lt;/svg&gt;
+
+  &lt;div class=&quot;tabpane&quot; id=&quot;pane-today&quot; hidden&gt;
+    &lt;p class=&quot;hint&quot;&gt;This view is read-only. Every action runs through your Claude Code chat — buttons here just copy a ready sentence to paste. Tasks come from &lt;code&gt;context/STATUS.md&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&quot;bf&quot;&gt;&lt;p class=&quot;bf-lead&quot;&gt;One project just landed, and two proposals are waiting on other people.&lt;/p&gt;&lt;p class=&quot;bf-text&quot;&gt;The &lt;strong&gt;dental clinic audit&lt;/strong&gt; came through, so today starts with the scope call rather
+than with acquisition. Everything they sent is already in the project&amp;#x27;s &lt;code&gt;inputs/&lt;/code&gt;
+folder, including the pitch page they clicked through twice before saying yes.&lt;/p&gt;&lt;p class=&quot;bf-text&quot;&gt;The &lt;strong&gt;media-manager proposal&lt;/strong&gt; has gone quiet. The follow-up was due yesterday, and
+it has been viewed twice since it went out, which is usually budget rather than fit.
+One short message today, not three next week.&lt;/p&gt;&lt;p class=&quot;bf-text&quot;&gt;Two new jobs came in overnight, the stronger one at 84 with a client who hires
+almost everything they post. Neither is urgent, and both will still be there after
+the call.&lt;/p&gt;&lt;details class=&quot;bf-sec&quot; open&gt;&lt;summary&gt;Waiting on&lt;span class=&quot;bf-count&quot;&gt;2&lt;/span&gt;&lt;/summary&gt;&lt;ul&gt;&lt;li&gt;Media-manager client, since 2026-08-11 (4 days). If nothing comes by Monday the slot goes to the analytics job.&lt;/li&gt;&lt;li&gt;Conversion-tracking client, since 2026-08-14 (1 day). The offer is out, no answer yet.&lt;/li&gt;&lt;/ul&gt;&lt;/details&gt;&lt;details class=&quot;bf-sec&quot;&gt;&lt;summary&gt;Since yesterday&lt;span class=&quot;bf-count&quot;&gt;2&lt;/span&gt;&lt;/summary&gt;&lt;ul&gt;&lt;li&gt;Won the dental clinic audit. Project created, proposal and pitch page moved in.&lt;/li&gt;&lt;li&gt;Conversion-tracking client asked for an offer and got one.&lt;/li&gt;&lt;/ul&gt;&lt;/details&gt;&lt;/div&gt;
+    &lt;h2 class=&quot;pane-h2&quot;&gt;Open to-dos&lt;/h2&gt;
+    &lt;div class=&quot;uw-filterbar t-filterbar&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;pill t-filterpill active&quot; data-tfilter=&quot;all&quot; title=&quot;All&quot;&gt;All&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;pill t-filterpill&quot; data-tfilter=&quot;due&quot; title=&quot;Due&quot;&gt;Due&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;pill t-filterpill&quot; data-tfilter=&quot;q1&quot; title=&quot;Q1&quot;&gt;Q1&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;pill t-filterpill&quot; data-tfilter=&quot;q2&quot; title=&quot;Q2&quot;&gt;Q2&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;pill t-filterpill&quot; data-tfilter=&quot;q3&quot; title=&quot;Q3&quot;&gt;Q3&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;pill t-filterpill&quot; data-tfilter=&quot;p:Bright Smile Google Ads audit&quot; title=&quot;Bright Smile Google Ads audit&quot;&gt;Bright Smile Google Ads audit&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;pill t-filterpill&quot; data-tfilter=&quot;p:Upwork&quot; title=&quot;Upwork&quot;&gt;Upwork&lt;/button&gt;&lt;/div&gt;&lt;ul class=&quot;task-list&quot;&gt;&lt;li data-quadrant=&quot;q1&quot; data-proj=&quot;Bright Smile Google Ads audit&quot; data-due=&quot;1&quot;&gt;&lt;span class=&quot;c-quad q1&quot; title=&quot;urgent + important&quot;&gt;Q1&lt;/span&gt;&lt;span class=&quot;t-text&quot;&gt;Confirm scope and first deliverable with the client&lt;/span&gt;&lt;span class=&quot;c-proj&quot;&gt;Bright Smile Google Ads audit&lt;/span&gt;&lt;span class=&quot;c-cat&quot;&gt;Preparation&lt;/span&gt;&lt;span class=&quot;c-status&quot;&gt;open&lt;/span&gt;&lt;span class=&quot;c-due&quot;&gt;2026-08-16&lt;/span&gt;&lt;div class=&quot;t-note&quot;&gt;Everything they sent is in &lt;code&gt;projects/bright-smile-google-ads-audit/inputs/&lt;/code&gt;. Read it before replying.&lt;/div&gt;&lt;/li&gt;&lt;li data-quadrant=&quot;q2&quot; data-proj=&quot;Bright Smile Google Ads audit&quot; data-due=&quot;&quot;&gt;&lt;span class=&quot;c-quad q2&quot; title=&quot;not urgent + important&quot;&gt;Q2&lt;/span&gt;&lt;span class=&quot;t-text&quot;&gt;Pull the last 90 days of search-term data&lt;/span&gt;&lt;span class=&quot;c-proj&quot;&gt;Bright Smile Google Ads audit&lt;/span&gt;&lt;span class=&quot;c-cat&quot;&gt;Deep Work&lt;/span&gt;&lt;span class=&quot;c-status&quot;&gt;open&lt;/span&gt;&lt;span class=&quot;c-due&quot;&gt;&lt;/span&gt;&lt;div class=&quot;t-note&quot;&gt;Nothing the audit says about wasted spend is provable without it.&lt;/div&gt;&lt;/li&gt;&lt;li data-quadrant=&quot;q2&quot; data-proj=&quot;Upwork&quot; data-due=&quot;&quot;&gt;&lt;span class=&quot;c-quad q2&quot; title=&quot;not urgent + important&quot;&gt;Q2&lt;/span&gt;&lt;span class=&quot;t-text&quot;&gt;Refresh the portfolio section on the profile&lt;/span&gt;&lt;span class=&quot;c-proj&quot;&gt;Upwork&lt;/span&gt;&lt;span class=&quot;c-cat&quot;&gt;Admin&lt;/span&gt;&lt;span class=&quot;c-status&quot;&gt;open&lt;/span&gt;&lt;span class=&quot;c-due&quot;&gt;&lt;/span&gt;&lt;div class=&quot;t-note&quot;&gt;Two of the four entries are from 2024.&lt;/div&gt;&lt;/li&gt;&lt;li data-quadrant=&quot;q3&quot; data-proj=&quot;Upwork&quot; data-due=&quot;1&quot;&gt;&lt;span class=&quot;c-quad q3&quot; title=&quot;urgent + not important&quot;&gt;Q3&lt;/span&gt;&lt;span class=&quot;t-text&quot;&gt;Follow up on the media-manager proposal&lt;/span&gt;&lt;span class=&quot;c-proj&quot;&gt;Upwork&lt;/span&gt;&lt;span class=&quot;c-cat&quot;&gt;Communication&lt;/span&gt;&lt;span class=&quot;c-status&quot;&gt;open&lt;/span&gt;&lt;span class=&quot;c-due&quot;&gt;2026-08-14&lt;/span&gt;&lt;div class=&quot;t-note&quot;&gt;Sent four days ago, viewed twice, then quiet. One short message, not three next week.&lt;/div&gt;&lt;/li&gt;&lt;/ul&gt;
+  &lt;/div&gt;&lt;!-- /pane-today --&gt;
+
+  &lt;div class=&quot;tabpane&quot; id=&quot;pane-projects&quot; hidden&gt;
+    &lt;p class=&quot;hint&quot;&gt;How each project stands, from &lt;code&gt;context/PROJECTS.md&lt;/code&gt;. The open to-dos live on the Today tab; this is the state, not the work.&lt;/p&gt;
+    &lt;div class=&quot;pr-grid&quot;&gt;&lt;div class=&quot;pr-card&quot;&gt;&lt;div class=&quot;pr-head&quot;&gt;&lt;span class=&quot;pr-name&quot;&gt;Bright Smile Google Ads audit&lt;/span&gt;&lt;span class=&quot;pr-meta&quot;&gt;Planning&lt;/span&gt;&lt;/div&gt;&lt;p class=&quot;pr-purpose&quot;&gt;Six clinics on one ad account, and spend doubled without more bookings. We find out where it goes.&lt;/p&gt;&lt;p class=&quot;pr-status&quot;&gt;Just won, nothing delivered yet. The scope call is the first step.&lt;/p&gt;&lt;p class=&quot;pr-foot&quot;&gt;Bright Smile Group · Upwork job &lt;code&gt;demo-6&lt;/code&gt;&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;/div&gt;&lt;!-- /pane-projects --&gt;
+
+  &lt;div class=&quot;tabpane&quot; id=&quot;pane-upwork&quot; hidden&gt;
+    &lt;p class=&quot;hint&quot;&gt;Pipeline: Applied → In contact → Offer sent → Won. The buttons on a row or card only copy a chat sentence — pasting it and sending it is what actually moves the job, or run &lt;code&gt;python3 reference/scripts/upwork_status.py set &amp;lt;id&amp;gt; &amp;lt;status&amp;gt;&lt;/code&gt; yourself.&lt;/p&gt;
+&lt;div class=&quot;uw-tracker&quot;&gt;&lt;div class=&quot;uw-tracker-head&quot;&gt;&lt;span class=&quot;uw-tracker-title&quot;&gt;Today&lt;/span&gt;&lt;span class=&quot;uw-tracker-count&quot;&gt;&lt;b&gt;0&lt;/b&gt; / 5 proposals&lt;/span&gt;&lt;span class=&quot;uw-tracker-meta&quot;&gt;0-day streak · this week 0&lt;/span&gt;&lt;span class=&quot;uw-tracker-stand&quot;&gt;as of 15 Aug 14:24&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-progress&quot;&gt;&lt;span class=&quot;uw-progress-fill&quot; style=&quot;width:0%&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-days&quot;&gt;&lt;span class=&quot;uw-daybar none&quot; title=&quot;2026-08-17: 0&quot;&gt;&lt;span class=&quot;uw-daybar-fill&quot; style=&quot;height:0%&quot;&gt;&lt;/span&gt;&lt;span class=&quot;uw-daybar-lbl&quot;&gt;Mon&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;uw-daybar none&quot; title=&quot;2026-08-18: 0&quot;&gt;&lt;span class=&quot;uw-daybar-fill&quot; style=&quot;height:0%&quot;&gt;&lt;/span&gt;&lt;span class=&quot;uw-daybar-lbl&quot;&gt;Tue&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;uw-daybar none&quot; title=&quot;2026-08-19: 0&quot;&gt;&lt;span class=&quot;uw-daybar-fill&quot; style=&quot;height:0%&quot;&gt;&lt;/span&gt;&lt;span class=&quot;uw-daybar-lbl&quot;&gt;Wed&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;uw-daybar none&quot; title=&quot;2026-08-20: 0&quot;&gt;&lt;span class=&quot;uw-daybar-fill&quot; style=&quot;height:0%&quot;&gt;&lt;/span&gt;&lt;span class=&quot;uw-daybar-lbl&quot;&gt;Thu&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;uw-daybar none&quot; title=&quot;2026-08-21: 0&quot;&gt;&lt;span class=&quot;uw-daybar-fill&quot; style=&quot;height:0%&quot;&gt;&lt;/span&gt;&lt;span class=&quot;uw-daybar-lbl&quot;&gt;Fri&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;uw-daybar none&quot; title=&quot;2026-08-22: 0&quot;&gt;&lt;span class=&quot;uw-daybar-fill&quot; style=&quot;height:0%&quot;&gt;&lt;/span&gt;&lt;span class=&quot;uw-daybar-lbl&quot;&gt;Sat&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;uw-daybar none&quot; title=&quot;2026-08-23: 0&quot;&gt;&lt;span class=&quot;uw-daybar-fill&quot; style=&quot;height:0%&quot;&gt;&lt;/span&gt;&lt;span class=&quot;uw-daybar-lbl&quot;&gt;Sun&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-next&quot;&gt;&lt;span class=&quot;uw-next-lbl&quot;&gt;Up next:&lt;/span&gt;&lt;a href=&quot;https://www.upwork.com/nx/search/jobs/?q=Google%20Ads%20specialist%20audit%20and%20optimisation&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Google Ads specialist, audit and optimisation&lt;/a&gt;&lt;span class=&quot;uw-score strong&quot;&gt;84&lt;/span&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Generate the pitch page for Upwork job demo-1 (&amp;quot;Google Ads specialist, audit and optimisation&amp;quot;)&quot;&gt;Yes, generate it&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn uw-batch-btn&quot; data-say=&quot;Work through my Upwork goal for today: 5 applications, one after the other. demo-1 &amp;quot;Google Ads specialist, audit and optimisation&amp;quot; · demo-4 &amp;quot;Rebuild reporting so the weekly numbers land in Slack&amp;quot; · demo-7 &amp;quot;SEO content plan for a B2B software company&amp;quot; · demo-2 &amp;quot;Digital analytics implementation specialist&amp;quot; · demo-5 &amp;quot;Conversion tracking across three landing pages&amp;quot;. For each job check briefly whether it really fits, then the proposal, then show it to me before anything goes out.&quot;&gt;Start today&amp;#x27;s batch (5)&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;uw-viewbar&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;pill uw-viewpill active&quot; data-uwview=&quot;list&quot;&gt;List&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;pill uw-viewpill&quot; data-uwview=&quot;board&quot;&gt;Pipeline&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;pill uw-viewpill&quot; data-uwview=&quot;stats&quot;&gt;Insights&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;uw-view uw-view-list&quot;&gt;&lt;div class=&quot;uw-me&quot;&gt;&lt;div class=&quot;uw-me-head&quot;&gt;Where you stand&lt;span class=&quot;uw-me-sub&quot;&gt;the numbers client minimums test against&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-me-stats&quot;&gt;&lt;div class=&quot;uw-me-stat&quot;&gt;&lt;span class=&quot;uw-me-val&quot;&gt;142&lt;/span&gt;&lt;span class=&quot;uw-me-lbl&quot;&gt;Connects&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-me-stat&quot;&gt;&lt;span class=&quot;uw-me-val&quot;&gt;6–20 proposals&lt;/span&gt;&lt;span class=&quot;uw-me-lbl&quot;&gt;buys you&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-me-stat&quot;&gt;&lt;span class=&quot;uw-me-val&quot;&gt;88%&lt;/span&gt;&lt;span class=&quot;uw-me-lbl&quot;&gt;Job Success&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-me-stat&quot;&gt;&lt;span class=&quot;uw-me-val&quot;&gt;$24,150&lt;/span&gt;&lt;span class=&quot;uw-me-lbl&quot;&gt;earned&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-me-stat&quot;&gt;&lt;span class=&quot;uw-me-val&quot;&gt;310 h&lt;/span&gt;&lt;span class=&quot;uw-me-lbl&quot;&gt;billed&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-me-stat&quot;&gt;&lt;span class=&quot;uw-me-val&quot;&gt;$55.00&lt;/span&gt;&lt;span class=&quot;uw-me-lbl&quot;&gt;hourly rate&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;ul class=&quot;uw-me-notes&quot;&gt;&lt;li&gt;Profile is set to America/New_York while you work from Europe. Clients read availability off this.&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;div class=&quot;uw-filterbar&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;pill uw-filterpill active&quot; data-uwfilter=&quot;all&quot;&gt;All&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;pill uw-filterpill&quot; data-uwfilter=&quot;stage:offen&quot;&gt;Not applied&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;pill uw-filterpill&quot; data-uwfilter=&quot;stage:outreach&quot;&gt;Applied&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;pill uw-filterpill&quot; data-uwfilter=&quot;stage:in_kontakt&quot;&gt;In contact&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;pill uw-filterpill&quot; data-uwfilter=&quot;stage:angebot&quot;&gt;Offer sent&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;pill uw-filterpill&quot; data-uwfilter=&quot;todo&quot;&gt;Has a to-do&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;pill uw-filterpill&quot; data-uwfilter=&quot;due&quot;&gt;Due today&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;pill uw-filterpill&quot; data-uwfilter=&quot;stage:closed&quot;&gt;Closed&lt;/button&gt;&lt;/div&gt;&lt;p class=&quot;uw-score-legend&quot;&gt;Score 0 to 100 from niche fit, client quality, deal size and recency. 70 and up is strong.&lt;/p&gt;&lt;table class=&quot;rt-table uw-table&quot;&gt;&lt;colgroup&gt;&lt;col style=&quot;width:6%&quot;&gt;&lt;col style=&quot;width:34%&quot;&gt;&lt;col style=&quot;width:13%&quot;&gt;&lt;col style=&quot;width:11%&quot;&gt;&lt;col style=&quot;width:12%&quot;&gt;&lt;col style=&quot;width:9%&quot;&gt;&lt;col style=&quot;width:15%&quot;&gt;&lt;/colgroup&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Score&lt;/th&gt;&lt;th&gt;Job&lt;/th&gt;&lt;th&gt;Client&lt;/th&gt;&lt;th&gt;Competition&lt;/th&gt;&lt;th&gt;Budget&lt;/th&gt;&lt;th&gt;Posted&lt;/th&gt;&lt;th&gt;Stage&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr class=&quot;uw-row due&quot; data-uwstatus=&quot;interviewing&quot; data-uwstage=&quot;in_kontakt&quot; data-uwtodo=&quot;1&quot; data-uwdue=&quot;1&quot; tabindex=&quot;0&quot;&gt;&lt;td&gt;&lt;span class=&quot;uw-score strong&quot;&gt;79&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;rt-td-name&quot;&gt;&lt;span class=&quot;rt-td-title&quot;&gt;Rebuild reporting so the weekly numbers land in Slack&lt;/span&gt;&lt;span class=&quot;rt-td-desc&quot;&gt;Every Monday someone assembles the week&amp;#x27;s performance numbers by hand in a spreadsheet and pastes them into Slack. They want that to happen without a person in the middle, and they named the exact stack it has to read from.&lt;/span&gt;&lt;span class=&#x27;rt-td-why&#x27;&gt;They named the tools, so the scope is real rather than a wish.&lt;/span&gt;&lt;div class=&quot;uw-detail&quot; hidden&gt;&lt;div class=&quot;uw-detail-head&quot;&gt;&lt;span class=&quot;uw-score strong&quot;&gt;79&lt;/span&gt;&lt;h3&gt;&lt;a href=&quot;https://www.upwork.com/nx/search/jobs/?q=Rebuild%20reporting%20weekly%20numbers%20Slack&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Rebuild reporting so the weekly numbers land in Slack&lt;/a&gt;&lt;/h3&gt;&lt;/div&gt;&lt;p class=&quot;uw-detail-meta&quot;&gt;4.8★ · 22/25 hires · $1,200 fixed · 13 days ago · In contact&lt;/p&gt;&lt;span class=&quot;uw-due-badge&quot;&gt;Follow-up due (2026-08-17)&lt;/span&gt;&lt;h4&gt;Why this job&lt;/h4&gt;&lt;p&gt;They named the tools, so the scope is real rather than a wish.&lt;/p&gt;&lt;h4&gt;Description&lt;/h4&gt;&lt;p&gt;Every Monday someone assembles the week&amp;#x27;s performance numbers by hand in a spreadsheet and pastes them into Slack. They want that to happen without a person in the middle, and they named the exact stack it has to read from.&lt;/p&gt;&lt;h4&gt;Where this application stands&lt;/h4&gt;&lt;dl class=&quot;uw-lage&quot;&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Costs&lt;/dt&gt;&lt;dd&gt;12 connects&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Competing bids&lt;/dt&gt;&lt;dd&gt;$54.0 average bid, $30–95 range&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Proposals so far&lt;/dt&gt;&lt;dd&gt;9&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client status&lt;/dt&gt;&lt;dd&gt;1 invitations sent&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Minimum bar&lt;/dt&gt;&lt;dd&gt;JSS ≥ 75% · 100 hrs experience · $$1K++&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Fit&lt;/dt&gt;&lt;dd&gt;You clear the bar&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Engagement&lt;/dt&gt;&lt;dd&gt;part time · Intermediate&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client is in&lt;/dt&gt;&lt;dd&gt;Hamburg, Germany · Europe/Berlin&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;&lt;h4&gt;Required screening questions&lt;/h4&gt;&lt;ol class=&quot;uw-questions&quot;&gt;&lt;li&gt;Which reporting tools have you connected to Slack before?&lt;/li&gt;&lt;/ol&gt;&lt;h4&gt;History&lt;/h4&gt;&lt;ul class=&quot;uw-hist&quot;&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-09&lt;/span&gt;&lt;span&gt;New&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-09&lt;/span&gt;&lt;span&gt;Proposal sent&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-14&lt;/span&gt;&lt;span&gt;In contact&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;uw-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Set Upwork job demo-4 to &amp;quot;Offer sent&amp;quot;.&quot;&gt;Offer sent →&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn uw-task-btn&quot; data-say=&quot;Add a task: follow up on Upwork job &amp;quot;Rebuild reporting so the weekly numbers land in Slack&amp;quot; (due 2026-08-17).&quot;&gt;+ Add task&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;uw-client&quot;&gt;4.8★ · 22/25 hires&lt;/td&gt;&lt;td class=&quot;uw-comp&quot;&gt;&lt;span class=&quot;uw-comp-n&quot;&gt;9 bids&lt;/span&gt;&lt;span class=&quot;uw-comp-inv&quot;&gt;1 invited&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-budget&quot;&gt;$1,200 fixed&lt;span class=&quot;uw-connects&quot;&gt;12 connects&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-ago&quot;&gt;13 days ago&lt;/td&gt;&lt;td class=&quot;uw-stage-cell&quot;&gt;&lt;span class=&quot;uw-stagechip&quot; style=&quot;background:color-mix(in srgb, var(--brand) 74%, var(--card)); color:color-mix(in srgb, var(--brand) 55%, var(--text))&quot;&gt;In contact&lt;/span&gt;&lt;span class=&quot;uw-due-inline&quot;&gt;&lt;span class=&quot;uw-duechip over&quot;&gt;6d overdue&lt;/span&gt;&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class=&quot;uw-row due&quot; data-uwstatus=&quot;proposal_sent&quot; data-uwstage=&quot;outreach&quot; data-uwtodo=&quot;1&quot; data-uwdue=&quot;1&quot; tabindex=&quot;0&quot;&gt;&lt;td&gt;&lt;span class=&quot;uw-score strong&quot;&gt;74&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;rt-td-name&quot;&gt;&lt;span class=&quot;rt-td-title&quot;&gt;SEO content plan for a B2B software company&lt;/span&gt;&lt;span class=&quot;rt-td-desc&quot;&gt;They rank for their own brand name and nothing else, and want a twelve-month plan rather than someone writing articles. Decision maker is the founder, which usually means a short chain to yes.&lt;/span&gt;&lt;span class=&#x27;rt-td-why&#x27;&gt;Strategy rather than production work, and the founder is the one deciding.&lt;/span&gt;&lt;div class=&quot;uw-detail&quot; hidden&gt;&lt;div class=&quot;uw-detail-head&quot;&gt;&lt;span class=&quot;uw-score strong&quot;&gt;74&lt;/span&gt;&lt;h3&gt;&lt;a href=&quot;https://www.upwork.com/nx/search/jobs/?q=SEO%20content%20plan%20B2B%20software&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;SEO content plan for a B2B software company&lt;/a&gt;&lt;/h3&gt;&lt;/div&gt;&lt;p class=&quot;uw-detail-meta&quot;&gt;4.95★ · 58/64 hires · $1,800 fixed · 10 days ago · Proposal sent&lt;/p&gt;&lt;span class=&quot;uw-due-badge&quot;&gt;Follow-up due (2026-08-16)&lt;/span&gt;&lt;h4&gt;Why this job&lt;/h4&gt;&lt;p&gt;Strategy rather than production work, and the founder is the one deciding.&lt;/p&gt;&lt;h4&gt;Description&lt;/h4&gt;&lt;p&gt;They rank for their own brand name and nothing else, and want a twelve-month plan rather than someone writing articles. Decision maker is the founder, which usually means a short chain to yes.&lt;/p&gt;&lt;h4&gt;Where this application stands&lt;/h4&gt;&lt;dl class=&quot;uw-lage&quot;&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Costs&lt;/dt&gt;&lt;dd&gt;13 connects&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Competing bids&lt;/dt&gt;&lt;dd&gt;$58.9 average bid, $32–110 range&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Proposals so far&lt;/dt&gt;&lt;dd&gt;18&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client status&lt;/dt&gt;&lt;dd&gt;2 invitations sent&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Minimum bar&lt;/dt&gt;&lt;dd&gt;JSS ≥ 80% · $$1K++&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Fit&lt;/dt&gt;&lt;dd&gt;You clear the bar&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Engagement&lt;/dt&gt;&lt;dd&gt;part time · Expert&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client is in&lt;/dt&gt;&lt;dd&gt;Toronto, Canada&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;&lt;h4&gt;Required screening questions&lt;/h4&gt;&lt;ol class=&quot;uw-questions&quot;&gt;&lt;li&gt;Link one content plan you have written that shipped.&lt;/li&gt;&lt;li&gt;How do you decide what not to write about?&lt;/li&gt;&lt;/ol&gt;&lt;h4&gt;History&lt;/h4&gt;&lt;ul class=&quot;uw-hist&quot;&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-12&lt;/span&gt;&lt;span&gt;New&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-12&lt;/span&gt;&lt;span&gt;Proposal sent&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;uw-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Generate the pitch page for Upwork job demo-7 (&amp;quot;SEO content plan for a B2B software company&amp;quot;)&quot;&gt;Yes, generate it&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;apply-btn&quot; data-url=&quot;https://www.upwork.com/nx/search/jobs/?q=SEO%20content%20plan%20B2B%20software&quot;&gt;Apply&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Set Upwork job demo-7 to &amp;quot;In contact&amp;quot;, the client replied.&quot;&gt;Got a reply →&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn uw-task-btn&quot; data-say=&quot;Add a task: follow up on Upwork job &amp;quot;SEO content plan for a B2B software company&amp;quot; (due 2026-08-16).&quot;&gt;+ Add task&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;uw-client&quot;&gt;4.95★ · 58/64 hires&lt;/td&gt;&lt;td class=&quot;uw-comp&quot;&gt;&lt;span class=&quot;uw-comp-n&quot;&gt;18 bids&lt;/span&gt;&lt;span class=&quot;uw-comp-inv&quot;&gt;2 invited&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-budget&quot;&gt;$1,800 fixed&lt;span class=&quot;uw-connects&quot;&gt;13 connects&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-ago&quot;&gt;10 days ago&lt;/td&gt;&lt;td class=&quot;uw-stage-cell&quot;&gt;&lt;span class=&quot;uw-stagechip&quot; style=&quot;background:color-mix(in srgb, var(--brand) 48%, var(--card)); color:color-mix(in srgb, var(--brand) 55%, var(--text))&quot;&gt;Applied&lt;/span&gt;&lt;span class=&quot;uw-due-inline&quot;&gt;&lt;span class=&quot;uw-duechip over&quot;&gt;7d overdue&lt;/span&gt;&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class=&quot;uw-row due&quot; data-uwstatus=&quot;proposal_sent&quot; data-uwstage=&quot;outreach&quot; data-uwtodo=&quot;1&quot; data-uwdue=&quot;1&quot; tabindex=&quot;0&quot;&gt;&lt;td&gt;&lt;span class=&quot;uw-score&quot;&gt;66&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;rt-td-name&quot;&gt;&lt;span class=&quot;rt-td-title&quot;&gt;Media manager for Google Ads and Meta campaigns&lt;span class=&quot;uw-flag soft&quot;&gt;full time&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;rt-td-desc&quot;&gt;An agency subcontracting media buying across Google and Meta, posting new roles constantly. Full-time engagement, intermediate level, and they have invited 11 people already.&lt;/span&gt;&lt;span class=&#x27;rt-td-why&#x27;&gt;Huge hire count, but the budget field reads like a placeholder. Worth one follow-up.&lt;/span&gt;&lt;div class=&quot;uw-detail&quot; hidden&gt;&lt;div class=&quot;uw-detail-head&quot;&gt;&lt;span class=&quot;uw-score&quot;&gt;66&lt;/span&gt;&lt;h3&gt;&lt;a href=&quot;https://www.upwork.com/nx/search/jobs/?q=Media%20manager%20for%20Google%20Ads%20and%20Meta%20campaigns&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Media manager for Google Ads and Meta campaigns&lt;/a&gt;&lt;/h3&gt;&lt;/div&gt;&lt;p class=&quot;uw-detail-meta&quot;&gt;4.98★ · 634/676 hires · $10 fixed, likely a placeholder · 11 days ago · Proposal sent&lt;/p&gt;&lt;span class=&quot;uw-due-badge&quot;&gt;Follow-up due (2026-08-14)&lt;/span&gt;&lt;h4&gt;Why this job&lt;/h4&gt;&lt;p&gt;Huge hire count, but the budget field reads like a placeholder. Worth one follow-up.&lt;/p&gt;&lt;h4&gt;Description&lt;/h4&gt;&lt;p&gt;An agency subcontracting media buying across Google and Meta, posting new roles constantly. Full-time engagement, intermediate level, and they have invited 11 people already.&lt;/p&gt;&lt;h4&gt;Where this application stands&lt;/h4&gt;&lt;dl class=&quot;uw-lage&quot;&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Costs&lt;/dt&gt;&lt;dd&gt;8 connects&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Competing bids&lt;/dt&gt;&lt;dd&gt;$18.4 average bid, $10–60 range&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Proposals so far&lt;/dt&gt;&lt;dd&gt;34&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client status&lt;/dt&gt;&lt;dd&gt;11 invitations sent&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Fit&lt;/dt&gt;&lt;dd&gt;You clear the bar&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Engagement&lt;/dt&gt;&lt;dd&gt;full time · Intermediate&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client is in&lt;/dt&gt;&lt;dd&gt;Austin, United States · America/Chicago&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;&lt;h4&gt;What this client hires for&lt;/h4&gt;&lt;ul class=&quot;uw-clienthist&quot;&gt;&lt;li&gt;Meta ads buyer, ongoing retainer&lt;span class=&quot;uw-hist-fb&quot;&gt;4.9★&lt;/span&gt;&lt;/li&gt;&lt;li&gt;Google Ads account manager&lt;span class=&quot;uw-hist-fb&quot;&gt;5.0★&lt;/span&gt;&lt;/li&gt;&lt;li&gt;Creative testing sprint&lt;span class=&quot;uw-hist-fb&quot;&gt;4.8★&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h4&gt;History&lt;/h4&gt;&lt;ul class=&quot;uw-hist&quot;&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-11&lt;/span&gt;&lt;span&gt;New&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-11&lt;/span&gt;&lt;span&gt;Proposal sent&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;uw-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Generate the pitch page for Upwork job demo-3 (&amp;quot;Media manager for Google Ads and Meta campaigns&amp;quot;)&quot;&gt;Yes, generate it&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;apply-btn&quot; data-url=&quot;https://www.upwork.com/nx/search/jobs/?q=Media%20manager%20for%20Google%20Ads%20and%20Meta%20campaigns&quot;&gt;Apply&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Set Upwork job demo-3 to &amp;quot;In contact&amp;quot;, the client replied.&quot;&gt;Got a reply →&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn uw-task-btn&quot; data-say=&quot;Add a task: follow up on Upwork job &amp;quot;Media manager for Google Ads and Meta campaigns&amp;quot; (due 2026-08-14).&quot;&gt;+ Add task&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;uw-client&quot;&gt;4.98★ · 634/676 hires&lt;/td&gt;&lt;td class=&quot;uw-comp&quot;&gt;&lt;span class=&quot;uw-comp-n high&quot;&gt;34 bids&lt;/span&gt;&lt;span class=&quot;uw-comp-inv&quot;&gt;11 invited&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-budget&quot;&gt;$10 fixed, likely a placeholder&lt;span class=&quot;uw-connects&quot;&gt;8 connects&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-ago&quot;&gt;11 days ago&lt;/td&gt;&lt;td class=&quot;uw-stage-cell&quot;&gt;&lt;span class=&quot;uw-stagechip&quot; style=&quot;background:color-mix(in srgb, var(--brand) 48%, var(--card)); color:color-mix(in srgb, var(--brand) 55%, var(--text))&quot;&gt;Applied&lt;/span&gt;&lt;span class=&quot;uw-due-inline&quot;&gt;&lt;span class=&quot;uw-duechip over&quot;&gt;9d overdue&lt;/span&gt;&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class=&quot;uw-row&quot; data-uwstatus=&quot;hired&quot; data-uwstage=&quot;closed&quot; data-uwtodo=&quot;0&quot; data-uwdue=&quot;0&quot; tabindex=&quot;0&quot;&gt;&lt;td&gt;&lt;span class=&quot;uw-score strong&quot;&gt;88&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;rt-td-name&quot;&gt;&lt;span class=&quot;rt-td-title&quot;&gt;Audit a Google Ads account for a dental clinic group&lt;span class=&quot;uw-flag gone&quot;&gt;taken&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;rt-td-desc&quot;&gt;Six clinic locations running out of a single ad account, no split by location, and a cost per booking nobody in the group can explain. They want the audit first and the rebuild quoted separately.&lt;/span&gt;&lt;span class=&#x27;rt-td-why&#x27;&gt;Six locations, one account. Exactly the shape of the last two wins.&lt;/span&gt;&lt;div class=&quot;uw-detail&quot; hidden&gt;&lt;div class=&quot;uw-detail-head&quot;&gt;&lt;span class=&quot;uw-score strong&quot;&gt;88&lt;/span&gt;&lt;h3&gt;&lt;a href=&quot;https://www.upwork.com/nx/search/jobs/?q=Audit%20Google%20Ads%20account%20dental%20clinic%20group&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Audit a Google Ads account for a dental clinic group&lt;/a&gt;&lt;/h3&gt;&lt;/div&gt;&lt;p class=&quot;uw-detail-meta&quot;&gt;4.9★ · 31/38 hires · $2,400 fixed · 21 days ago · Won&lt;/p&gt;&lt;h4&gt;Why this job&lt;/h4&gt;&lt;p&gt;Six locations, one account. Exactly the shape of the last two wins.&lt;/p&gt;&lt;h4&gt;Description&lt;/h4&gt;&lt;p&gt;Six clinic locations running out of a single ad account, no split by location, and a cost per booking nobody in the group can explain. They want the audit first and the rebuild quoted separately.&lt;/p&gt;&lt;h4&gt;Where this application stands&lt;/h4&gt;&lt;dl class=&quot;uw-lage&quot;&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Costs&lt;/dt&gt;&lt;dd&gt;16 connects&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Competing bids&lt;/dt&gt;&lt;dd&gt;$72.0 average bid, $40–150 range&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Proposals so far&lt;/dt&gt;&lt;dd&gt;6&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client status&lt;/dt&gt;&lt;dd&gt;someone already hired · an offer is out · 3 invitations sent&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Minimum bar&lt;/dt&gt;&lt;dd&gt;JSS ≥ 80% · $$1K++&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Fit&lt;/dt&gt;&lt;dd&gt;You clear the bar&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Engagement&lt;/dt&gt;&lt;dd&gt;part time · Expert&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client is in&lt;/dt&gt;&lt;dd&gt;Leeds, United Kingdom · Europe/London&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;&lt;h4&gt;History&lt;/h4&gt;&lt;ul class=&quot;uw-hist&quot;&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-01&lt;/span&gt;&lt;span&gt;New&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-01&lt;/span&gt;&lt;span&gt;Proposal sent&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-04&lt;/span&gt;&lt;span&gt;In contact&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-06&lt;/span&gt;&lt;span&gt;Offer sent&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-07&lt;/span&gt;&lt;span&gt;Won&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;uw-actions&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;uw-client&quot;&gt;4.9★ · 31/38 hires&lt;/td&gt;&lt;td class=&quot;uw-comp&quot;&gt;&lt;span class=&quot;uw-comp-n&quot;&gt;6 bids&lt;/span&gt;&lt;span class=&quot;uw-comp-inv&quot;&gt;3 invited&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-budget&quot;&gt;$2,400 fixed&lt;span class=&quot;uw-connects&quot;&gt;16 connects&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-ago&quot;&gt;21 days ago&lt;/td&gt;&lt;td class=&quot;uw-stage-cell&quot;&gt;&lt;span class=&quot;uw-stagechip closed&quot;&gt;Won&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class=&quot;uw-row&quot; data-uwstatus=&quot;new&quot; data-uwstage=&quot;offen&quot; data-uwtodo=&quot;0&quot; data-uwdue=&quot;0&quot; tabindex=&quot;0&quot;&gt;&lt;td&gt;&lt;span class=&quot;uw-score strong&quot;&gt;84&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;rt-td-name&quot;&gt;&lt;span class=&quot;rt-td-title&quot;&gt;Google Ads specialist, audit and optimisation&lt;/span&gt;&lt;span class=&quot;rt-td-desc&quot;&gt;A six-figure ad account that has run unattended for a year. They want a written audit plus a call that says plainly what is wasting money, before anyone touches a setting. Two screening questions, one of them about accounts above $50k a month.&lt;/span&gt;&lt;span class=&#x27;rt-td-why&#x27;&gt;Audit-shaped and scoped, and the client hires almost everything they post.&lt;/span&gt;&lt;div class=&quot;uw-detail&quot; hidden&gt;&lt;div class=&quot;uw-detail-head&quot;&gt;&lt;span class=&quot;uw-score strong&quot;&gt;84&lt;/span&gt;&lt;h3&gt;&lt;a href=&quot;https://www.upwork.com/nx/search/jobs/?q=Google%20Ads%20specialist%20audit%20and%20optimisation&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Google Ads specialist, audit and optimisation&lt;/a&gt;&lt;/h3&gt;&lt;/div&gt;&lt;p class=&quot;uw-detail-meta&quot;&gt;5.0★ · 137/139 hires · $1,500 fixed · 7 days ago · New&lt;/p&gt;&lt;h4&gt;Why this job&lt;/h4&gt;&lt;p&gt;Audit-shaped and scoped, and the client hires almost everything they post.&lt;/p&gt;&lt;h4&gt;Description&lt;/h4&gt;&lt;p&gt;A six-figure ad account that has run unattended for a year. They want a written audit plus a call that says plainly what is wasting money, before anyone touches a setting. Two screening questions, one of them about accounts above $50k a month.&lt;/p&gt;&lt;h4&gt;Where this application stands&lt;/h4&gt;&lt;dl class=&quot;uw-lage&quot;&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Costs&lt;/dt&gt;&lt;dd&gt;14 connects&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Competing bids&lt;/dt&gt;&lt;dd&gt;$61.5 average bid, $35–120 range&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Proposals so far&lt;/dt&gt;&lt;dd&gt;7&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client status&lt;/dt&gt;&lt;dd&gt;2 invitations sent&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Minimum bar&lt;/dt&gt;&lt;dd&gt;JSS ≥ 80% · $$1K++&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Fit&lt;/dt&gt;&lt;dd&gt;You clear the bar&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Engagement&lt;/dt&gt;&lt;dd&gt;part time · Intermediate&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client is in&lt;/dt&gt;&lt;dd&gt;Melbourne, Australia&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;&lt;p class=&quot;uw-screening&quot;&gt;⚠ Screening instruction in the text: Tell us in one line which single change you would make first.&lt;/p&gt;&lt;h4&gt;Required screening questions&lt;/h4&gt;&lt;ol class=&quot;uw-questions&quot;&gt;&lt;li&gt;Which single change would you make first, and why that one?&lt;/li&gt;&lt;li&gt;Have you worked on an account spending over $50k a month?&lt;/li&gt;&lt;/ol&gt;&lt;h4&gt;What this client hires for&lt;/h4&gt;&lt;ul class=&quot;uw-clienthist&quot;&gt;&lt;li&gt;Google Ads management, ongoing&lt;span class=&quot;uw-hist-fb&quot;&gt;5.0★&lt;/span&gt;&lt;/li&gt;&lt;li&gt;Landing page conversion rebuild&lt;span class=&quot;uw-hist-fb&quot;&gt;4.9★&lt;/span&gt;&lt;/li&gt;&lt;li&gt;GA4 migration and event tracking&lt;span class=&quot;uw-hist-fb&quot;&gt;5.0★&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h4&gt;History&lt;/h4&gt;&lt;ul class=&quot;uw-hist&quot;&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-15&lt;/span&gt;&lt;span&gt;New&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;uw-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Generate the pitch page for Upwork job demo-1 (&amp;quot;Google Ads specialist, audit and optimisation&amp;quot;)&quot;&gt;Yes, generate it&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;apply-btn&quot; data-url=&quot;https://www.upwork.com/nx/search/jobs/?q=Google%20Ads%20specialist%20audit%20and%20optimisation&quot;&gt;Apply&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Set Upwork job demo-1 to &amp;quot;In contact&amp;quot;, the client replied.&quot;&gt;Got a reply →&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;uw-client&quot;&gt;5.0★ · 137/139 hires&lt;/td&gt;&lt;td class=&quot;uw-comp&quot;&gt;&lt;span class=&quot;uw-comp-n&quot;&gt;7 bids&lt;/span&gt;&lt;span class=&quot;uw-comp-inv&quot;&gt;2 invited&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-budget&quot;&gt;$1,500 fixed&lt;span class=&quot;uw-connects&quot;&gt;14 connects&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-ago&quot;&gt;7 days ago&lt;/td&gt;&lt;td class=&quot;uw-stage-cell&quot;&gt;&lt;span class=&quot;uw-stagechip&quot; style=&quot;background:color-mix(in srgb, var(--brand) 22%, var(--card)); color:color-mix(in srgb, var(--brand) 55%, var(--text))&quot;&gt;Not applied&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class=&quot;uw-row&quot; data-uwstatus=&quot;rejected&quot; data-uwstage=&quot;closed&quot; data-uwtodo=&quot;0&quot; data-uwdue=&quot;0&quot; tabindex=&quot;0&quot;&gt;&lt;td&gt;&lt;span class=&quot;uw-score strong&quot;&gt;72&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;rt-td-name&quot;&gt;&lt;span class=&quot;rt-td-title&quot;&gt;Automate lead handover between forms and the CRM&lt;span class=&quot;uw-flag gone&quot;&gt;taken&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;rt-td-desc&quot;&gt;Form submissions were being retyped into the CRM by hand. Clear scope, fair budget. They went with someone who had built on their exact CRM before.&lt;/span&gt;&lt;span class=&#x27;rt-td-why&#x27;&gt;Lost to a specialist in their CRM. The proposal was fine, the overlap was not.&lt;/span&gt;&lt;div class=&quot;uw-detail&quot; hidden&gt;&lt;div class=&quot;uw-detail-head&quot;&gt;&lt;span class=&quot;uw-score strong&quot;&gt;72&lt;/span&gt;&lt;h3&gt;&lt;a href=&quot;https://www.upwork.com/nx/search/jobs/?q=Automate%20lead%20handover%20forms%20CRM&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Automate lead handover between forms and the CRM&lt;/a&gt;&lt;/h3&gt;&lt;/div&gt;&lt;p class=&quot;uw-detail-meta&quot;&gt;4.7★ · 12/19 hires · $950 fixed · 18 days ago · Declined&lt;/p&gt;&lt;h4&gt;Why this job&lt;/h4&gt;&lt;p&gt;Lost to a specialist in their CRM. The proposal was fine, the overlap was not.&lt;/p&gt;&lt;h4&gt;Description&lt;/h4&gt;&lt;p&gt;Form submissions were being retyped into the CRM by hand. Clear scope, fair budget. They went with someone who had built on their exact CRM before.&lt;/p&gt;&lt;h4&gt;Where this application stands&lt;/h4&gt;&lt;dl class=&quot;uw-lage&quot;&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Costs&lt;/dt&gt;&lt;dd&gt;11 connects&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Competing bids&lt;/dt&gt;&lt;dd&gt;$44.5 average bid, $25–88 range&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Proposals so far&lt;/dt&gt;&lt;dd&gt;21&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client status&lt;/dt&gt;&lt;dd&gt;someone already hired · an offer is out&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Fit&lt;/dt&gt;&lt;dd&gt;You clear the bar&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Engagement&lt;/dt&gt;&lt;dd&gt;as needed · Intermediate&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client is in&lt;/dt&gt;&lt;dd&gt;Denver, United States&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;&lt;h4&gt;History&lt;/h4&gt;&lt;ul class=&quot;uw-hist&quot;&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-04&lt;/span&gt;&lt;span&gt;New&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-04&lt;/span&gt;&lt;span&gt;Proposal sent&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-08&lt;/span&gt;&lt;span&gt;In contact&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-13&lt;/span&gt;&lt;span&gt;Declined&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;uw-actions&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;uw-client&quot;&gt;4.7★ · 12/19 hires&lt;/td&gt;&lt;td class=&quot;uw-comp&quot;&gt;&lt;span class=&quot;uw-comp-n&quot;&gt;21 bids&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-budget&quot;&gt;$950 fixed&lt;span class=&quot;uw-connects&quot;&gt;11 connects&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-ago&quot;&gt;18 days ago&lt;/td&gt;&lt;td class=&quot;uw-stage-cell&quot;&gt;&lt;span class=&quot;uw-stagechip closed&quot;&gt;Declined&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class=&quot;uw-row&quot; data-uwstatus=&quot;new&quot; data-uwstage=&quot;offen&quot; data-uwtodo=&quot;0&quot; data-uwdue=&quot;0&quot; tabindex=&quot;0&quot;&gt;&lt;td&gt;&lt;span class=&quot;uw-score strong&quot;&gt;71&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;rt-td-name&quot;&gt;&lt;span class=&quot;rt-td-title&quot;&gt;Digital analytics implementation specialist&lt;/span&gt;&lt;span class=&quot;rt-td-desc&quot;&gt;Ecommerce brand wants server-side tracking set up properly after two previous contractors failed at it. Hourly and open-ended rather than a fixed deliverable.&lt;/span&gt;&lt;span class=&#x27;rt-td-why&#x27;&gt;Ongoing rather than one-off, which is worth more than the rate suggests.&lt;/span&gt;&lt;div class=&quot;uw-detail&quot; hidden&gt;&lt;div class=&quot;uw-detail-head&quot;&gt;&lt;span class=&quot;uw-score strong&quot;&gt;71&lt;/span&gt;&lt;h3&gt;&lt;a href=&quot;https://www.upwork.com/nx/search/jobs/?q=Digital%20analytics%20implementation%20specialist&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Digital analytics implementation specialist&lt;/a&gt;&lt;/h3&gt;&lt;/div&gt;&lt;p class=&quot;uw-detail-meta&quot;&gt;5.0★ · 16/9 hires · $hourly, platform default range/hr · 7 days ago · New&lt;/p&gt;&lt;h4&gt;Why this job&lt;/h4&gt;&lt;p&gt;Ongoing rather than one-off, which is worth more than the rate suggests.&lt;/p&gt;&lt;h4&gt;Description&lt;/h4&gt;&lt;p&gt;Ecommerce brand wants server-side tracking set up properly after two previous contractors failed at it. Hourly and open-ended rather than a fixed deliverable.&lt;/p&gt;&lt;h4&gt;Where this application stands&lt;/h4&gt;&lt;dl class=&quot;uw-lage&quot;&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Costs&lt;/dt&gt;&lt;dd&gt;9 connects&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Competing bids&lt;/dt&gt;&lt;dd&gt;$42.0/hr average, $25–85 range&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Proposals so far&lt;/dt&gt;&lt;dd&gt;3&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client status&lt;/dt&gt;&lt;dd&gt;open, nobody hired yet&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Fit&lt;/dt&gt;&lt;dd&gt;You clear the bar&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Engagement&lt;/dt&gt;&lt;dd&gt;as needed · Expert&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client is in&lt;/dt&gt;&lt;dd&gt;Barcelona, Spain · Europe/Madrid&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;&lt;h4&gt;History&lt;/h4&gt;&lt;ul class=&quot;uw-hist&quot;&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-15&lt;/span&gt;&lt;span&gt;New&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;uw-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Generate the pitch page for Upwork job demo-2 (&amp;quot;Digital analytics implementation specialist&amp;quot;)&quot;&gt;Yes, generate it&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;apply-btn&quot; data-url=&quot;https://www.upwork.com/nx/search/jobs/?q=Digital%20analytics%20implementation%20specialist&quot;&gt;Apply&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Set Upwork job demo-2 to &amp;quot;In contact&amp;quot;, the client replied.&quot;&gt;Got a reply →&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;uw-client&quot;&gt;5.0★ · 16/9 hires&lt;/td&gt;&lt;td class=&quot;uw-comp&quot;&gt;&lt;span class=&quot;uw-comp-n low&quot;&gt;3 bids&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-budget&quot;&gt;$hourly, platform default range/hr&lt;span class=&quot;uw-connects&quot;&gt;9 connects&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-ago&quot;&gt;7 days ago&lt;/td&gt;&lt;td class=&quot;uw-stage-cell&quot;&gt;&lt;span class=&quot;uw-stagechip&quot; style=&quot;background:color-mix(in srgb, var(--brand) 22%, var(--card)); color:color-mix(in srgb, var(--brand) 55%, var(--text))&quot;&gt;Not applied&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr class=&quot;uw-row&quot; data-uwstatus=&quot;offer_sent&quot; data-uwstage=&quot;angebot&quot; data-uwtodo=&quot;0&quot; data-uwdue=&quot;0&quot; tabindex=&quot;0&quot;&gt;&lt;td&gt;&lt;span class=&quot;uw-score&quot;&gt;68&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;rt-td-name&quot;&gt;&lt;span class=&quot;rt-td-title&quot;&gt;Conversion tracking across three landing pages&lt;/span&gt;&lt;span class=&quot;rt-td-desc&quot;&gt;Three landing pages, no reliable conversion tracking on any of them, and a product launch four weeks out. Fixed scope, no screening questions.&lt;/span&gt;&lt;span class=&#x27;rt-td-why&#x27;&gt;Small and clean. New client, but everything they posted they hired for.&lt;/span&gt;&lt;div class=&quot;uw-detail&quot; hidden&gt;&lt;div class=&quot;uw-detail-head&quot;&gt;&lt;span class=&quot;uw-score&quot;&gt;68&lt;/span&gt;&lt;h3&gt;&lt;a href=&quot;https://www.upwork.com/nx/search/jobs/?q=Conversion%20tracking%20across%20three%20landing%20pages&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Conversion tracking across three landing pages&lt;/a&gt;&lt;/h3&gt;&lt;/div&gt;&lt;p class=&quot;uw-detail-meta&quot;&gt;5.0★ · 4/4 hires · $800 fixed · 16 days ago · Offer sent&lt;/p&gt;&lt;h4&gt;Why this job&lt;/h4&gt;&lt;p&gt;Small and clean. New client, but everything they posted they hired for.&lt;/p&gt;&lt;h4&gt;Description&lt;/h4&gt;&lt;p&gt;Three landing pages, no reliable conversion tracking on any of them, and a product launch four weeks out. Fixed scope, no screening questions.&lt;/p&gt;&lt;h4&gt;Where this application stands&lt;/h4&gt;&lt;dl class=&quot;uw-lage&quot;&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Costs&lt;/dt&gt;&lt;dd&gt;10 connects&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Competing bids&lt;/dt&gt;&lt;dd&gt;$47.2 average bid, $28–90 range&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Proposals so far&lt;/dt&gt;&lt;dd&gt;12&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client status&lt;/dt&gt;&lt;dd&gt;an offer is out&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Fit&lt;/dt&gt;&lt;dd&gt;You clear the bar&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Engagement&lt;/dt&gt;&lt;dd&gt;as needed · Intermediate&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client is in&lt;/dt&gt;&lt;dd&gt;Utrecht, Netherlands · Europe/Amsterdam&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;&lt;h4&gt;History&lt;/h4&gt;&lt;ul class=&quot;uw-hist&quot;&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-06&lt;/span&gt;&lt;span&gt;New&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-06&lt;/span&gt;&lt;span&gt;Proposal sent&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-10&lt;/span&gt;&lt;span&gt;In contact&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-14&lt;/span&gt;&lt;span&gt;Offer sent&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;uw-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Set Upwork job demo-5 to &amp;quot;Hired&amp;quot;.&quot;&gt;Won&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Set Upwork job demo-5 to &amp;quot;Rejected&amp;quot;.&quot;&gt;Declined&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=&quot;uw-client&quot;&gt;5.0★ · 4/4 hires&lt;/td&gt;&lt;td class=&quot;uw-comp&quot;&gt;&lt;span class=&quot;uw-comp-n&quot;&gt;12 bids&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-budget&quot;&gt;$800 fixed&lt;span class=&quot;uw-connects&quot;&gt;10 connects&lt;/span&gt;&lt;/td&gt;&lt;td class=&quot;uw-ago&quot;&gt;16 days ago&lt;/td&gt;&lt;td class=&quot;uw-stage-cell&quot;&gt;&lt;span class=&quot;uw-stagechip&quot; style=&quot;background:color-mix(in srgb, var(--brand) 100%, var(--card)); color:color-mix(in srgb, var(--brand) 55%, var(--text))&quot;&gt;Offer sent&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;p class=&quot;uw-excluded&quot;&gt;3 jobs filtered out, so not in the list: 1 below the bar · 1 already taken · 1 other&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;uw-view uw-view-board&quot; hidden&gt;&lt;div class=&quot;uw-board&quot;&gt;&lt;div class=&quot;uw-col&quot;&gt;&lt;div class=&quot;uw-col-head&quot; style=&quot;border-top-color: color-mix(in srgb, var(--brand) 22%, var(--card))&quot;&gt;&lt;div&gt;&lt;div class=&quot;uw-col-title&quot;&gt;Not applied&lt;/div&gt;&lt;div class=&quot;uw-col-hint&quot;&gt;found and scored, still sitting&lt;/div&gt;&lt;/div&gt;&lt;span class=&quot;uw-col-count&quot; style=&quot;color: color-mix(in srgb, var(--brand) 22%, var(--card)); background: color-mix(in srgb, color-mix(in srgb, var(--brand) 22%, var(--card)) 16%, transparent)&quot;&gt;2&lt;/span&gt;&lt;/div&gt;&lt;ul class=&quot;uw-col-body&quot;&gt;&lt;li class=&quot;uw-card&quot; data-uwdue=&quot;0&quot; tabindex=&quot;0&quot; role=&quot;button&quot;&gt;&lt;div class=&quot;uw-card-top&quot;&gt;&lt;span class=&quot;uw-score strong&quot;&gt;84&lt;/span&gt;&lt;span class=&quot;uw-card-title&quot;&gt;Google Ads specialist, audit and optimisation&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-card-meta&quot;&gt;5.0★ · 137/139 hires · $1,500 fixed · 7 days ago · New&lt;/div&gt;&lt;div class=&quot;uw-card-rationale&quot;&gt;A six-figure ad account that has run unattended for a year. They want a written audit plus a call that says plainly what is wasting money, before anyone touches a setting. Two screening questions, one of them about accounts above $50k a month.&lt;/div&gt;&lt;div class=&quot;uw-detail&quot; hidden&gt;&lt;div class=&quot;uw-detail-head&quot;&gt;&lt;span class=&quot;uw-score strong&quot;&gt;84&lt;/span&gt;&lt;h3&gt;&lt;a href=&quot;https://www.upwork.com/nx/search/jobs/?q=Google%20Ads%20specialist%20audit%20and%20optimisation&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Google Ads specialist, audit and optimisation&lt;/a&gt;&lt;/h3&gt;&lt;/div&gt;&lt;p class=&quot;uw-detail-meta&quot;&gt;5.0★ · 137/139 hires · $1,500 fixed · 7 days ago · New&lt;/p&gt;&lt;h4&gt;Why this job&lt;/h4&gt;&lt;p&gt;Audit-shaped and scoped, and the client hires almost everything they post.&lt;/p&gt;&lt;h4&gt;Description&lt;/h4&gt;&lt;p&gt;A six-figure ad account that has run unattended for a year. They want a written audit plus a call that says plainly what is wasting money, before anyone touches a setting. Two screening questions, one of them about accounts above $50k a month.&lt;/p&gt;&lt;h4&gt;Where this application stands&lt;/h4&gt;&lt;dl class=&quot;uw-lage&quot;&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Costs&lt;/dt&gt;&lt;dd&gt;14 connects&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Competing bids&lt;/dt&gt;&lt;dd&gt;$61.5 average bid, $35–120 range&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Proposals so far&lt;/dt&gt;&lt;dd&gt;7&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client status&lt;/dt&gt;&lt;dd&gt;2 invitations sent&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Minimum bar&lt;/dt&gt;&lt;dd&gt;JSS ≥ 80% · $$1K++&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Fit&lt;/dt&gt;&lt;dd&gt;You clear the bar&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Engagement&lt;/dt&gt;&lt;dd&gt;part time · Intermediate&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client is in&lt;/dt&gt;&lt;dd&gt;Melbourne, Australia&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;&lt;p class=&quot;uw-screening&quot;&gt;⚠ Screening instruction in the text: Tell us in one line which single change you would make first.&lt;/p&gt;&lt;h4&gt;Required screening questions&lt;/h4&gt;&lt;ol class=&quot;uw-questions&quot;&gt;&lt;li&gt;Which single change would you make first, and why that one?&lt;/li&gt;&lt;li&gt;Have you worked on an account spending over $50k a month?&lt;/li&gt;&lt;/ol&gt;&lt;h4&gt;What this client hires for&lt;/h4&gt;&lt;ul class=&quot;uw-clienthist&quot;&gt;&lt;li&gt;Google Ads management, ongoing&lt;span class=&quot;uw-hist-fb&quot;&gt;5.0★&lt;/span&gt;&lt;/li&gt;&lt;li&gt;Landing page conversion rebuild&lt;span class=&quot;uw-hist-fb&quot;&gt;4.9★&lt;/span&gt;&lt;/li&gt;&lt;li&gt;GA4 migration and event tracking&lt;span class=&quot;uw-hist-fb&quot;&gt;5.0★&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h4&gt;History&lt;/h4&gt;&lt;ul class=&quot;uw-hist&quot;&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-15&lt;/span&gt;&lt;span&gt;New&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;uw-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Generate the pitch page for Upwork job demo-1 (&amp;quot;Google Ads specialist, audit and optimisation&amp;quot;)&quot;&gt;Yes, generate it&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;apply-btn&quot; data-url=&quot;https://www.upwork.com/nx/search/jobs/?q=Google%20Ads%20specialist%20audit%20and%20optimisation&quot;&gt;Apply&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Set Upwork job demo-1 to &amp;quot;In contact&amp;quot;, the client replied.&quot;&gt;Got a reply →&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/li&gt;&lt;li class=&quot;uw-card&quot; data-uwdue=&quot;0&quot; tabindex=&quot;0&quot; role=&quot;button&quot;&gt;&lt;div class=&quot;uw-card-top&quot;&gt;&lt;span class=&quot;uw-score strong&quot;&gt;71&lt;/span&gt;&lt;span class=&quot;uw-card-title&quot;&gt;Digital analytics implementation specialist&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-card-meta&quot;&gt;5.0★ · 16/9 hires · $hourly, platform default range/hr · 7 days ago · New&lt;/div&gt;&lt;div class=&quot;uw-card-rationale&quot;&gt;Ecommerce brand wants server-side tracking set up properly after two previous contractors failed at it. Hourly and open-ended rather than a fixed deliverable.&lt;/div&gt;&lt;div class=&quot;uw-detail&quot; hidden&gt;&lt;div class=&quot;uw-detail-head&quot;&gt;&lt;span class=&quot;uw-score strong&quot;&gt;71&lt;/span&gt;&lt;h3&gt;&lt;a href=&quot;https://www.upwork.com/nx/search/jobs/?q=Digital%20analytics%20implementation%20specialist&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Digital analytics implementation specialist&lt;/a&gt;&lt;/h3&gt;&lt;/div&gt;&lt;p class=&quot;uw-detail-meta&quot;&gt;5.0★ · 16/9 hires · $hourly, platform default range/hr · 7 days ago · New&lt;/p&gt;&lt;h4&gt;Why this job&lt;/h4&gt;&lt;p&gt;Ongoing rather than one-off, which is worth more than the rate suggests.&lt;/p&gt;&lt;h4&gt;Description&lt;/h4&gt;&lt;p&gt;Ecommerce brand wants server-side tracking set up properly after two previous contractors failed at it. Hourly and open-ended rather than a fixed deliverable.&lt;/p&gt;&lt;h4&gt;Where this application stands&lt;/h4&gt;&lt;dl class=&quot;uw-lage&quot;&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Costs&lt;/dt&gt;&lt;dd&gt;9 connects&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Competing bids&lt;/dt&gt;&lt;dd&gt;$42.0/hr average, $25–85 range&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Proposals so far&lt;/dt&gt;&lt;dd&gt;3&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client status&lt;/dt&gt;&lt;dd&gt;open, nobody hired yet&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Fit&lt;/dt&gt;&lt;dd&gt;You clear the bar&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Engagement&lt;/dt&gt;&lt;dd&gt;as needed · Expert&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client is in&lt;/dt&gt;&lt;dd&gt;Barcelona, Spain · Europe/Madrid&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;&lt;h4&gt;History&lt;/h4&gt;&lt;ul class=&quot;uw-hist&quot;&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-15&lt;/span&gt;&lt;span&gt;New&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;uw-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Generate the pitch page for Upwork job demo-2 (&amp;quot;Digital analytics implementation specialist&amp;quot;)&quot;&gt;Yes, generate it&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;apply-btn&quot; data-url=&quot;https://www.upwork.com/nx/search/jobs/?q=Digital%20analytics%20implementation%20specialist&quot;&gt;Apply&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Set Upwork job demo-2 to &amp;quot;In contact&amp;quot;, the client replied.&quot;&gt;Got a reply →&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;div class=&quot;uw-col&quot;&gt;&lt;div class=&quot;uw-col-head&quot; style=&quot;border-top-color: color-mix(in srgb, var(--brand) 48%, var(--card))&quot;&gt;&lt;div&gt;&lt;div class=&quot;uw-col-title&quot;&gt;Applied&lt;/div&gt;&lt;div class=&quot;uw-col-hint&quot;&gt;sent, no reply yet&lt;/div&gt;&lt;/div&gt;&lt;span class=&quot;uw-col-count&quot; style=&quot;color: color-mix(in srgb, var(--brand) 48%, var(--card)); background: color-mix(in srgb, color-mix(in srgb, var(--brand) 48%, var(--card)) 16%, transparent)&quot;&gt;2&lt;/span&gt;&lt;/div&gt;&lt;ul class=&quot;uw-col-body&quot;&gt;&lt;li class=&quot;uw-card due&quot; data-uwdue=&quot;1&quot; tabindex=&quot;0&quot; role=&quot;button&quot;&gt;&lt;div class=&quot;uw-card-top&quot;&gt;&lt;span class=&quot;uw-score strong&quot;&gt;74&lt;/span&gt;&lt;span class=&quot;uw-card-title&quot;&gt;SEO content plan for a B2B software company&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-card-meta&quot;&gt;4.95★ · 58/64 hires · $1,800 fixed · 10 days ago · Proposal sent&lt;/div&gt;&lt;span class=&quot;uw-due-badge&quot;&gt;Follow-up due (2026-08-16)&lt;/span&gt;&lt;div class=&quot;uw-card-rationale&quot;&gt;They rank for their own brand name and nothing else, and want a twelve-month plan rather than someone writing articles. Decision maker is the founder, which usually means a short chain to yes.&lt;/div&gt;&lt;div class=&quot;uw-detail&quot; hidden&gt;&lt;div class=&quot;uw-detail-head&quot;&gt;&lt;span class=&quot;uw-score strong&quot;&gt;74&lt;/span&gt;&lt;h3&gt;&lt;a href=&quot;https://www.upwork.com/nx/search/jobs/?q=SEO%20content%20plan%20B2B%20software&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;SEO content plan for a B2B software company&lt;/a&gt;&lt;/h3&gt;&lt;/div&gt;&lt;p class=&quot;uw-detail-meta&quot;&gt;4.95★ · 58/64 hires · $1,800 fixed · 10 days ago · Proposal sent&lt;/p&gt;&lt;span class=&quot;uw-due-badge&quot;&gt;Follow-up due (2026-08-16)&lt;/span&gt;&lt;h4&gt;Why this job&lt;/h4&gt;&lt;p&gt;Strategy rather than production work, and the founder is the one deciding.&lt;/p&gt;&lt;h4&gt;Description&lt;/h4&gt;&lt;p&gt;They rank for their own brand name and nothing else, and want a twelve-month plan rather than someone writing articles. Decision maker is the founder, which usually means a short chain to yes.&lt;/p&gt;&lt;h4&gt;Where this application stands&lt;/h4&gt;&lt;dl class=&quot;uw-lage&quot;&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Costs&lt;/dt&gt;&lt;dd&gt;13 connects&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Competing bids&lt;/dt&gt;&lt;dd&gt;$58.9 average bid, $32–110 range&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Proposals so far&lt;/dt&gt;&lt;dd&gt;18&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client status&lt;/dt&gt;&lt;dd&gt;2 invitations sent&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Minimum bar&lt;/dt&gt;&lt;dd&gt;JSS ≥ 80% · $$1K++&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Fit&lt;/dt&gt;&lt;dd&gt;You clear the bar&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Engagement&lt;/dt&gt;&lt;dd&gt;part time · Expert&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client is in&lt;/dt&gt;&lt;dd&gt;Toronto, Canada&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;&lt;h4&gt;Required screening questions&lt;/h4&gt;&lt;ol class=&quot;uw-questions&quot;&gt;&lt;li&gt;Link one content plan you have written that shipped.&lt;/li&gt;&lt;li&gt;How do you decide what not to write about?&lt;/li&gt;&lt;/ol&gt;&lt;h4&gt;History&lt;/h4&gt;&lt;ul class=&quot;uw-hist&quot;&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-12&lt;/span&gt;&lt;span&gt;New&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-12&lt;/span&gt;&lt;span&gt;Proposal sent&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;uw-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Generate the pitch page for Upwork job demo-7 (&amp;quot;SEO content plan for a B2B software company&amp;quot;)&quot;&gt;Yes, generate it&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;apply-btn&quot; data-url=&quot;https://www.upwork.com/nx/search/jobs/?q=SEO%20content%20plan%20B2B%20software&quot;&gt;Apply&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Set Upwork job demo-7 to &amp;quot;In contact&amp;quot;, the client replied.&quot;&gt;Got a reply →&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn uw-task-btn&quot; data-say=&quot;Add a task: follow up on Upwork job &amp;quot;SEO content plan for a B2B software company&amp;quot; (due 2026-08-16).&quot;&gt;+ Add task&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/li&gt;&lt;li class=&quot;uw-card due&quot; data-uwdue=&quot;1&quot; tabindex=&quot;0&quot; role=&quot;button&quot;&gt;&lt;div class=&quot;uw-card-top&quot;&gt;&lt;span class=&quot;uw-score&quot;&gt;66&lt;/span&gt;&lt;span class=&quot;uw-card-title&quot;&gt;Media manager for Google Ads and Meta campaigns&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-card-meta&quot;&gt;4.98★ · 634/676 hires · $10 fixed, likely a placeholder · 11 days ago · Proposal sent&lt;/div&gt;&lt;span class=&quot;uw-due-badge&quot;&gt;Follow-up due (2026-08-14)&lt;/span&gt;&lt;div class=&quot;uw-card-rationale&quot;&gt;An agency subcontracting media buying across Google and Meta, posting new roles constantly. Full-time engagement, intermediate level, and they have invited 11 people already.&lt;/div&gt;&lt;div class=&quot;uw-detail&quot; hidden&gt;&lt;div class=&quot;uw-detail-head&quot;&gt;&lt;span class=&quot;uw-score&quot;&gt;66&lt;/span&gt;&lt;h3&gt;&lt;a href=&quot;https://www.upwork.com/nx/search/jobs/?q=Media%20manager%20for%20Google%20Ads%20and%20Meta%20campaigns&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Media manager for Google Ads and Meta campaigns&lt;/a&gt;&lt;/h3&gt;&lt;/div&gt;&lt;p class=&quot;uw-detail-meta&quot;&gt;4.98★ · 634/676 hires · $10 fixed, likely a placeholder · 11 days ago · Proposal sent&lt;/p&gt;&lt;span class=&quot;uw-due-badge&quot;&gt;Follow-up due (2026-08-14)&lt;/span&gt;&lt;h4&gt;Why this job&lt;/h4&gt;&lt;p&gt;Huge hire count, but the budget field reads like a placeholder. Worth one follow-up.&lt;/p&gt;&lt;h4&gt;Description&lt;/h4&gt;&lt;p&gt;An agency subcontracting media buying across Google and Meta, posting new roles constantly. Full-time engagement, intermediate level, and they have invited 11 people already.&lt;/p&gt;&lt;h4&gt;Where this application stands&lt;/h4&gt;&lt;dl class=&quot;uw-lage&quot;&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Costs&lt;/dt&gt;&lt;dd&gt;8 connects&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Competing bids&lt;/dt&gt;&lt;dd&gt;$18.4 average bid, $10–60 range&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Proposals so far&lt;/dt&gt;&lt;dd&gt;34&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client status&lt;/dt&gt;&lt;dd&gt;11 invitations sent&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Fit&lt;/dt&gt;&lt;dd&gt;You clear the bar&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Engagement&lt;/dt&gt;&lt;dd&gt;full time · Intermediate&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client is in&lt;/dt&gt;&lt;dd&gt;Austin, United States · America/Chicago&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;&lt;h4&gt;What this client hires for&lt;/h4&gt;&lt;ul class=&quot;uw-clienthist&quot;&gt;&lt;li&gt;Meta ads buyer, ongoing retainer&lt;span class=&quot;uw-hist-fb&quot;&gt;4.9★&lt;/span&gt;&lt;/li&gt;&lt;li&gt;Google Ads account manager&lt;span class=&quot;uw-hist-fb&quot;&gt;5.0★&lt;/span&gt;&lt;/li&gt;&lt;li&gt;Creative testing sprint&lt;span class=&quot;uw-hist-fb&quot;&gt;4.8★&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;h4&gt;History&lt;/h4&gt;&lt;ul class=&quot;uw-hist&quot;&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-11&lt;/span&gt;&lt;span&gt;New&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-11&lt;/span&gt;&lt;span&gt;Proposal sent&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;uw-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Generate the pitch page for Upwork job demo-3 (&amp;quot;Media manager for Google Ads and Meta campaigns&amp;quot;)&quot;&gt;Yes, generate it&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;apply-btn&quot; data-url=&quot;https://www.upwork.com/nx/search/jobs/?q=Media%20manager%20for%20Google%20Ads%20and%20Meta%20campaigns&quot;&gt;Apply&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Set Upwork job demo-3 to &amp;quot;In contact&amp;quot;, the client replied.&quot;&gt;Got a reply →&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn uw-task-btn&quot; data-say=&quot;Add a task: follow up on Upwork job &amp;quot;Media manager for Google Ads and Meta campaigns&amp;quot; (due 2026-08-14).&quot;&gt;+ Add task&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;div class=&quot;uw-col&quot;&gt;&lt;div class=&quot;uw-col-head&quot; style=&quot;border-top-color: color-mix(in srgb, var(--brand) 74%, var(--card))&quot;&gt;&lt;div&gt;&lt;div class=&quot;uw-col-title&quot;&gt;In contact&lt;/div&gt;&lt;div class=&quot;uw-col-hint&quot;&gt;client replied&lt;/div&gt;&lt;/div&gt;&lt;span class=&quot;uw-col-count&quot; style=&quot;color: color-mix(in srgb, var(--brand) 74%, var(--card)); background: color-mix(in srgb, color-mix(in srgb, var(--brand) 74%, var(--card)) 16%, transparent)&quot;&gt;1&lt;/span&gt;&lt;/div&gt;&lt;ul class=&quot;uw-col-body&quot;&gt;&lt;li class=&quot;uw-card due&quot; data-uwdue=&quot;1&quot; tabindex=&quot;0&quot; role=&quot;button&quot;&gt;&lt;div class=&quot;uw-card-top&quot;&gt;&lt;span class=&quot;uw-score strong&quot;&gt;79&lt;/span&gt;&lt;span class=&quot;uw-card-title&quot;&gt;Rebuild reporting so the weekly numbers land in Slack&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-card-meta&quot;&gt;4.8★ · 22/25 hires · $1,200 fixed · 13 days ago · In contact&lt;/div&gt;&lt;span class=&quot;uw-due-badge&quot;&gt;Follow-up due (2026-08-17)&lt;/span&gt;&lt;div class=&quot;uw-card-rationale&quot;&gt;Every Monday someone assembles the week&amp;#x27;s performance numbers by hand in a spreadsheet and pastes them into Slack. They want that to happen without a person in the middle, and they named the exact stack it has to read from.&lt;/div&gt;&lt;div class=&quot;uw-detail&quot; hidden&gt;&lt;div class=&quot;uw-detail-head&quot;&gt;&lt;span class=&quot;uw-score strong&quot;&gt;79&lt;/span&gt;&lt;h3&gt;&lt;a href=&quot;https://www.upwork.com/nx/search/jobs/?q=Rebuild%20reporting%20weekly%20numbers%20Slack&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Rebuild reporting so the weekly numbers land in Slack&lt;/a&gt;&lt;/h3&gt;&lt;/div&gt;&lt;p class=&quot;uw-detail-meta&quot;&gt;4.8★ · 22/25 hires · $1,200 fixed · 13 days ago · In contact&lt;/p&gt;&lt;span class=&quot;uw-due-badge&quot;&gt;Follow-up due (2026-08-17)&lt;/span&gt;&lt;h4&gt;Why this job&lt;/h4&gt;&lt;p&gt;They named the tools, so the scope is real rather than a wish.&lt;/p&gt;&lt;h4&gt;Description&lt;/h4&gt;&lt;p&gt;Every Monday someone assembles the week&amp;#x27;s performance numbers by hand in a spreadsheet and pastes them into Slack. They want that to happen without a person in the middle, and they named the exact stack it has to read from.&lt;/p&gt;&lt;h4&gt;Where this application stands&lt;/h4&gt;&lt;dl class=&quot;uw-lage&quot;&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Costs&lt;/dt&gt;&lt;dd&gt;12 connects&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Competing bids&lt;/dt&gt;&lt;dd&gt;$54.0 average bid, $30–95 range&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Proposals so far&lt;/dt&gt;&lt;dd&gt;9&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client status&lt;/dt&gt;&lt;dd&gt;1 invitations sent&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Minimum bar&lt;/dt&gt;&lt;dd&gt;JSS ≥ 75% · 100 hrs experience · $$1K++&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Fit&lt;/dt&gt;&lt;dd&gt;You clear the bar&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Engagement&lt;/dt&gt;&lt;dd&gt;part time · Intermediate&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client is in&lt;/dt&gt;&lt;dd&gt;Hamburg, Germany · Europe/Berlin&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;&lt;h4&gt;Required screening questions&lt;/h4&gt;&lt;ol class=&quot;uw-questions&quot;&gt;&lt;li&gt;Which reporting tools have you connected to Slack before?&lt;/li&gt;&lt;/ol&gt;&lt;h4&gt;History&lt;/h4&gt;&lt;ul class=&quot;uw-hist&quot;&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-09&lt;/span&gt;&lt;span&gt;New&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-09&lt;/span&gt;&lt;span&gt;Proposal sent&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-14&lt;/span&gt;&lt;span&gt;In contact&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;uw-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Set Upwork job demo-4 to &amp;quot;Offer sent&amp;quot;.&quot;&gt;Offer sent →&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn uw-task-btn&quot; data-say=&quot;Add a task: follow up on Upwork job &amp;quot;Rebuild reporting so the weekly numbers land in Slack&amp;quot; (due 2026-08-17).&quot;&gt;+ Add task&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;div class=&quot;uw-col&quot;&gt;&lt;div class=&quot;uw-col-head&quot; style=&quot;border-top-color: color-mix(in srgb, var(--brand) 100%, var(--card))&quot;&gt;&lt;div&gt;&lt;div class=&quot;uw-col-title&quot;&gt;Offer sent&lt;/div&gt;&lt;div class=&quot;uw-col-hint&quot;&gt;offer out, awaiting their call&lt;/div&gt;&lt;/div&gt;&lt;span class=&quot;uw-col-count&quot; style=&quot;color: color-mix(in srgb, var(--brand) 100%, var(--card)); background: color-mix(in srgb, color-mix(in srgb, var(--brand) 100%, var(--card)) 16%, transparent)&quot;&gt;1&lt;/span&gt;&lt;/div&gt;&lt;ul class=&quot;uw-col-body&quot;&gt;&lt;li class=&quot;uw-card&quot; data-uwdue=&quot;0&quot; tabindex=&quot;0&quot; role=&quot;button&quot;&gt;&lt;div class=&quot;uw-card-top&quot;&gt;&lt;span class=&quot;uw-score&quot;&gt;68&lt;/span&gt;&lt;span class=&quot;uw-card-title&quot;&gt;Conversion tracking across three landing pages&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-card-meta&quot;&gt;5.0★ · 4/4 hires · $800 fixed · 16 days ago · Offer sent&lt;/div&gt;&lt;div class=&quot;uw-card-rationale&quot;&gt;Three landing pages, no reliable conversion tracking on any of them, and a product launch four weeks out. Fixed scope, no screening questions.&lt;/div&gt;&lt;div class=&quot;uw-detail&quot; hidden&gt;&lt;div class=&quot;uw-detail-head&quot;&gt;&lt;span class=&quot;uw-score&quot;&gt;68&lt;/span&gt;&lt;h3&gt;&lt;a href=&quot;https://www.upwork.com/nx/search/jobs/?q=Conversion%20tracking%20across%20three%20landing%20pages&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Conversion tracking across three landing pages&lt;/a&gt;&lt;/h3&gt;&lt;/div&gt;&lt;p class=&quot;uw-detail-meta&quot;&gt;5.0★ · 4/4 hires · $800 fixed · 16 days ago · Offer sent&lt;/p&gt;&lt;h4&gt;Why this job&lt;/h4&gt;&lt;p&gt;Small and clean. New client, but everything they posted they hired for.&lt;/p&gt;&lt;h4&gt;Description&lt;/h4&gt;&lt;p&gt;Three landing pages, no reliable conversion tracking on any of them, and a product launch four weeks out. Fixed scope, no screening questions.&lt;/p&gt;&lt;h4&gt;Where this application stands&lt;/h4&gt;&lt;dl class=&quot;uw-lage&quot;&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Costs&lt;/dt&gt;&lt;dd&gt;10 connects&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Competing bids&lt;/dt&gt;&lt;dd&gt;$47.2 average bid, $28–90 range&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Proposals so far&lt;/dt&gt;&lt;dd&gt;12&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client status&lt;/dt&gt;&lt;dd&gt;an offer is out&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Fit&lt;/dt&gt;&lt;dd&gt;You clear the bar&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Engagement&lt;/dt&gt;&lt;dd&gt;as needed · Intermediate&lt;/dd&gt;&lt;/div&gt;&lt;div class=&quot;uw-lage-row&quot;&gt;&lt;dt&gt;Client is in&lt;/dt&gt;&lt;dd&gt;Utrecht, Netherlands · Europe/Amsterdam&lt;/dd&gt;&lt;/div&gt;&lt;/dl&gt;&lt;h4&gt;History&lt;/h4&gt;&lt;ul class=&quot;uw-hist&quot;&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-06&lt;/span&gt;&lt;span&gt;New&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-06&lt;/span&gt;&lt;span&gt;Proposal sent&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-10&lt;/span&gt;&lt;span&gt;In contact&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span class=&quot;uw-hist-when&quot;&gt;2026-08-14&lt;/span&gt;&lt;span&gt;Offer sent&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;div class=&quot;uw-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Set Upwork job demo-5 to &amp;quot;Hired&amp;quot;.&quot;&gt;Won&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;say-btn&quot; data-say=&quot;Set Upwork job demo-5 to &amp;quot;Rejected&amp;quot;.&quot;&gt;Declined&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;uw-view uw-view-stats&quot; hidden&gt;&lt;div class=&quot;uw-tiles&quot;&gt;&lt;div class=&quot;uw-tile&quot;&gt;&lt;span class=&quot;uw-tile-lbl&quot;&gt;Reply rate&lt;/span&gt;&lt;span class=&quot;uw-tile-val&quot;&gt;67%&lt;/span&gt;&lt;span class=&quot;uw-tile-hint&quot;&gt;4 of 6 replied&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-tile&quot;&gt;&lt;span class=&quot;uw-tile-lbl&quot;&gt;Time to reply&lt;/span&gt;&lt;span class=&quot;uw-tile-val&quot;&gt;4 days&lt;/span&gt;&lt;span class=&quot;uw-tile-hint&quot;&gt;median of 4&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-tile&quot;&gt;&lt;span class=&quot;uw-tile-lbl&quot;&gt;Proposals per week&lt;/span&gt;&lt;span class=&quot;uw-tile-val&quot;&gt;1.5&lt;/span&gt;&lt;span class=&quot;uw-tile-hint&quot;&gt;average of the last four weeks&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;uw-funnel&quot;&gt;&lt;div class=&quot;uw-funnel-row&quot;&gt;&lt;span class=&quot;uw-funnel-label&quot;&gt;Found&lt;/span&gt;&lt;span class=&quot;uw-funnel-track&quot;&gt;&lt;span class=&quot;uw-funnel-bar&quot; style=&quot;width:100%&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;uw-funnel-count&quot;&gt;11&lt;/span&gt;&lt;span class=&quot;uw-funnel-pct&quot;&gt;100%&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-funnel-row&quot;&gt;&lt;span class=&quot;uw-funnel-label&quot;&gt;Applied&lt;/span&gt;&lt;span class=&quot;uw-funnel-track&quot;&gt;&lt;span class=&quot;uw-funnel-bar&quot; style=&quot;width:55%&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;uw-funnel-count&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;uw-funnel-pct&quot;&gt;55% · 55% of previous&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-funnel-row&quot;&gt;&lt;span class=&quot;uw-funnel-label&quot;&gt;In contact&lt;/span&gt;&lt;span class=&quot;uw-funnel-track&quot;&gt;&lt;span class=&quot;uw-funnel-bar&quot; style=&quot;width:36%&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;uw-funnel-count&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;uw-funnel-pct&quot;&gt;36% · 67% of previous&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-funnel-row&quot;&gt;&lt;span class=&quot;uw-funnel-label&quot;&gt;Offer sent&lt;/span&gt;&lt;span class=&quot;uw-funnel-track&quot;&gt;&lt;span class=&quot;uw-funnel-bar&quot; style=&quot;width:18%&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;uw-funnel-count&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;uw-funnel-pct&quot;&gt;18% · 50% of previous&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;uw-funnel-row&quot;&gt;&lt;span class=&quot;uw-funnel-label&quot;&gt;Won&lt;/span&gt;&lt;span class=&quot;uw-funnel-track&quot;&gt;&lt;span class=&quot;uw-funnel-bar&quot; style=&quot;width:9%&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;uw-funnel-count&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;uw-funnel-pct&quot;&gt;9% · 50% of previous&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;p class=&quot;uw-funnel-note&quot;&gt;A real cohort: each job counts at the highest stage it ever reached, taken from its history, so declined and archived jobs count where they got to. Jobs found before the first run that wrote history only have a reconstructed history.&lt;/p&gt;&lt;/div&gt;
+  &lt;/div&gt;&lt;!-- /pane-upwork --&gt;
+  &lt;div class=&quot;tabpane&quot; id=&quot;pane-tooling&quot; hidden&gt;
+    &lt;p class=&quot;hint&quot;&gt;The Tooling tab reads this machine on every render, so it shows something
+    different for everyone. There is nothing meaningful to freeze into an example, and the
+    original was scrubbed because it listed the tools and connections of the machine this copy
+    was taken from.&lt;/p&gt;
+  &lt;/div&gt;&lt;!-- /pane-tooling --&gt;
+
+  &lt;div class=&quot;tabpane&quot; id=&quot;pane-onboarding&quot; hidden&gt;
+&lt;p class=&quot;sysnote&quot;&gt;What the first run does: the five phases, which tools get connected and why, and where the keys end up.&lt;/p&gt;&lt;iframe class=&quot;sysframe&quot; src=&quot;../ONBOARDING.html&quot; title=&quot;Onboarding&quot; loading=&quot;lazy&quot;&gt;&lt;/iframe&gt;
+  &lt;/div&gt;&lt;!-- /pane-onboarding --&gt;
+
+  &lt;div class=&quot;tabpane&quot; id=&quot;pane-system&quot; hidden&gt;
+&lt;p class=&quot;sysnote&quot;&gt;What this system does and why each step is shaped the way it is. The same page sits in the folder as SYSTEM.html.&lt;/p&gt;&lt;iframe class=&quot;sysframe&quot; src=&quot;../SYSTEM.html&quot; title=&quot;System&quot; loading=&quot;lazy&quot;&gt;&lt;/iframe&gt;
+  &lt;/div&gt;&lt;!-- /pane-system --&gt;
+
+  &lt;!-- Native &lt;dialog&gt;: Escape, the focus trap and the top stacking layer come for
+       free, and none of them are worth reimplementing. --&gt;
+  &lt;dialog class=&quot;uw-modal&quot; id=&quot;uw-modal&quot;&gt;
+    &lt;button type=&quot;button&quot; class=&quot;uw-modal-x&quot; id=&quot;uw-modal-x&quot; aria-label=&quot;Close&quot;&gt;&amp;times;&lt;/button&gt;
+    &lt;div class=&quot;uw-modal-body&quot; id=&quot;uw-modal-body&quot;&gt;&lt;/div&gt;
+  &lt;/dialog&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  const panes = { today: document.getElementById(&#x27;pane-today&#x27;), projects: document.getElementById(&#x27;pane-projects&#x27;), upwork: document.getElementById(&#x27;pane-upwork&#x27;), tooling: document.getElementById(&#x27;pane-tooling&#x27;), onboarding: document.getElementById(&#x27;pane-onboarding&#x27;), system: document.getElementById(&#x27;pane-system&#x27;) };
+  function showTab(name) {
+    if (!panes[name]) name = &#x27;today&#x27;;
+    Object.entries(panes).forEach(([k, p]) =&gt; p.hidden = k !== name);
+    document.querySelectorAll(&#x27;#tabs .tab&#x27;).forEach(t =&gt; t.classList.toggle(&#x27;active&#x27;, t.dataset.tab === name));
+    sessionStorage.setItem(&#x27;uwc-tab&#x27;, name);
+  }
+  document.querySelectorAll(&#x27;#tabs .tab&#x27;).forEach(t =&gt; t.addEventListener(&#x27;click&#x27;, () =&gt; showTab(t.dataset.tab)));
+
+  // Task filters: one attribute per row, one active pill. Deliberately the same
+  // shape as the Upwork filter below, so a change to how filtering feels is one
+  // change and not two.
+  // Job detail. The panel already exists inside the row, so this clones rather than
+  // rebuilds: one source for the markup, and nothing to keep in sync.
+  (function () {
+    const dlg = document.getElementById(&#x27;uw-modal&#x27;);
+    const body = document.getElementById(&#x27;uw-modal-body&#x27;);
+    if (!dlg) return;
+    function open(scope) {
+      const panel = scope &amp;&amp; scope.querySelector(&#x27;.uw-detail&#x27;);
+      if (!panel) return;
+      const clone = panel.cloneNode(true);
+      clone.hidden = false;
+      body.replaceChildren(clone);
+      dlg.showModal();
+    }
+    // The whole row opens it, not only the title. A row that highlights on hover
+    // and does nothing when you click it is the more annoying of the two options.
+    document.querySelectorAll(&#x27;.uw-row, .uw-card&#x27;).forEach(el =&gt; {
+      el.classList.add(&#x27;is-openable&#x27;);
+      el.addEventListener(&#x27;click&#x27;, e =&gt; {
+        // Anything with its own job stays its own job: the say-buttons copy a
+        // sentence, and swallowing that click would break the actual workflow.
+        if (e.target.closest(&#x27;button, a, summary, details&#x27;)) return;
+        open(el);
+      });
+    });
+    document.getElementById(&#x27;uw-modal-x&#x27;).addEventListener(&#x27;click&#x27;, () =&gt; dlg.close());
+    // Clicking the backdrop closes it: the dialog element itself is the click target
+    // when the press lands outside the box.
+    dlg.addEventListener(&#x27;click&#x27;, e =&gt; { if (e.target === dlg) dlg.close(); });
+  })();
+
+  document.querySelectorAll(&#x27;.t-filterpill&#x27;).forEach(btn =&gt; btn.addEventListener(&#x27;click&#x27;, () =&gt; {
+    const f = btn.dataset.tfilter;
+    document.querySelectorAll(&#x27;.task-list &gt; li&#x27;).forEach(li =&gt; {
+      let show = true;
+      if (f === &#x27;due&#x27;) show = li.dataset.due === &#x27;1&#x27;;
+      else if (f.startsWith(&#x27;p:&#x27;)) show = li.dataset.proj === f.slice(2);
+      else if (f !== &#x27;all&#x27;) show = li.dataset.quadrant === f;
+      li.hidden = !show;
+    });
+    document.querySelectorAll(&#x27;.t-filterpill&#x27;).forEach(b =&gt; b.classList.toggle(&#x27;active&#x27;, b === btn));
+  }));
+  showTab(location.hash ? location.hash.slice(1) : (sessionStorage.getItem(&#x27;uwc-tab&#x27;) || &#x27;today&#x27;));
+
+  // Every action button just copies a sentence to the clipboard — this page
+  // changes nothing on its own, Claude Code does the actual work when you
+  // paste the sentence into chat.
+  document.addEventListener(&#x27;click&#x27;, (e) =&gt; {
+    const b = e.target.closest(&#x27;.say-btn&#x27;);
+    if (!b) return;
+    e.preventDefault();
+    const text = b.dataset.say || &#x27;&#x27;;
+    const done = () =&gt; {
+      const before = b.textContent;
+      b.textContent = &#x27;copied&#x27;; b.classList.add(&#x27;done&#x27;);
+      setTimeout(() =&gt; { b.textContent = before; b.classList.remove(&#x27;done&#x27;); }, 1400);
+    };
+    if (navigator.clipboard &amp;&amp; navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, () =&gt; fallback(text, done));
+    } else fallback(text, done);
+    function fallback(t, cb) {
+      const ta = document.createElement(&#x27;textarea&#x27;);
+      ta.value = t; ta.style.position = &#x27;fixed&#x27;; ta.style.opacity = &#x27;0&#x27;;
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand(&#x27;copy&#x27;); cb(); } catch (err) {}
+      ta.remove();
+    }
+  });
+
+  document.addEventListener(&#x27;click&#x27;, (e) =&gt; {
+    const b = e.target.closest(&#x27;.apply-btn&#x27;);
+    if (!b) return;
+    e.preventDefault();
+    const url = b.dataset.url;
+    if (url &amp;&amp; url !== &#x27;#&#x27;) window.open(url, &#x27;_blank&#x27;);
+  });
+
+  // Upwork: List/Pipeline/Stats view switcher, 1:1 borrowed from the
+  // Automatable tracker (there: List/Pipeline/Calendar). List stays default.
+  (function () {
+    const views = { list: document.querySelector(&#x27;.uw-view-list&#x27;), board: document.querySelector(&#x27;.uw-view-board&#x27;),
+                     stats: document.querySelector(&#x27;.uw-view-stats&#x27;) };
+    if (!views.list) return;
+    document.querySelectorAll(&#x27;.uw-viewpill&#x27;).forEach(btn =&gt; btn.addEventListener(&#x27;click&#x27;, () =&gt; {
+      const v = btn.dataset.uwview;
+      Object.entries(views).forEach(([k, el]) =&gt; { if (el) el.hidden = k !== v; });
+      document.querySelectorAll(&#x27;.uw-viewpill&#x27;).forEach(b =&gt; b.classList.toggle(&#x27;active&#x27;, b === btn));
+    }));
+
+    // Status/due filter, clientside only — hides rows via data-uwstatus/data-uwdue
+    // instead of re-rendering. Filter values are the same status values shown in
+    // the Status column, no separate grouping vocabulary.
+    const rows = document.querySelectorAll(&#x27;.uw-view-list .uw-row&#x27;);
+    document.querySelectorAll(&#x27;.uw-filterpill&#x27;).forEach(btn =&gt; btn.addEventListener(&#x27;click&#x27;, () =&gt; {
+      const f = btn.dataset.uwfilter;
+      rows.forEach(r =&gt; {
+        const show = f === &#x27;all&#x27; ? true : f === &#x27;due&#x27; ? r.dataset.uwdue === &#x27;1&#x27; : r.dataset.uwstatus === f;
+        r.style.display = show ? &#x27;&#x27; : &#x27;none&#x27;;
+      });
+      document.querySelectorAll(&#x27;.uw-filterpill&#x27;).forEach(b =&gt; b.classList.toggle(&#x27;active&#x27;, b === btn));
+    }));
+  })();
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+          <!-- DEMO-FRAME-END -->
+  <figcaption>The real thing with made-up data, running right here: switch tabs, use the
+  filters, press a copy button. Setup replaces the data with yours and deletes the demo.
+  <a href="examples/dashboard.html" target="_blank">Full size in its own tab</a>.</figcaption>
+  </figure>
+
   <div class="gets">
     <div class="get">
       <h3>A dashboard you open in a browser</h3>
@@ -880,13 +1547,6 @@
         has, that last one gets read off the machine on every render, so it can't quietly go stale.</p>
         <p>It never writes anything. Buttons copy a ready sentence for you to paste into the
         chat, so the work happens in Claude with its normal safeguards.</p>
-        <figure class="shot" id="demo">
-          <img src="examples/dashboard.png" alt="The Today tab of the dashboard, showing a
-          briefing paragraph, a waiting-on list and the open to-dos underneath" loading="lazy">
-          <figcaption>Made-up data, so this is what a fresh clone looks like before it is yours.
-          <a href="examples/dashboard.html" target="_blank">Open the real one</a> to click
-          through the tabs and filters.</figcaption>
-        </figure>
       </div>
     </div>
     <div class="get">

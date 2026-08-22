@@ -17,6 +17,7 @@ the checks attached to it.
 
 Run it whenever check_repo.py reports the frozen example as older than the renderer.
 """
+import html as html_mod
 import pathlib
 import re
 import subprocess
@@ -25,6 +26,9 @@ import sys
 W = pathlib.Path(__file__).resolve().parents[2]
 RENDERED = W / 'context/today.html'
 FROZEN = W / 'examples/dashboard.html'
+PAGE = W / 'WHAT-WORKS-BASE.html'
+START = '<!-- DEMO-FRAME-START'
+END = '<!-- DEMO-FRAME-END -->'
 
 PLACEHOLDER = """
     <p class="hint">The Tooling tab reads this machine on every render, so it shows something
@@ -50,6 +54,25 @@ def scrub(html: str) -> str:
     return html
 
 
+def embed(page_html: str, dashboard: str) -> str:
+    """Put the dashboard inside WHAT-WORKS-BASE.html as an iframe srcdoc.
+
+    Not `src="examples/dashboard.html"`: Chrome gives every file:// URL its own
+    origin, so a local src can come up blank in a page someone opened by double
+    click, while rendering fine in a headless check. srcdoc inherits the page's
+    origin, so it always runs, and it keeps the dashboard's CSS in its own document
+    instead of colliding with the page's.
+    """
+    s = page_html.index(START)
+    e = page_html.index(END) + len(END)
+    frame = ('<!-- DEMO-FRAME-START: filled by reference/scripts/freeze_example.py, '
+             'do not hand-edit -->\n'
+             '          <iframe class="demo-frame" title="Example dashboard, with made-up data" '
+             f'srcdoc="{html_mod.escape(dashboard, quote=True)}"></iframe>\n'
+             '          <!-- DEMO-FRAME-END -->')
+    return page_html[:s] + frame + page_html[e:]
+
+
 def main() -> int:
     check_only = '--check' in sys.argv
 
@@ -62,12 +85,25 @@ def main() -> int:
     fresh = scrub(RENDERED.read_text(encoding='utf-8'))
     old = FROZEN.read_text(encoding='utf-8') if FROZEN.is_file() else ''
 
+    def sync_page(dashboard):
+        if not PAGE.is_file():
+            return
+        page = PAGE.read_text(encoding='utf-8')
+        if START not in page:
+            raise SystemExit('ABORT: WHAT-WORKS-BASE.html has no DEMO-FRAME slot any more.')
+        updated = embed(page, dashboard)
+        if updated != page:
+            PAGE.write_text(updated, encoding='utf-8')
+            print(f'WHAT-WORKS-BASE.html: embedded dashboard refreshed '
+                  f'({len(updated) // 1024} KB total).')
+
     if fresh == old:
         # Same bytes, older timestamp. check_repo.py compares mtimes, so without this
         # touch it would report a stale example forever and the warning would stop
         # meaning anything.
         if not check_only:
             FROZEN.touch()
+            sync_page(fresh)
             print('examples/dashboard.html was already current; timestamp refreshed.')
         else:
             print('examples/dashboard.html is already current.')
@@ -78,6 +114,7 @@ def main() -> int:
         return 0
 
     FROZEN.write_text(fresh, encoding='utf-8')
+    sync_page(fresh)
     print(f'examples/dashboard.html re-frozen, tooling pane scrubbed '
           f'({len(fresh) // 1024} KB).')
     return 0

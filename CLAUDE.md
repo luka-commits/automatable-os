@@ -187,11 +187,11 @@ examples/dashboard.html            a frozen render of the demo dashboard, linked
                                    WHAT-WORKS-BASE.html so it can be clicked through.
                                    Machine-specific panes are scrubbed; re-freeze with
                                    freeze_example.py, never `cp`
-examples/dashboard.png             a screenshot of the same thing, shown inline on that
-                                   page. An <iframe> was tried first and dropped: Chrome
-                                   treats every local file as its own origin, so an
-                                   embedded one can come up blank on someone's machine
-                                   while rendering fine in a headless test
+                                   The page embeds it as an iframe **srcdoc**, not src:
+                                   Chrome gives every file:// URL its own origin, so a
+                                   local src can come up blank on someone's machine while
+                                   rendering fine in a headless check. srcdoc inherits the
+                                   page's origin, so the demo is clickable there
 demo/                              an example pipeline, so a fresh clone shows something.
                                    The dashboard falls back to it while context/ is empty
                                    and says so in a banner. Setup deletes it
