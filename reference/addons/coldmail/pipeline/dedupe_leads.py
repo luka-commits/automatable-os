@@ -144,8 +144,14 @@ def _supabase():
     """(url, key) aus der Portal-Env oder credentials.env. Kein Import-Zeit-Crash."""
     import os
     env = {}
-    for p in (f"{__file__.rsplit('/seo/', 1)[0]}/seo/portal/.env.local",
-              os.path.expanduser("~/.config/credentials.env")):
+    # `rsplit('/seo/')` ergab ausserhalb des alten seo/-Baums den ganzen Dateinamen
+        # als Praefix und damit einen Pfad, der auf eine DATEI zeigte statt in einen
+        # Ordner -- NotADirectoryError statt "keine Zugangsdaten". Der Portal-Pfad wird
+        # jetzt nur genommen, wenn es diesen Baum ueberhaupt gibt (23.08.2026).
+    kandidaten = [os.path.expanduser("~/.config/credentials.env")]
+    if "/seo/" in __file__:
+        kandidaten.insert(0, f"{__file__.rsplit('/seo/', 1)[0]}/seo/portal/.env.local")
+    for p in kandidaten:
         try:
             for line in open(p, encoding="utf-8"):
                 line = line.strip()

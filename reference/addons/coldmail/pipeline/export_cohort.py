@@ -384,29 +384,23 @@ def push_variablen(mails: dict, apply: bool) -> str:
     Damit ueberleben sie den naechsten export_cohort, der cohort_vars.csv komplett neu aus
     Supabase baut. Genau daran waeren heute frueh schon die Findings gestorben.
     """
-    import urllib.parse, urllib.request
-    from dedupe_leads import _supabase
-    url, key = _supabase()
-    hdr = {"apikey": key, "Authorization": f"Bearer {key}"}
+    import speicher
     echte = {k: v for k, v in mails.items()
              if isinstance(v, dict) and (v.get(FERTIG_SPALTE) or "").strip()}
     if not apply:
         return f"[dry-run] {len(echte)} Zeilen wuerden geschrieben"
+    n = 0
     for pid, v in echte.items():
-        q = (f"{url}/rest/v1/industry_operators?"
-             f"place_id=eq.{urllib.parse.quote(pid, safe='')}")
-        cur = json.load(urllib.request.urlopen(
-            urllib.request.Request(q + "&select=web_signals", headers=hdr), timeout=30))
-        if not cur:
+        zeile = speicher.lade_eins(pid, ["place_id", "web_signals"])
+        if not zeile:
             continue
-        ws = cur[0].get("web_signals") or {}
+        # web_signals wird GELESEN und ergaenzt, nicht ersetzt: dort liegen auch die
+        # findings, und ein blindes Ueberschreiben nimmt dem Lead seinen Marker.
+        ws = zeile.get("web_signals") or {}
         ws["mail"] = {k: (v.get(k) or "").strip() for k in VARIABLEN_SPALTEN}
-        req = urllib.request.Request(q, data=json.dumps({"web_signals": ws}).encode(),
-                                     method="PATCH",
-                                     headers={**hdr, "Content-Type": "application/json",
-                                              "Prefer": "return=minimal"})
-        urllib.request.urlopen(req, timeout=30).read()
-    return f"{len(echte)} Zeilen geschrieben"
+        if speicher.aendere(pid, web_signals=ws):
+            n += 1
+    return f"{n} Zeilen geschrieben"
 
 
 def fetch_cohort(niche, region):
@@ -420,21 +414,11 @@ def fetch_cohort(niche, region):
     # Abfrage fehlen.
     sel = ('place_id,name,town,region,website,email,details,web_signals,'
            'raw,raw_dataforseo')
-    while True:
-        # Was dedupe_leads als Dublette oder Kettenfiliale markiert hat, verlaesst die Datenbank
-        # nie wieder Richtung Mail. Ohne diese Zeile war Timpson 3 von 15 Leads in Bedford, und
-        # zwei von drei Mails nannten eine Kette als "deinen engsten Konkurrenten".
-        q = urllib.parse.urlencode({'select': sel, 'niche': f'eq.{niche}', 'region': f'eq.{region}',
-                                    'pipeline_status': 'neq.disqualified'})
-        req = urllib.request.Request(f"https://{REF}.supabase.co/rest/v1/industry_operators?{q}",
-                                     headers={'apikey': key, 'Authorization': f'Bearer {key}',
-                                              'Range-Unit': 'items', 'Range': f'{off}-{off+step-1}'})
-        rows = json.load(urllib.request.urlopen(req, timeout=60))
-        out += rows
-        if len(rows) < step:
-            break
-        off += step
-    return out
+    # Was dedupe_leads als Dublette oder Kettenfiliale markiert hat, verlaesst die Datenbank
+    # nie wieder Richtung Mail. Ohne `ohne_disqualifiziert` war Timpson 3 von 15 Leads in
+    # Bedford, und zwei von drei Mails nannten eine Kette als "deinen engsten Konkurrenten".
+    import speicher
+    return speicher.lade(niche, sel.split(','), ohne_disqualifiziert=True, region=region)
 
 
 def main():

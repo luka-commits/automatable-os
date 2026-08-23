@@ -34,20 +34,8 @@ def _pct(sorted_vals, p):
 
 
 def compute(niche: str) -> dict:
-    from dedupe_leads import _supabase
-    url, key = _supabase()
-    hdr = {"apikey": key, "Authorization": f"Bearer {key}"}
-    rows, off = [], 0
-    while True:                                   # PostgREST liefert max 1000 je Aufruf
-        q = urllib.parse.urlencode({"select": "reviews,rating,photos_count,website",
-                                    "niche": f"eq.{niche}"})
-        req = urllib.request.Request(f"{url}/rest/v1/industry_operators?{q}",
-                                     headers={**hdr, "Range": f"{off}-{off + 999}"})
-        page = json.load(urllib.request.urlopen(req, timeout=60))
-        rows += page
-        if len(page) < 1000:
-            break
-        off += 1000
+    import speicher
+    rows = speicher.lade(niche, ["reviews", "rating", "photos_count", "website"])
 
     rev = sorted(r.get("reviews") or 0 for r in rows)
     rat = sorted(r["rating"] for r in rows if r.get("rating"))
@@ -59,13 +47,13 @@ def compute(niche: str) -> dict:
         "rating_median": _pct(rat, 50),
         "photos_median": _pct(pho, 50),
         "no_website": sum(1 for r in rows if not r.get("website")),
-        "posts": _posting_rate(niche, url, hdr),
-        "hours24": _hours24_rate(niche, url, hdr),
-        "services_median": _services_median(niche, url, hdr),
+        "posts": _posting_rate(niche),
+        "hours24": _hours24_rate(niche),
+        "services_median": _services_median(niche),
     }
 
 
-def _services_median(niche: str, url: str, hdr: dict):
+def _services_median(niche: str):
     """Wie viele Leistungen ein Profil ueblicherweise listet -- landesweit.
 
     DER ANLASS (Luka, 23.08.2026): "die sektion hat keinen vergleich oder keine erklaerung
@@ -79,20 +67,14 @@ def _services_median(niche: str, url: str, hdr: dict):
     Gibt keine Zeile Daten her, kommt None zurueck und die Bausteine lassen den Vergleich
     weg, statt eine Null zu behaupten.
     """
-    zahlen, off = [], 0
-    while True:
-        q = (f"{url}/rest/v1/industry_operators?select=s:raw_dataforseo->services"
-             f"&niche=eq.{niche}&order=place_id")
-        req = urllib.request.Request(q, headers={**hdr, "Range": f"{off}-{off + 999}"})
-        page = json.load(urllib.request.urlopen(req, timeout=60))
-        zahlen += [len(r["s"]) for r in page if isinstance(r.get("s"), list)]
-        if len(page) < 1000:
-            break
-        off += 1000
+    import speicher
+    zahlen = [len((r.get("raw_dataforseo") or {}).get("services") or [])
+              for r in speicher.lade(niche, ["raw_dataforseo"])
+              if isinstance((r.get("raw_dataforseo") or {}).get("services"), list)]
     return _pct(sorted(zahlen), 50) if zahlen else None
 
 
-def _hours24_rate(niche: str, url: str, hdr: dict) -> dict:
+def _hours24_rate(niche: str) -> dict:
     """Wie viele haben rund um die Uhr offen -- landesweit, nicht je Ort.
 
     DER ANLASS (Luka, 30.07.2026): "dann lassen wir die Zahl vielleicht einfach weg oder?"
@@ -102,16 +84,10 @@ def _hours24_rate(niche: str, url: str, hdr: dict) -> dict:
     900 m weg), eine Aussage ueber ALLE nicht. Also vergleicht die Copy ab jetzt gegen das
     Land, wo n gross genug ist, dass die Luecke den Median nicht kippt.
     """
-    oh, off = [], 0
-    while True:
-        q = (f"{url}/rest/v1/industry_operators?select=oh:raw->openingHours"
-             f"&niche=eq.{niche}&order=place_id")
-        req = urllib.request.Request(q, headers={**hdr, "Range": f"{off}-{off + 999}"})
-        page = json.load(urllib.request.urlopen(req, timeout=60))
-        oh += [r.get("oh") for r in page if r.get("oh")]
-        if len(page) < 1000:
-            break
-        off += 1000
+    import speicher
+    oh = [(r.get("raw") or {}).get("openingHours")
+          for r in speicher.lade(niche, ["raw"])
+          if (r.get("raw") or {}).get("openingHours")]
     if not oh:
         return {}
     rund = sum(1 for tage in oh
@@ -119,27 +95,22 @@ def _hours24_rate(niche: str, url: str, hdr: dict) -> dict:
     return {"n": len(oh), "ja": rund, "ja_pct": round(rund * 100 / len(oh))}
 
 
-def _posting_rate(niche: str, url: str, hdr: dict) -> dict:
+def _posting_rate(niche: str) -> dict:
     """Wie viele posten nie -- als Anteil, gemessen statt geschaetzt.
 
     Stand bis 27.07. als "six in ten" in findings.py, also als getippte Zahl in einem
     Satz, der an den Inhaber geht. Beantwortbar ist die Frage nur fuer Leads mit
     Detail-Lauf; `n` sagt deshalb dazu, auf wie vielen sie beruht.
     """
-    def zaehle(extra: str) -> int:
-        q = (f"{url}/rest/v1/industry_operators?select=place_id&niche=eq.{niche}"
-             f"&raw->_detail=eq.true{extra}")
-        req = urllib.request.Request(q, headers={**hdr, "Prefer": "count=exact",
-                                                 "Range": "0-0"})
-        with urllib.request.urlopen(req, timeout=60) as r:
-            return int(r.headers["content-range"].split("/")[1])
-
-    n = zaehle("")
+    import speicher
+    mit_detail = [(r.get("raw") or {}) for r in speicher.lade(niche, ["raw"])
+                  if (r.get("raw") or {}).get("_detail") is True]
+    n = len(mit_detail)
     if not n:
         return {}
-    # `raw->ownerUpdates=eq.[]` traefe nur die leere Liste; fehlt das Feld ganz, ist es
-    # ebenfalls "postet nie". Deshalb ueber den Gegenwert: wer welche HAT.
-    mit = zaehle("&raw->ownerUpdates=neq.[]")
+    # Ein FEHLENDES Feld ist ebenfalls "postet nie" -- nicht "nicht gemessen". Das gilt
+    # nur hier, weil der Detail-Lauf das Feld setzt, wenn es Beitraege gibt.
+    mit = sum(1 for raw in mit_detail if raw.get("ownerUpdates"))
     return {"n": n, "never": n - mit, "never_pct": round((n - mit) * 100 / n)}
 
 
