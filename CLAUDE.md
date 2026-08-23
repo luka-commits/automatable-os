@@ -103,11 +103,24 @@ Cold mailing is the next.
 
 That is not a naming convention, it is enforced by how the dashboard is built:
 
-- An add-on is **one file in `reference/addons/`** that exposes `render() -> str`. It gets the
-  base's helpers (`W`, `esc`, `TXT`, `TODAY`, …) injected into its namespace by the loader in
-  `render_dashboard.py`, and it hands back one block of HTML.
-- **The base never imports an add-on by name.** No `if upwork:` anywhere in it, no Upwork
-  functions, no Upwork constants. `reference/addons/upwork.py` holds all 1000 lines of it.
+- An add-on is **one file or one package in `reference/addons/`** (`<name>.py` or
+  `<name>/__init__.py`) that exposes `render() -> str`. It gets the base's helpers (`W`, `esc`,
+  `TXT`, `TODAY`, …) injected into its namespace by the loader in `render_dashboard.py`, and it
+  hands back one block of HTML. **A package, since 23.08.2026, because an add-on with a real
+  machine behind it does not fit in one file** — cold mail brings a scraper, a benchmark and a
+  mail builder, and forcing them out of the add-on would put its pipeline somewhere other than
+  itself.
+- **It carries its own `LABEL` and `HINT`** (a dict per language, or a plain string). Those used
+  to live in the base's translation table, which meant a second add-on could not be added without
+  editing the base — the exact thing this contract forbids.
+- **The dashboard never names an add-on.** It walks `addon_names()`, asks each for its label
+  and its HTML, and skips the ones that hand back nothing. Dropping a new add-on in really is the
+  whole install.
+- **The rest of the base is not there yet, and pretending otherwise would be worse than saying
+  it.** `new_project.py` reads `.upwork_jobs.json` directly, `community_sync.py` shells out to
+  `upwork_status.py`, and `setup-check.py` pairs `upwork_enabled` with `expertise.md`. Those are
+  real couplings, they predate the contract, and the second add-on is what made them visible. The
+  dashboard side is clean; these three are the work left.
 - **A missing add-on is normal, not an error.** No tab button, no pane, no trace in the
   interface. A tab that exists but is empty is worse than none, because the reader has to click
   it to find out it was never for them.
@@ -117,6 +130,12 @@ That is not a naming convention, it is enforced by how the dashboard is built:
   question (does the file exist, is the data there), you have built a second truth, and the two
   will disagree the first time somebody switches the add-on off.
 - **A broken add-on says so in its own tab** and does not take the render down with it.
+- **An add-on may need outside services; the base never does.** Upwork needs a connector, cold
+  mail needs a database, a sender and a verifier. That is allowed, on three conditions: the
+  accounts belong to the user and not to whoever shipped the package, nothing is connected or
+  charged before they said yes to that add-on, and the list of what it needs is on its page
+  **before** the decision. `WHAT-THIS-SYSTEM-DOES.md` draws exactly this line, so an add-on that
+  quietly reaches for a service breaks a promise the base made on its behalf.
 
 When you build the next one, add the file and nothing else. If you find yourself editing
 `render_dashboard.py` to make an add-on work, the extension point is missing something — extend

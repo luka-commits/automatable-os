@@ -75,3 +75,26 @@ connects_drain_note: ""
 # and *.key — but the habit is what protects you, not the file.
 # A skill that needs a key you have not set says which one and stops. It does
 # not guess, and it does not carry on with half the picture.
+
+# ---------------------------------------------------------------------------
+# The cold mail add-on. Everything from here to the end of this block belongs
+# to it. Say no during setup and this line goes to false, the dashboard drops
+# its tab, and none of the fields below matter.
+#
+# Unlike Upwork, this add-on costs money before it earns any: mailboxes and
+# domains at Zapmail, a sending subscription at Instantly, and per-niche scrape
+# credits. `coldmail-setup` works out how many of each your target needs and
+# states the monthly total before anything is bought.
+coldmail_enabled: false
+
+# The day warmup started. New mailboxes may not send for about two weeks; the
+# dashboard counts the days from here so you can see whether you are clear yet.
+# Written by coldmail-setup, format YYYY-MM-DD.
+coldmail_warmup_started: ""
+
+# How many mailboxes you had created, and what you want to send per day. The
+# dashboard multiplies mailboxes by 30 (Instantly's per-mailbox ceiling) to show
+# your real capacity. Raising the 30 is not an option — you scale by adding
+# mailboxes across more domains, never by sending more from each.
+coldmail_mailboxes: 0
+coldmail_target_per_day: 0

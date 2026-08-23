@@ -453,6 +453,25 @@
 .uw-modal .uw-actions { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 6px; }
 .uw-viewbar .uw-viewpill { border: 0; border-left: 1px solid var(--border); border-radius: 0; padding: 6px 14px; }
 .uw-viewbar .uw-viewpill:first-child { border-left: 0; }
+
+  /* Cold mail tab. Cards rather than a table, because this tab answers "what now"
+     and not "what is in the list" — the list itself is thousands of rows and has no
+     business on a morning dashboard. Inert without the add-on: a few hundred bytes.
+     The coupling is deliberate and named in CLAUDE.md — an add-on is not yet a
+     single self-contained file, its CSS lives here with everyone else's. */
+.cm-grid { display: flex; flex-direction: column; gap: 12px; }
+.cm-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+           padding: 16px 18px; }
+.cm-card h3 { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
+.cm-card p { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.5; }
+.cm-card code { background: var(--accent-soft); color: var(--accent-deep); padding: 1px 5px;
+                border-radius: 4px; font-size: 13px; }
+/* The two states that carry meaning: waiting (do not send yet) and ready. */
+.cm-warn { border-color: var(--accent); }
+.cm-ok { border-color: var(--ok, var(--border-strong)); }
+.cm-bar { margin-top: 10px; height: 5px; border-radius: 3px; background: var(--accent-soft);
+          overflow: hidden; }
+.cm-bar span { display: block; height: 100%; background: var(--accent); }
 </style>
 </head>
 <body>

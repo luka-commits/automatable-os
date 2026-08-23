@@ -374,6 +374,54 @@ def addon_tab(name, label, body):
     return btn, pane
 
 
+def addon_names():
+    """Every add-on present, in a stable order. Files and packages both count.
+
+    A one-file add-on was enough while Upwork was the only one: it renders a tab
+    out of a JSON file the skills maintain. An add-on that carries a real machine
+    (cold mail brings a scraper, a benchmark and a mail builder) does not fit in
+    one file, and forcing it to would put its pipeline somewhere else than itself.
+    So an add-on is `<name>.py` OR `<name>/__init__.py`, and the rest of the
+    contract is unchanged.
+
+    Sorted, because tab order should not depend on filesystem order -- that
+    differs between machines and would reshuffle the interface for no reason.
+    """
+    if not ADDONS.is_dir():
+        return []
+    namen = {p.stem for p in ADDONS.glob('*.py') if p.stem != '__init__'}
+    namen |= {p.name for p in ADDONS.iterdir()
+              if p.is_dir() and not p.name.startswith('_') and (p / '__init__.py').is_file()}
+    return sorted(namen)
+
+
+def load_addon(name):
+    """The add-on's module, or None when it is off or absent.
+
+    Separated from rendering (23.08.2026) because the base needs more from an
+    add-on than its HTML: the tab's label and the line above it belong to the
+    add-on, not to the base's own translation table. As long as the base held
+    those, adding a second add-on meant editing the base -- which is exactly what
+    the contract says must not happen.
+    """
+    # One switch, not two. `<name>_enabled: false` in config.yaml is what morning,
+    # setup and the session hook already read; the dashboard has to agree with them
+    # or the tab outlives the answer the user gave during setup.
+    if f'{name}_enabled: false' in CFG_TEXT:
+        return None
+    datei = ADDONS / f'{name}.py'
+    paket = ADDONS / name / '__init__.py'
+    pfad = datei if datei.is_file() else (paket if paket.is_file() else None)
+    if pfad is None:
+        return None
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(f'addon_{name}', pfad)
+    mod = importlib.util.module_from_spec(spec)
+    mod.__dict__.update({k: globals()[k] for k in _ADDON_EXPORTS})
+    spec.loader.exec_module(mod)
+    return mod
+
+
 def addon_html(name, fallback=''):
     """Render one add-on's tab, or return the fallback if it is not installed.
 
@@ -382,23 +430,19 @@ def addon_html(name, fallback=''):
     whole render down with it, because a dashboard that refuses to build tells
     you nothing about the day.
     """
-    # One switch, not two. `<name>_enabled: false` in config.yaml is what morning,
-    # setup and the session hook already read; the dashboard has to agree with them
-    # or the tab outlives the answer the user gave during setup.
-    if f'{name}_enabled: false' in CFG_TEXT:
-        return fallback
-    path = ADDONS / f'{name}.py'
-    if not path.is_file():
-        return fallback
     try:
-        import importlib.util
-        spec = importlib.util.spec_from_file_location(f'addon_{name}', path)
-        mod = importlib.util.module_from_spec(spec)
-        mod.__dict__.update({k: globals()[k] for k in _ADDON_EXPORTS})
-        spec.loader.exec_module(mod)
-        return mod.render()
+        mod = load_addon(name)
+        return mod.render() if mod else fallback
     except Exception as e:
         return f'<p class="sub">Add-on "{esc(name)}" failed to render: {esc(str(e))}</p>'
+
+
+def addon_text(mod, feld, rueckfall=''):
+    """A label or hint the add-on ships for itself, in the dashboard's language."""
+    wert = getattr(mod, feld, None)
+    if isinstance(wert, dict):
+        return wert.get(LANG) or wert.get('en') or rueckfall
+    return wert or rueckfall
 
 def parse_tooling():
     """The Tooling tab: what this machine actually has, from inventory.js.
@@ -516,12 +560,33 @@ def parse_system():
 if not TPL.is_file():
     raise SystemExit(f'ABORT: template missing at {TPL}')
 
-# Add-ons contribute their own tab. Today that is Upwork; the next one drops a
-# file next to it and appears here without this block changing.
-_uw_body = addon_html('upwork')
-if _uw_body:
-    _uw_body = f'    <p class="hint">{TXT["uw_hint"]}</p>\n{_uw_body}'
-_addon_tabs, _addon_panes = addon_tab('upwork', TXT['tab_upwork'], _uw_body)
+# Add-ons contribute their own tab. This block does not know any of them by name:
+# it walks what is installed, asks each for its label and its HTML, and skips the
+# ones that hand back nothing. Dropping a new add-on in really is the whole install.
+#
+# An add-on carries its own LABEL and HINT (a dict per language, or a plain string).
+# Upwork predates that and still reads its two from TXT -- the fallbacks below are
+# only for it, and can go once its strings move into the add-on.
+_addon_tabs, _addon_panes = [], []
+for _name in addon_names():
+    try:
+        _mod = load_addon(_name)
+        _body = _mod.render() if _mod else ''
+    except Exception as _e:
+        _mod, _body = None, (f'<p class="sub">Add-on "{esc(_name)}" failed to render: '
+                             f'{esc(str(_e))}</p>')
+    if not _body:
+        continue
+    # Der Hinweis kommt als fertiges HTML aus dem Add-on (er enthaelt <code>), wird
+    # also nicht escaped -- ein Add-on ist Code in diesem Repo, keine Nutzereingabe.
+    _hint = addon_text(_mod, 'HINT') if _mod else ''
+    if _hint:
+        _body = f'    <p class="hint">{_hint}</p>\n{_body}'
+    _label = addon_text(_mod, 'LABEL', _name.title()) if _mod else _name.title()
+    _btn, _pane = addon_tab(_name, _label, _body)
+    _addon_tabs.append(_btn)
+    _addon_panes.append(_pane)
+_addon_tabs, _addon_panes = '\n'.join(_addon_tabs), '\n'.join(_addon_panes)
 
 date_str = TXT['datum'].format(wd=WD[TODAY.weekday()], d=TODAY.day, mon=MON[TODAY.month], y=TODAY.year)
 h = TPL.read_text(encoding='utf-8')

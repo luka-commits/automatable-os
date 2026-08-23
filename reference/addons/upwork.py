@@ -17,6 +17,17 @@ import datetime
 import json
 import re
 
+# Label und Hinweis gehoeren dem Add-on, nicht der Basis (23.08.2026). Solange die
+# Basis sie in ihrer eigenen Uebersetzungstabelle hielt, hiess ein zweites Add-on:
+# die Basis anfassen -- genau das, was der Vertrag in CLAUDE.md ausschliesst.
+LABEL = {'en': 'Upwork', 'de': 'Upwork'}
+HINT = {
+    'en': ('Pipeline: Applied → In contact → Offer sent → Won. The buttons on a row or card '
+           'only copy a chat sentence — pasting it and sending it is what actually moves the '
+           'job, or run <code>python3 reference/scripts/upwork_status.py set &lt;id&gt; '
+           '&lt;status&gt;</code> yourself.'),
+}
+
 UW_I18N = {
     'en': {
         'status': {'new': 'New', 'notified': 'Notified', 'proposal_sent': 'Proposal sent',
