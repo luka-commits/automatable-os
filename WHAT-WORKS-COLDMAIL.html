@@ -280,6 +280,42 @@
     .flow svg,.stack svg{min-width:540px}
   }
   @media (prefers-reduced-motion: reduce){ .draw{animation:none} }
+  /* Die Beispielmail. Sie sieht aus wie im Postfach, damit klar ist, dass es eine
+     Mail ist und keine Abbildung davon -- deshalb Systemschrift statt der Serifen
+     der Seite. Die Farben markieren die Herkunft jedes Teils. */
+  .mailwrap{display:grid;grid-template-columns:minmax(0,1fr) 230px;
+    gap:clamp(18px,3vw,34px);margin-top:clamp(24px,3.5vw,36px);align-items:start}
+  .mail{background:var(--card);border:1px solid var(--border);border-radius:14px;
+    padding:clamp(20px,3vw,30px);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",
+    sans-serif;font-size:15px;line-height:1.62;color:var(--text)}
+  .mail p{margin:0 0 14px}
+  .mail p:last-child{margin-bottom:0}
+  .mail-subject{padding-bottom:14px;margin-bottom:18px;border-bottom:1px solid var(--border);
+    font-size:13.5px;color:var(--text-2)}
+  .mail-subject b{display:block;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--text-3);font-weight:600;margin-bottom:4px}
+  .mail ul{margin:0 0 14px;padding-left:19px;display:flex;flex-direction:column;gap:6px}
+  .mail-sig{color:var(--text-3)}
+  /* drei Herkuenfte, drei Markierungen */
+  /* Drei Toene, die sich auch als 15px-Quadrat noch unterscheiden. Der erste Entwurf
+     war so blass, dass die Legende nicht zuordbar war -- und m2 gegen m3 im Text
+     ueberhaupt nicht. Gemessen an einem Screenshot, nicht am Quelltext. */
+  .m1{background:#d8e8d4;box-shadow:0 0 0 1px #a8c9a2}      /* gescrapt */
+  .m2{background:#f7dcc6;box-shadow:0 0 0 1px #dda775}      /* gerechnet */
+  .m3{background:#e2ddcd;box-shadow:0 0 0 1px #c0b79e}      /* fest */
+  .m1,.m2,.m3{border-radius:3px;padding:1px 2px;box-decoration-break:clone;
+    -webkit-box-decoration-break:clone}
+  .legend{position:sticky;top:24px;font-size:13.5px}
+  .legend h4{font-family:var(--serif);font-size:16px;font-weight:400;margin:0 0 12px;
+    color:var(--text)}
+  .legend div{display:flex;gap:9px;align-items:flex-start;margin-bottom:13px}
+  .legend i{width:17px;height:17px;border-radius:5px;flex:none;margin-top:1px}
+  .legend p{margin:0;color:var(--text-2);line-height:1.45}
+  .legend b{color:var(--text);display:block;font-size:13.5px}
+  @media (max-width:820px){ .mailwrap{grid-template-columns:1fr}
+    .legend{position:static;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+      gap:14px} .legend h4{grid-column:1/-1;margin-bottom:0} }
+
   .pricing{width:100%;border-collapse:collapse;margin-top:clamp(20px,3vw,30px);
     background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
   .pricing th{text-align:left;padding:11px 16px;background:var(--bg-band);
@@ -306,6 +342,71 @@
     <span><b>Nothing sent</b> without your yes</span>
   </div>
 </header>
+
+<section>
+  <div class="sec-head">
+    <h2>This is what comes out</h2>
+    <p class="sub-head">One real mail, to a real locksmith in Lancashire. Every coloured part
+    was measured on his Google profile an hour earlier — nobody typed any of it, and nothing in
+    it is a guess.</p>
+  </div>
+
+  <div class="mailwrap">
+    <div class="mail">
+      <p class="mail-subject"><b>Subject</b>
+        <span class="m1">longridge</span>, <span class="m1">dps</span> and
+        <span class="m1">lancashire</span> locksmiths</p>
+
+      <p>hey <span class="m1">dps</span>,</p>
+
+      <p>i scored your google business profile against <span class="m1">longridge</span>,
+      <span class="m1">kew ormskirk</span> and a few other <span class="m1">lancashire</span>
+      locksmiths. you came out at <span class="m2">53/100</span> across these
+      <span class="m2">10</span> categories:</p>
+
+      <p>what's already right: <span class="m2">you've got 64 reviews where most uk locksmiths
+      have 20, a 5 star average and 61 photos where most have 14.</span></p>
+
+      <p>what's costing you calls:</p>
+      <ul>
+        <li><span class="m2">64 reviews and no services listed, add five so those searches
+        land</span></li>
+        <li><span class="m2">3 of google's 10 categories used, add more so 7 job types find
+        you</span></li>
+        <li><span class="m2">customers write key fob, your profile doesn't, add it so it
+        lands</span></li>
+        <li><span class="m2">the one 400m from you is on 130 reviews, so ask your next ten
+        customers</span></li>
+      </ul>
+
+      <p><span class="m3">fix this first, it's an afternoon of work where the rest takes months.
+      that's what i do for</span> <span class="m1">locksmiths</span>
+      <span class="m3">as a freelancer. to take it further, i'd like to send you the full audit
+      of your website and seo performance, plus the system that automates your reviews and
+      google posts. no gatekeeping, just value. reply yes and it's yours.</span></p>
+
+      <p class="mail-sig">luka</p>
+    </div>
+
+    <div class="legend">
+      <h4>Where each part comes from</h4>
+      <div><i class="m1"></i>
+        <p><b>Scraped</b>His name, his town, the two neighbours — read off Google Maps, and
+        checkable by him in one search.</p></div>
+      <div><i class="m2"></i>
+        <p><b>Measured and compared</b>His numbers against the market's. He knows he has 64
+        reviews; that the median is 20 is the part he cannot look up.</p></div>
+      <div><i class="m3"></i>
+        <p><b>The same in every mail</b>The closing. Everything above it differs per
+        business.</p></div>
+    </div>
+  </div>
+
+  <p class="note"><b>Read the third point again.</b> His own customers write "key fob" in his
+  reviews, and his profile does not list it — so somebody searching for exactly that job does
+  not find him. <b>Nobody could write that line without having read both</b>, and there are 2,700
+  more businesses where it is a different word.</p>
+</section>
 
 <section>
   <div class="sec-head">
