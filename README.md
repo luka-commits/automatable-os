@@ -17,12 +17,14 @@ niche, your own data, your own repo.
 can see what the thing does before deciding to set it up. A banner says plainly that the data is
 not yours, and the setup deletes it as its last step.
 
-**Want the picture before the detail?** Four pages, all offline and all a double click.
+**Want the picture before the detail?** Five pages, all offline and all a double click.
 
 Start with the one for the layer you care about: [`WHAT-WORKS-BASE.html`](WHAT-WORKS-BASE.html)
 walks through what the setup does, what each phase leaves on your machine, and what the system
 does for you every day after. [`WHAT-WORKS-UPWORK.html`](WHAT-WORKS-UPWORK.html) does the same
-for the Upwork add-on, which you can leave switched off without losing anything else.
+for the Upwork add-on, and [`WHAT-WORKS-COLDMAIL.html`](WHAT-WORKS-COLDMAIL.html) for cold mail —
+that one leads with what it costs, because unlike the rest it runs on subscriptions you pay for.
+Both add-ons can stay switched off without losing anything else.
 
 For more depth: [`ONBOARDING.html`](ONBOARDING.html) is the first run phase by phase, and
 [`SYSTEM.html`](SYSTEM.html) is every step of the day with the reasoning behind its shape.

@@ -26,6 +26,7 @@ without the ones above it:
 | How do I get in at all? | `SETUP.md`, three routes and the mistake that throws no error |
 | What does the base do for me? | `WHAT-WORKS-BASE.html`, the setup phase by phase and the day after |
 | What does the Upwork layer add? | `WHAT-WORKS-UPWORK.html`, same shape, one layer up |
+| What does the cold mail layer add? | `WHAT-WORKS-COLDMAIL.html`, same shape, and the costs before the capabilities |
 | What happens in the first run, in detail? | `ONBOARDING.md`, and `ONBOARDING.html` to look at |
 | Why is the day shaped like this? | `SYSTEM.html` |
 

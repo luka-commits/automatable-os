@@ -1,0 +1,96 @@
+<!-- markt — die eine Vorlage in Instantly. Betreff: {{subject}}
+
+     DER BETREFF: Wettbewerber, Lead, Gebiet (23.08.2026, Luka woertlich: "den competitor an
+     den anfang packen, dann den namen des lead business und dann die area dahinter") --
+     "longridge, dps and lancashire". Der Grund: im Postfach steht links ein Absender, den er
+     nicht kennt. Das erste Wort des Betreffs muss deshalb etwas sein, das er kennt, und das
+     ist der Nachbar von nebenan. Gemessen ueber 2.483 versandfertige Leads sind 83% der
+     Wettbewerbernamen dafuer brauchbar; 13% sind Kuerzel ("1st", "a-z"), 2% Ortsnamen, die
+     meist echte Firmennamen sind, 1,3% leer. Fehlt der Nachbar, faellt der Betreff auf Lead
+     plus Gebiet zurueck, nie auf eine Zahl ueber den Ort.
+
+     STRUKTUR SEIT 22.08.2026 (Luka, woertlich): "wir haben businesses in area verglichen,
+     hier ist dein score basierend auf den folgenden x kategorien. und dann darunter what's
+     working well mit einer zusammenfassung der punkte die schon passen und dann darunter
+     what can be improved ... und dann im pitch inkludieren wir das system auch was ihnen
+     automatisch reviews bekommt und wie sie automatisch auf gbp posten koennen."
+
+     Vier Bloecke, feste Reihenfolge:
+
+       1  ANREDE + EINSTIEG   die gemessenen Nachbarn, der ORT, und der Score.
+       2  WHAT'S ALREADY RIGHT  bis zu drei Punkte, die schon passen.
+       3  WHAT'S COSTING YOU CALLS  drei bis fuenf Stichpunkte, hoechstens 80 Zeichen.
+       4  ABSCHLUSS           die Dringlichkeit, wer schreibt, die Bitte.
+
+     DAS ZIEL DES AUFBAUS: vermitteln, dass wir das GANZE Profil durchgegangen sind, nicht
+     nur ein paar Maengel gesammelt haben. Der Score sagt es als Zahl, "what's already right"
+     beweist es -- eine Mail, die ausschliesslich Maengel auflistet, liest sich wie ein
+     Verkaufsvorwand. Wer zuerst benennt, was gut laeuft, und es abhakbar auflistet, zeigt
+     dass er nachgesehen hat. Der Empfaenger kann jede Zeile in seinem Profil nachpruefen.
+
+     DER SCORE ({{score_line}}) rechnet ZWOELF Faktoren, alle aus dem GBP-Scraper:
+     Kategorien, Hauptkategorie, Leistungsliste, die Kategorie der Bestbewerteten,
+     Bewertungszahl, Beschreibung, Review-Themen, Fotos, Sternschnitt, schlechte
+     Bewertungen, 24 Stunden, Oeffnungszeiten. Die Zahl in der Zeile ("across the 10 things")
+     ist die der WIRKLICH gemessenen -- was fehlt, faellt aus Zaehler und Nenner, sonst
+     bestraft der Score den Betrieb fuer eine Luecke in unserem Scrape.
+     Bewusst NICHT drin: die Site-Haelfte des alten `score.py` (der Site-Read laeuft nicht
+     mehr, bei jeder neuen Nische waere sie 0%), sowie "Profil beansprucht" und
+     "Telefonnummer" -- 99% erfuellen sie, ein solcher Faktor trennt nichts. Die beiden
+     stehen stattdessen in Block 2, wo sie die Liste fuellen duerfen.
+
+     KEIN POSITIONS-STATEMENT mehr ("du stehst nicht in den top 3"). Gemessen am 30.07.
+     standen vier von vier Betrieben an der EIGENEN Tuer im Drei-Kasten -- wer im Laden
+     nachsieht, haelt den Satz fuer falsch und liest die Stichpunkte darunter nicht mehr.
+     Der Rang entscheidet weiter, WELCHE Zeilen kommen (`pool.py`), steht aber in keiner Mail.
+
+     DER ORT, nicht die Grafschaft. "a few other of your competitors in greater london" ist
+     fuer einen Betrieb in Barnet keine ueberpruefbare Aussage -- dort sitzen Hunderte. 68%
+     der Leads tragen einen echten Ort; die uebrigen sind Service-Area-Betriebe ohne Adresse,
+     dort ist die Grafschaft der ehrliche Ersatz.
+
+     DIE UEBERSCHRIFT DER LISTE nennt den Verlust, nicht die Aufgabe (23.08.2026, Luka:
+     "die painpoints und emotionen treffen"). "what can be improved" liest sich wie eine
+     Hausaufgabenliste und laesst offen, warum es eilt; "what's costing you calls" sagt in
+     vier Woertern, was jeder Punkt darunter bedeutet. Dieselben Stichpunkte, andere Wirkung.
+     Der Kontrast zu Block 2 traegt sich damit selbst und braucht keinen Bruecken-Satz: oben
+     was er richtig macht, unten was ihn trotzdem Auftraege kostet.
+
+     DER ABSCHLUSS oeffnet mit der Dringlichkeit, nicht mit dem Angebot. "every week it stays
+     like this, those calls go to someone else" ist der Grund, warum ein schwaches Profil
+     JETZT kostet und nicht irgendwann. Vorgaenger und warum sie fielen: "sorting the profile
+     out is the lowest hanging fruit for local leads" nannte einen Vorteil ohne Folge und las
+     sich als Floskel; die Zwischenfassung mit "people don't shortlist, they call whoever
+     looks right first" davor erklaerte etwas, das der Empfaenger ohnehin weiss, und kostete
+     die doppelte Laenge. Bewusst OHNE Zahl: "die top 3 bekommen die Haelfte der Auftraege"
+     waere die naheliegende Verschaerfung und ist nicht belegt.
+
+     EIN Nutzen statt sechs. Bis 23.08. standen Report, Website, SEO, Reviews, Posting und
+     Walkthrough in zwei Saetzen nebeneinander und verwaesserten sich gegenseitig. Uebrig
+     bleiben der Report und die zwei Automatisierungen, weil die der eigentliche Grund zu
+     antworten sind. Das walkthrough ist HANDARBEIT -- Luka geht es je Antwort selbst durch;
+     es steht als Verb da ("i'll walk you through"), damit niemand es fuer automatisiert
+     haelt und eine Antwort liegen bleibt.
+
+     Alles {{...}} kommt fertig aus cohort_vars.csv (export_cohort.py). Keine Zahl im festen
+     Teil: "die top 3, die etwa die Haelfte aller Auftraege bekommen" ist NICHT belegt und
+     deshalb nirgends drin (§ Geprueffte Plattform-Zahlen in markt_copy.md).
+
+     Pruefen, bevor das hier nach Instantly geht:  python3 preview_mail.py --run runs/<slug>
+-->
+<div>hey {{company_casual}},</div>
+<div><br></div>
+<div>{{opener}} {{score_line}}</div>
+<div><br></div>
+<div>what's already right: {{gut_satz}}</div>
+<div><br></div>
+<div>{{tips_intro}}</div>
+<div>{{tip_1}}</div>
+<div>{{tip_2}}</div>
+<div>{{tip_3}}</div>
+<div>{{tip_4}}</div>
+<div>{{tip_5}}</div>
+<div><br></div>
+<div>fix this first, it's an afternoon of work where the rest takes months. that's what i do for {{niche_plural}} as a freelancer. to take it further, i'd like to send you the full audit of your website and seo performance, plus the system that automates your reviews and google posts. no gatekeeping, just value. reply yes and it's yours.</div>
+<div><br></div>
+<div>luka</div>

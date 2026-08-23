@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The cold mail add-on: what it costs, what it builds, what it sends</title>
+<style>
+  /* Tokens from reference/design.md. Same values as the dashboard and the pitch pages. */
+  :root{
+    --accent:#c1663e; --accent-deep:#a24f2e; --accent-soft:#f3e4db;
+    --bg:#f3efe6; --bg-band:#ece5d7; --card:#fbf9f4;
+    --ink:#1c1712; --on-ink:#f3efe6;
+    --text:#262019; --text-2:#5c5347; --text-3:#6f6656;
+    --border:#e2d9c8; --border-strong:#cfc2ab; --border-soft:#eae3d3;
+    --amber:#B54708; --amber-soft:#f7ecd9; --amber-border:#e3caa0;
+    --serif:Georgia,"Iowan Old Style","Times New Roman",ui-serif,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text-2);
+    font:16px/1.6 var(--sans);
+    padding:0 clamp(20px,5vw,40px) clamp(72px,10vw,120px);
+  }
+  .wrap{max-width:1020px;margin:0 auto}
+  h1,h2,h3{color:var(--text);margin:0;text-wrap:balance;font-weight:400}
+  h1,h2{font-family:var(--serif)}
+  h1{font-size:clamp(34px,6vw,62px);line-height:1.03;letter-spacing:-.028em}
+  h2{font-size:clamp(24px,3.4vw,38px);letter-spacing:-.02em;line-height:1.1}
+  h3{font-family:var(--sans);font-size:16px;letter-spacing:-.005em;font-weight:600}
+  p{margin:0;max-width:64ch;text-wrap:pretty}
+  code{
+    font:12.5px/1.5 var(--mono); background:var(--accent-soft); color:var(--accent-deep);
+    padding:.14em .44em; border-radius:6px; white-space:nowrap;
+  }
+  a{color:var(--accent-deep);text-underline-offset:3px}
+
+  header{padding:clamp(60px,10vw,116px) 0 0}
+  /* The measure belongs to the heading, not to the header: putting it on the
+     container squeezed the lede and the meta row into the same narrow column. */
+  header h1{max-width:16ch}
+  header p{max-width:52ch}
+  .lede{font-size:clamp(18px,2.1vw,21px);line-height:1.5;margin-top:22px}
+  .lede strong{color:var(--text);font-weight:600}
+  header .meta{
+    margin-top:26px;font-size:14px;color:var(--text-3);
+    display:flex;gap:22px;flex-wrap:wrap;
+  }
+  header .meta b{color:var(--text);font-weight:600}
+
+  section{padding:clamp(56px,8vw,104px) 0 0}
+  .sec-head{max-width:58ch}
+  .sec-head h2 + p{color:var(--text-3);font-size:15.5px;margin-top:11px}
+
+  /* ---------------------------------------------------------- setup timeline */
+  .phases{margin-top:clamp(30px,4vw,46px)}
+  .phase{
+    display:grid; grid-template-columns:44px minmax(0,1fr) minmax(0,320px);
+    gap:clamp(14px,2.5vw,34px); position:relative;
+    padding:0 0 clamp(30px,4vw,42px);
+  }
+  .phase::before{
+    content:""; position:absolute; left:15px; top:26px; bottom:-4px; width:2px;
+    background:var(--border-strong);
+  }
+  .phase:last-child::before{display:none}
+  .ring{
+    width:32px;height:32px;border-radius:50%;background:var(--card);
+    border:2.5px solid var(--accent); display:grid;place-items:center;
+    font-family:var(--serif); font-size:16px; color:var(--accent-deep);
+    position:relative; z-index:1;
+  }
+  .phase-body h3{font-size:clamp(17px,2vw,21px);font-family:var(--serif);font-weight:400;
+                 letter-spacing:-.012em;line-height:1.25;margin-bottom:8px}
+  .phase-body p{font-size:15px}
+  .phase-body p + p{margin-top:9px;font-size:14.5px;color:var(--text-3)}
+  .skill{
+    display:inline-block; font:11.5px/1 var(--mono); color:var(--accent-deep);
+    background:var(--accent-soft); padding:5px 8px; border-radius:5px;
+    margin-bottom:10px; letter-spacing:.01em;
+  }
+  .leaves{
+    background:var(--card); border:1px solid var(--border); border-radius:11px;
+    padding:15px 17px; align-self:start;
+  }
+  .leaves-h{
+    font-size:11px; letter-spacing:.07em; text-transform:uppercase;
+    color:var(--text-3); margin-bottom:10px;
+  }
+  .leaves ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+  .leaves li{font:12.5px/1.45 var(--mono);color:var(--text-2)}
+  .leaves li span{font-family:var(--sans);font-size:13px;color:var(--text-3)}
+  .leaves.stop{background:var(--amber-soft);border-color:var(--amber-border)}
+  .leaves.stop .leaves-h{color:#5b4a30}
+  .leaves.stop li span{color:#5b4a30}
+  @media(max-width:760px){
+    .phase{grid-template-columns:32px minmax(0,1fr)}
+    .leaves{grid-column:2;margin-top:14px}
+  }
+
+  /* three answers */
+  .answers{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:clamp(14px,2vw,20px);margin-top:16px}
+  .answer{border-top:2px solid var(--accent);padding-top:11px}
+  .answer:nth-child(2){border-top-color:var(--accent-soft)}
+  .answer:nth-child(3){border-top-color:var(--border-strong)}
+  .answer b{display:block;color:var(--text);font-size:14.5px;margin-bottom:4px}
+  .answer p{font-size:13.5px;color:var(--text-3)}
+
+  .note{
+    background:var(--amber-soft); border:1px solid var(--amber-border);
+    border-radius:12px; padding:17px 19px; margin-top:26px; font-size:14.5px; color:#5b4a30;
+  }
+  .note strong{color:#402f18}
+  .note code{background:#efdfc4;color:#5b4a30}
+
+  /* ---------------------------------------------------------- pipeline */
+  .flow{margin-top:clamp(28px,4vw,42px)}
+  .flow svg{display:block;width:100%;height:auto;overflow:visible}
+  .steps{margin-top:clamp(26px,4vw,38px);border-top:1px solid var(--border)}
+  .step{
+    display:grid; grid-template-columns:34px minmax(0,1fr); gap:clamp(14px,2.5vw,26px);
+    padding:clamp(20px,3vw,26px) 0; border-bottom:1px solid var(--border);
+  }
+  .step-n{font-family:var(--serif);font-size:26px;color:var(--accent);line-height:1;padding-top:2px}
+  .step h3{margin-bottom:7px;font-size:16.5px}
+  .step p{font-size:15px}
+  .step p + p{margin-top:9px;color:var(--text-3);font-size:14.5px}
+
+  /* Depth without length: the page stays scannable and the reasoning is one click
+     away. Native <details>, so it works offline, prints open, and needs no script. */
+  details{
+    margin-top:16px; border-top:1px solid var(--border-soft); padding-top:14px;
+  }
+  summary{
+    cursor:pointer; list-style:none; font-size:14px; color:var(--accent-deep);
+    display:flex; align-items:center; gap:8px; width:fit-content;
+  }
+  summary::-webkit-details-marker{display:none}
+  summary::before{
+    content:"+"; font:14px/1 var(--mono); color:var(--accent);
+    border:1px solid var(--accent-soft); background:var(--accent-soft);
+    width:19px; height:19px; border-radius:5px; display:grid; place-items:center;
+  }
+  details[open] summary::before{content:"–"}
+  summary:hover{color:var(--text)}
+  details > p{margin-top:12px;font-size:14.5px;max-width:68ch}
+  details > p + p{margin-top:9px}
+
+  /* ---------------------------------------------------------- what lands here */
+  .kind{margin-top:clamp(30px,4vw,44px)}
+  .kind-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+             border-bottom:1px solid var(--border-strong);padding-bottom:11px}
+  .kind-head h3{font-family:var(--serif);font-size:clamp(20px,2.3vw,25px);font-weight:400;
+                letter-spacing:-.015em}
+  .count{font-size:13px;color:var(--text-3)}
+  .kind-sub{font-size:14.5px;color:var(--text-3);margin-top:13px;max-width:70ch}
+
+  /* skills as chips: the quantity and the grouping are the point, not the reading */
+  .chips{margin-top:20px;display:grid;gap:16px}
+  .chip-group{display:flex;flex-wrap:wrap;gap:7px;align-items:baseline}
+  .grp{
+    flex:0 0 128px; font-size:12.5px; color:var(--text-3);
+  }
+  .chip-group b{
+    font:12px/1 var(--mono); font-weight:400; color:var(--accent-deep);
+    background:var(--accent-soft); padding:6px 9px; border-radius:6px;
+  }
+  @media(max-width:620px){ .grp{flex:0 0 100%;margin-bottom:2px} }
+
+  /* Depth without length: the page stays scannable and the reasoning is one click
+     away. Native <details>, so it works offline, prints open, and needs no script. */
+  details{
+    margin-top:16px; border-top:1px solid var(--border-soft); padding-top:14px;
+  }
+  summary{
+    cursor:pointer; list-style:none; font-size:14px; color:var(--accent-deep);
+    display:flex; align-items:center; gap:8px; width:fit-content;
+  }
+  summary::-webkit-details-marker{display:none}
+  summary::before{
+    content:"+"; font:14px/1 var(--mono); color:var(--accent);
+    border:1px solid var(--accent-soft); background:var(--accent-soft);
+    width:19px; height:19px; border-radius:5px; display:grid; place-items:center;
+  }
+  details[open] summary::before{content:"–"}
+  summary:hover{color:var(--text)}
+  details > p{margin-top:12px;font-size:14.5px;max-width:68ch}
+  details > p + p{margin-top:9px}
+
+  .rows{margin-top:6px}
+  /* Plugins carry their origin instead of a status: where a thing comes from is
+     the fact that matters when it runs on your whole machine. */
+  .plugin-rows .row{grid-template-columns:196px 246px minmax(0,1fr)}
+  .src{
+    font:11.5px/1.4 var(--mono); color:var(--text-3);
+    word-break:break-all;
+  }
+  .sub-head{margin-top:clamp(26px,3vw,34px)}
+  @media(max-width:680px){ .plugin-rows .row{grid-template-columns:1fr} }
+  .row{
+    display:grid; grid-template-columns:150px 162px minmax(0,1fr);
+    gap:clamp(12px,2vw,24px); padding:14px 0; border-bottom:1px solid var(--border-soft);
+    align-items:baseline;
+  }
+  .row b{color:var(--text);font-weight:600;font-size:15px}
+  .row p{font-size:14.5px}
+  .row em{color:var(--text-3);font-style:normal;display:block;margin-top:4px;font-size:13.5px}
+  .pill{
+    font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; font-weight:700;
+    padding:4px 8px; border-radius:5px; white-space:nowrap; display:inline-block;
+  }
+  .pill.carry{background:var(--accent-soft);color:var(--accent-deep);font-weight:600}
+  .pill.ask{background:var(--accent-soft);color:var(--accent-deep)}
+  .pill.opt{background:transparent;color:var(--text-3);border:1px solid var(--border-strong)}
+  @media(max-width:680px){
+    .row{grid-template-columns:1fr auto;gap:5px 12px}
+    .row > p{grid-column:1/-1}
+  }
+
+  /* ---------------------------------------------------------- views */
+  table{width:100%;border-collapse:collapse;margin-top:clamp(24px,3vw,32px);font-size:14.5px}
+  th,td{text-align:left;padding:13px 16px 13px 0;border-bottom:1px solid var(--border-soft);vertical-align:top}
+  th{color:var(--text-3);font-weight:600;font-size:12px;letter-spacing:.06em;
+     text-transform:uppercase;border-bottom:1px solid var(--border-strong)}
+  td:first-child{color:var(--text);font-weight:600;white-space:nowrap;padding-right:28px}
+
+  /* The dashboard runs inside the page, clickable, via srcdoc rather than src.
+     A src pointing at a local file can come up blank, because Chrome treats every
+     file:// URL as its own origin; srcdoc inherits this page's, so it always runs.
+     freeze_example.py keeps the content in sync with examples/dashboard.html. */
+  .demo{margin:18px 0 0;padding:0}
+  .demo-frame{
+    display:block; width:100%; height:min(78vh,720px);
+    border:1px solid var(--border-strong); border-radius:12px; background:var(--card);
+  }
+  .demo figcaption{font-size:13.5px;color:var(--text-3);margin-top:11px;max-width:64ch}
+
+  /* ---------------------------------------------------------- limits */
+  .never{
+    background:var(--ink); color:var(--on-ink); border-radius:18px;
+    padding:clamp(30px,5vw,50px) clamp(24px,4vw,44px); margin-top:clamp(28px,4vw,40px);
+  }
+  .never h2{color:var(--on-ink)}
+  .never > p{color:#a89e8e;font-size:15.5px;margin-top:11px}
+  .never dl{margin:clamp(24px,3vw,34px) 0 0}
+  .never dt{
+    color:var(--on-ink); font-weight:600; font-size:15.5px;
+    padding-top:16px; border-top:1px solid rgba(243,239,230,.14);
+  }
+  .never dd{margin:5px 0 16px;color:#c9c0b3;font-size:14.5px;max-width:66ch}
+  .never dt:first-of-type{border-top:0;padding-top:0}
+  .tag{
+    font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; font-weight:700;
+    color:var(--accent); margin-left:9px; white-space:nowrap;
+  }
+
+  /* ---------------------------------------------------------- layers */
+  .stack{margin-top:clamp(28px,4vw,40px)}
+  .stack svg{display:block;width:100%;height:auto;overflow:visible}
+
+  footer{
+    margin-top:clamp(64px,9vw,104px); padding-top:28px; border-top:1px solid var(--border);
+    font-size:14px; color:var(--text-3);
+  }
+  footer a{margin-right:20px;white-space:nowrap}
+
+  /* Motion enhances a state that is already visible. Nothing starts at opacity 0
+     or with the line undrawn: in a headless renderer or an inactive tab the
+     animation never fires, and a reveal that owns visibility ships a blank page. */
+  .draw{animation:draw 1.5s var(--ease) .3s}
+  @keyframes draw{
+    from{stroke-dasharray:var(--len);stroke-dashoffset:var(--len)}
+    to{stroke-dasharray:var(--len);stroke-dashoffset:0}
+  }
+  @media(max-width:640px){
+    .flow,.stack{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .flow svg,.stack svg{min-width:540px}
+  }
+  @media (prefers-reduced-motion: reduce){ .draw{animation:none} }
+  .pricing{width:100%;border-collapse:collapse;margin-top:clamp(20px,3vw,30px);
+    background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .pricing th{text-align:left;padding:11px 16px;background:var(--bg-band);
+    font-family:-apple-system,sans-serif;font-size:12px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--text-3);font-weight:600}
+  .pricing td{padding:12px 16px;border-top:1px solid var(--border);font-size:15px;
+    color:var(--text-2)}
+  .pricing td:first-child{color:var(--text)}
+  @media (max-width:640px){ .pricing{font-size:14px} .pricing th,.pricing td{padding:9px 11px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>No model writes these mails, and that is the point.</h1>
+  <p class="lede">Cold outreach as a machine: it scores every business in a market against every
+  other one, writes each mail from what it measured, and throws out the ones it cannot back up.
+  <strong>It costs money before it earns any, and the first mail goes out in three weeks.</strong>
+  Both of those are on this page before anything else.</p>
+  <div class="meta">
+    <span><b>2,617 of 2,717</b> mails cleared all four checkers</span>
+    <span><b>13 seconds</b> for the batch</span>
+    <span><b>Nothing sent</b> without your yes</span>
+  </div>
+</header>
+
+<section>
+  <div class="sec-head">
+    <h2>Where this sits</h2>
+    <p class="sub-head">A second way in, next to Upwork rather than on top of it. Both are
+    optional, both run on the same base, and neither knows the other exists.</p>
+  </div>
+
+  <div class="stack" aria-hidden="true">
+    <svg viewBox="0 0 760 244" role="img">
+      <g>
+        <rect x="60" y="24" width="290" height="68" rx="11"
+              fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="86" y="57" font-family="Georgia,serif" font-size="20" fill="var(--text)">Upwork</text>
+        <text x="86" y="78" font-size="13" fill="var(--text-3)" font-family="-apple-system,sans-serif">acquisition, optional</text>
+      </g>
+      <g>
+        <rect x="380" y="24" width="290" height="68" rx="11"
+              fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="406" y="57" font-family="Georgia,serif" font-size="20" fill="var(--text)">Cold mail</text>
+        <text x="406" y="78" font-size="13" fill="var(--text-3)" font-family="-apple-system,sans-serif">acquisition, optional, paid</text>
+      </g>
+      <g stroke="var(--border-strong)" stroke-width="1.5" stroke-dasharray="3 4">
+        <path d="M 205 92 V 128"/><path d="M 525 92 V 128"/>
+      </g>
+      <rect x="60" y="128" width="610" height="96" rx="13"
+            fill="var(--card)" stroke="var(--accent)" stroke-width="3"/>
+      <text x="86" y="169" font-family="Georgia,serif" font-size="25" fill="var(--text)">The base layer</text>
+      <text x="86" y="195" font-size="14" fill="var(--text-2)" font-family="-apple-system,sans-serif">
+        the day loop, your projects, the dashboard, mail drafts
+      </text>
+      <text x="646" y="169" font-size="13" fill="var(--accent-deep)" text-anchor="end"
+            font-family="-apple-system,sans-serif">always</text>
+    </svg>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>What it costs</h2>
+    <p class="sub-head">The base layer is the folder and your Claude access, full stop. This
+    add-on runs on services you subscribe to, so the list comes before the capabilities.</p>
+  </div>
+
+  <table class="pricing">
+    <thead>
+      <tr><th>Service</th><th>What for</th><th>What it costs</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><b>Zapmail</b></td><td>mailboxes, domains, DNS</td>
+          <td>$39/mo for 10 mailboxes · $99 for 30 · $299 for 100</td></tr>
+      <tr><td><b>Instantly</b></td><td>warmup, sending, replies</td>
+          <td>own subscription</td></tr>
+      <tr><td><b>Apify</b></td><td>the market, once per niche</td>
+          <td>~$5 for 3,600 businesses</td></tr>
+      <tr><td><b>DataForSEO</b></td><td>the service lists</td>
+          <td>~$1.34 per niche</td></tr>
+      <tr><td>domains</td><td>separate from the mailboxes</td>
+          <td>$10–15/year each, or free if you own them</td></tr>
+    </tbody>
+  </table>
+
+  <p class="stop"><b>Saying no changes nothing else.</b> Your accounts, your keys, cancellable
+  by you. Nothing here is installed, connected or charged until you say yes to this add-on
+  specifically, and the base layer runs exactly as described on its own page either way.</p>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>How many mailboxes: arithmetic, not a guess</h2>
+    <p class="sub-head">Instantly caps a mailbox at 30 campaign mails a day. You scale by adding
+    mailboxes across more domains, never by sending more from each.</p>
+  </div>
+
+  <div class="flow" aria-hidden="true">
+    <svg viewBox="0 0 760 176" role="img">
+      <path class="draw" style="--len:520" d="M 120 62 H 640"
+            fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+      <g fill="var(--card)" stroke="var(--accent)" stroke-width="3">
+        <rect x="60" y="34" width="120" height="56" rx="10"/>
+        <rect x="320" y="34" width="120" height="56" rx="10"/>
+        <rect x="580" y="34" width="120" height="56" rx="10"/>
+      </g>
+      <g font-family="Georgia,serif" font-size="26" fill="var(--text)" text-anchor="middle">
+        <text x="120" y="70">300</text><text x="380" y="70">10</text><text x="640" y="70">4</text>
+      </g>
+      <g font-size="13" fill="var(--text-3)" text-anchor="middle"
+         font-family="-apple-system,sans-serif">
+        <text x="120" y="112">mails a day</text>
+        <text x="380" y="112">mailboxes</text>
+        <text x="640" y="112">domains</text>
+      </g>
+      <g font-size="14" fill="var(--accent-deep)" text-anchor="middle" font-family="Georgia,serif">
+        <text x="250" y="52">÷ 30</text><text x="510" y="52">÷ 3</text>
+      </g>
+      <text x="380" y="152" font-size="14" fill="var(--text-2)" text-anchor="middle"
+            font-family="-apple-system,sans-serif">
+        10 mailboxes across 4 domains — the $39 plan
+      </text>
+    </svg>
+  </div>
+
+  <p class="note"><b>You pick the final domain count.</b> The same mailboxes spread over more
+  domains cost a little more and risk a little less. Someone who already owns suitable domains
+  connects those instead of buying new ones.</p>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>Three weeks before the first mail, and that is the schedule working</h2>
+    <p class="sub-head">New mailboxes may not send — Instantly asks for two weeks of warmup and
+    recommends four. This decides the order of everything else, so it is the first thing the
+    setup does rather than the last.</p>
+  </div>
+
+  <div class="flow" aria-hidden="true">
+    <svg viewBox="0 0 760 250" role="img">
+      <!-- Zeitachse -->
+      <path d="M 70 218 H 700" stroke="var(--border-strong)" stroke-width="1.5"/>
+      <g font-size="12" fill="var(--text-3)" font-family="-apple-system,sans-serif">
+        <text x="70" y="238">day 1</text>
+        <text x="280" y="238">week 1</text>
+        <text x="490" y="238">week 3</text>
+        <text x="700" y="238" text-anchor="end">then on</text>
+      </g>
+
+      <!-- Spur 1: die Infrastruktur, laeuft ohne dich -->
+      <rect x="70" y="40" width="420" height="52" rx="10"
+            fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+      <text x="88" y="64" font-family="Georgia,serif" font-size="16" fill="var(--text)">
+        Mailboxes warming
+      </text>
+      <text x="88" y="82" font-size="12.5" fill="var(--text-3)"
+            font-family="-apple-system,sans-serif">
+        one hour of yours, then three weeks without you
+      </text>
+
+      <!-- Spur 2: die Liste, parallel -->
+      <rect x="70" y="108" width="300" height="52" rx="10"
+            fill="var(--card)" stroke="var(--accent)" stroke-width="2"/>
+      <text x="88" y="132" font-family="Georgia,serif" font-size="16" fill="var(--text)">
+        The list gets built
+      </text>
+      <text x="88" y="150" font-size="12.5" fill="var(--text-3)"
+            font-family="-apple-system,sans-serif">
+        scrape, score, write, check
+      </text>
+
+      <!-- der Punkt, an dem beide zusammenkommen -->
+      <path class="draw" style="--len:120" d="M 490 66 H 560"
+            fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M 370 134 C 430 134 440 90 490 78"
+            fill="none" stroke="var(--border-strong)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <rect x="560" y="40" width="140" height="52" rx="10"
+            fill="var(--ink)" stroke="none"/>
+      <text x="630" y="64" font-family="Georgia,serif" font-size="16" fill="var(--on-ink)"
+            text-anchor="middle">Campaign</text>
+      <text x="630" y="82" font-size="12" fill="var(--on-ink)" text-anchor="middle"
+            font-family="-apple-system,sans-serif" opacity="0.75">half an hour</text>
+
+      <!-- taeglich -->
+      <rect x="560" y="108" width="140" height="52" rx="10"
+            fill="var(--card)" stroke="var(--border-strong)" stroke-width="1.5"/>
+      <text x="630" y="132" font-family="Georgia,serif" font-size="16" fill="var(--text)"
+            text-anchor="middle">Replies</text>
+      <text x="630" y="150" font-size="12" fill="var(--text-3)" text-anchor="middle"
+            font-family="-apple-system,sans-serif">the only daily work</text>
+
+      <g stroke="var(--border)" stroke-width="1" stroke-dasharray="3 4">
+        <path d="M 490 92 V 218"/><path d="M 560 160 V 218"/>
+      </g>
+    </svg>
+  </div>
+
+  <p class="note">Build the list first and the infrastructure second, and you sit on finished
+  mails for three weeks. <b>That is the mistake this order exists to prevent</b>, and the
+  dashboard counts the days down so nobody has to guess whether it is safe to send yet.</p>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>What the machine does</h2>
+    <p class="sub-head">Every business in the market, scored against every other one. Then each
+    mail written out of what was measured — and the ones that cannot be backed up thrown away.</p>
+  </div>
+
+  <div class="flow" aria-hidden="true">
+    <svg viewBox="0 0 760 214" role="img">
+      <rect x="40" y="52" width="128" height="64" rx="10"
+            fill="var(--card)" stroke="var(--accent)" stroke-width="2.5"/>
+      <text x="104" y="82" font-family="Georgia,serif" font-size="23" fill="var(--text)"
+            text-anchor="middle">2,717</text>
+      <text x="104" y="102" font-size="12" fill="var(--text-3)" text-anchor="middle"
+            font-family="-apple-system,sans-serif">leads with data</text>
+
+      <path class="draw" style="--len:420" d="M 168 84 H 588"
+            fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+
+      <g fill="var(--bg-band)" stroke="var(--border-strong)" stroke-width="1.5">
+        <rect x="212" y="58" width="76" height="52" rx="8"/>
+        <rect x="304" y="58" width="76" height="52" rx="8"/>
+        <rect x="396" y="58" width="76" height="52" rx="8"/>
+        <rect x="488" y="58" width="76" height="52" rx="8"/>
+      </g>
+      <g font-size="11.5" fill="var(--text-2)" text-anchor="middle"
+         font-family="-apple-system,sans-serif">
+        <text x="250" y="80">numbers</text><text x="250" y="96">in the data</text>
+        <text x="342" y="80">no claim</text><text x="342" y="96">about a town</text>
+        <text x="434" y="80">not already</text><text x="434" y="96">done</text>
+        <text x="526" y="80">state, act,</text><text x="526" y="96">consequence</text>
+      </g>
+
+      <rect x="588" y="52" width="132" height="64" rx="10" fill="var(--ink)"/>
+      <text x="654" y="82" font-family="Georgia,serif" font-size="23" fill="var(--on-ink)"
+            text-anchor="middle">2,617</text>
+      <text x="654" y="102" font-size="12" fill="var(--on-ink)" text-anchor="middle"
+            opacity="0.75" font-family="-apple-system,sans-serif">ready to send</text>
+
+      <path d="M 388 116 V 156" stroke="var(--border-strong)" stroke-width="1.5"
+            stroke-dasharray="4 4"/>
+      <text x="388" y="176" font-size="13" fill="var(--text-3)" text-anchor="middle"
+            font-family="-apple-system,sans-serif">
+        63 dropped, 37 had too little to say
+      </text>
+      <text x="388" y="34" font-size="12.5" fill="var(--accent-deep)" text-anchor="middle"
+            font-family="-apple-system,sans-serif">four checkers, all four have to pass</text>
+    </svg>
+  </div>
+
+  <div class="rows">
+    <div class="row">
+      <div class="kind"><span class="kind-head">The whole market</span>
+        <span class="kind-sub">not a sample</span></div>
+      <p>A national median is the one number the owner cannot look up. He knows he has 64
+      reviews. That the median is 20 is ours to tell him.</p>
+    </div>
+    <div class="row">
+      <div class="kind"><span class="kind-head">Twelve factors</span>
+        <span class="kind-sub">and the unmeasured ones drop out</span></div>
+      <p>A factor we could not measure leaves the numerator <b>and</b> the denominator. Never
+      counted as a flaw. That single rule is why the score can be shown to the recipient.</p>
+    </div>
+    <div class="row">
+      <div class="kind"><span class="kind-head">Twenty building blocks</span>
+        <span class="kind-sub">chosen by ID, not at random</span></div>
+      <p>The same business gets the same mail on a second run, so one sent three weeks ago can
+      still be reconstructed exactly.</p>
+    </div>
+  </div>
+
+  <p class="note"><b>Why not just have a model write them.</b> That is what this did until
+  August 2026, and the bottleneck was never quality or cost — somebody had to sit there and
+  prompt it, ten at a time, roughly 250 rounds for one niche. The machine does the same work in
+  thirteen seconds, and unlike a model it cannot invent a number that is not in the data.</p>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>One extra tab, and it changes with the weeks</h2>
+    <p class="sub-head">The Upwork tab always shows the same list of jobs. This one answers a
+    different question depending on where you are.</p>
+  </div>
+
+  <div class="rows">
+    <div class="row">
+      <div class="kind"><span class="kind-head">Week 1</span>
+        <span class="kind-sub">may I send yet?</span></div>
+      <p><i>Mailboxes warming up — day 7 of 14.</i></p>
+    </div>
+    <div class="row">
+      <div class="kind"><span class="kind-head">Week 2</span>
+        <span class="kind-sub">is the list ready?</span></div>
+      <p><i>412 ready to send out of 500 scraped, 3 still need an address.</i></p>
+    </div>
+    <div class="row">
+      <div class="kind"><span class="kind-head">From then on</span>
+        <span class="kind-sub">what needs me today?</span></div>
+      <p><i>3 replies waiting.</i> That is the whole tab most mornings, and it should be.</p>
+    </div>
+  </div>
+
+  <p class="note">No score distributions, no coverage rates, no factor counts. Those are the
+  machine's own metrics: useful while building it, noise on a morning dashboard. The test for
+  any line here is whether it changes what you do today.</p>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>What it will not and cannot do</h2>
+    <p class="sub-head">Each limit is there because the alternative costs more than it gives.</p>
+  </div>
+
+  <div class="rows">
+    <div class="row never">
+      <div class="kind"><span class="kind-head">It does not send by itself</span></div>
+      <p>Uploading the campaign is a separate command and needs your yes. An add-on does not get
+      to break a promise the base made on its behalf.</p>
+    </div>
+    <div class="row never">
+      <div class="kind"><span class="kind-head">Local businesses with a Google profile</span></div>
+      <p>Trades, clinics, salons — anyone whose customers find them on a map. If your buyers are
+      SaaS founders, this add-on has nothing to measure.</p>
+    </div>
+    <div class="row never">
+      <div class="kind"><span class="kind-head">It will not invent a number</span></div>
+      <p>Every figure has to exist in that business's data sheet or the mail is thrown out. A
+      lead with too little data gets fewer points, or none.</p>
+    </div>
+    <div class="row never">
+      <div class="kind"><span class="kind-head">It cannot make a bad offer work</span></div>
+      <p>It gets a personal, well-built mail into the right inbox at a volume you could not
+      reach by hand. What you sell is still yours.</p>
+    </div>
+  </div>
+</section>
+
+
+<footer>
+  <a href="SETUP.md">Getting in</a>
+  <a href="WHAT-WORKS-BASE.html">The base layer</a>
+  <a href="SYSTEM.html">The whole system</a>
+  <a href="WHAT-THIS-SYSTEM-DOES.md">What happens to your data</a>
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,74 @@
+{
+ "country": "Germany",
+ "countryCode": "de",
+ "language": "de",
+ "timezone": "Europe/Berlin",
+ "level": "state",
+ "_source": "GeoNames admin1, prefix=DE",
+ "regions": [
+  {
+   "name": "Baden-Württemberg",
+   "level": "state"
+  },
+  {
+   "name": "Bayern",
+   "level": "state"
+  },
+  {
+   "name": "Berlin",
+   "level": "state"
+  },
+  {
+   "name": "Brandenburg",
+   "level": "state"
+  },
+  {
+   "name": "Bremen",
+   "level": "state"
+  },
+  {
+   "name": "Hamburg",
+   "level": "state"
+  },
+  {
+   "name": "Hessen",
+   "level": "state"
+  },
+  {
+   "name": "Mecklenburg-Vorpommern",
+   "level": "state"
+  },
+  {
+   "name": "Niedersachsen",
+   "level": "state"
+  },
+  {
+   "name": "Nordrhein-Westfalen",
+   "level": "state"
+  },
+  {
+   "name": "Rheinland-Pfalz",
+   "level": "state"
+  },
+  {
+   "name": "Saarland",
+   "level": "state"
+  },
+  {
+   "name": "Sachsen",
+   "level": "state"
+  },
+  {
+   "name": "Sachsen-Anhalt",
+   "level": "state"
+  },
+  {
+   "name": "Schleswig-Holstein",
+   "level": "state"
+  },
+  {
+   "name": "Thüringen",
+   "level": "state"
+  }
+ ]
+}
