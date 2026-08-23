@@ -334,6 +334,18 @@
     border-radius:7px;padding:9px 11px;color:var(--text)!important;font-size:13px!important}
   .card.never b{color:var(--text-3)}
   .card.never{background:transparent;border-style:dashed}
+  .mini{font-family:var(--serif);font-size:clamp(17px,1.9vw,20px);font-weight:400;
+    margin:clamp(30px,4vw,42px) 0 0;color:var(--text)}
+  .cols td:first-child{width:190px;vertical-align:top}
+  .cols code{font-size:12.5px;background:var(--bg-band);padding:2px 6px;border-radius:4px;
+    color:var(--accent-deep)}
+  .dim{color:var(--text-3)}
+  .card.wide{grid-column:span 2}
+  .casual{width:100%;border-collapse:collapse;font-size:13px}
+  .casual td{padding:5px 0;color:var(--text-3);vertical-align:baseline}
+  .casual td:nth-child(2){width:26px;text-align:center;color:var(--accent)}
+  .casual b{color:var(--text);font-weight:600}
+  @media (max-width:700px){ .card.wide{grid-column:span 1} }
   @media (max-width:560px){ .funnel{overflow-x:auto} .funnel svg{min-width:520px} }
 
   .pricing{width:100%;border-collapse:collapse;margin-top:clamp(20px,3vw,30px);
@@ -630,6 +642,8 @@
 
         <text x="66" y="94" font-size="12.5" fill="var(--text-3)">
           &#8595;&nbsp; chains out — Timpson alone was 1,877 separate pins</text>
+        <text x="694" y="94" font-size="12.5" fill="var(--accent-deep)" text-anchor="end">
+          &#8722;24%</text>
 
         <rect x="50" y="106" width="500" height="46" rx="7" fill="var(--card)"
               stroke="var(--accent)" stroke-width="1.5"/>
@@ -640,6 +654,8 @@
 
         <text x="66" y="174" font-size="12.5" fill="var(--text-3)">
           &#8595;&nbsp; no email anywhere, not on the profile and not on the site</text>
+        <text x="694" y="174" font-size="12.5" fill="var(--accent-deep)" text-anchor="end">
+          &#8722;24%</text>
 
         <rect x="50" y="186" width="382" height="46" rx="7" fill="var(--card)"
               stroke="var(--accent)" stroke-width="1.5"/>
@@ -650,6 +666,8 @@
 
         <text x="66" y="254" font-size="12.5" fill="var(--text-3)">
           &#8595;&nbsp; turned out to be a different trade after all</text>
+        <text x="694" y="254" font-size="12.5" fill="var(--accent-deep)" text-anchor="end">
+          &#8722;10%</text>
 
         <rect x="50" y="266" width="346" height="46" rx="7" fill="var(--ink)"/>
         <text x="66" y="295" font-size="16" fill="var(--on-ink)" font-family="Georgia,serif">
@@ -657,8 +675,8 @@
         <text x="380" y="295" font-size="19" fill="var(--on-ink)" text-anchor="end"
               font-family="Georgia,serif">2,483</text>
       </g>
-      <text x="710" y="295" font-size="12.5" fill="var(--text-3)" text-anchor="end"
-            font-family="-apple-system,sans-serif">just over half of what was scraped</text>
+      <text x="710" y="295" font-size="13" fill="var(--accent-deep)" text-anchor="end"
+            font-family="-apple-system,sans-serif">52% of what was scraped</text>
     </svg>
   </div>
 
@@ -671,8 +689,8 @@
     </div>
     <div class="card">
       <b>Why the chains go</b>
-      <p>Google lists one row per <em>shop</em>. Timpson had 1,877 of them, all the same
-      company and the same website. Mailing them all is not weak personalisation, it is spam.</p>
+      <p>A 1,800-branch operation is not a freelancer's customer, and it would eat a whole day's
+      sending on its own.</p>
     </div>
     <div class="card">
       <b>Why some get a second look</b>
@@ -684,6 +702,112 @@
       <b>Where the emails come from</b>
       <p>Seven in ten are on the profile itself. For the rest, their website's homepage and
       contact page get read — and only for the ones missing one, because each read costs.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <h2>From a profile to a row in a table</h2>
+    <p class="sub-head">Two sources go in. What comes out is one row per business, with the
+    finished sentences already in it — the sending tool only fills in blanks, it does not
+    decide anything.</p>
+  </div>
+
+  <div class="flow" aria-hidden="true">
+    <svg viewBox="0 0 760 236" role="img">
+      <g font-family="-apple-system,sans-serif">
+        <rect x="30" y="20" width="212" height="86" rx="10" fill="var(--card)"
+              stroke="var(--accent)" stroke-width="2"/>
+        <text x="46" y="44" font-size="14.5" fill="var(--text)" font-family="Georgia,serif">
+          Apify · Google Maps</text>
+        <text x="46" y="66" font-size="11.5" fill="var(--text-3)">categories · reviews · stars</text>
+        <text x="46" y="83" font-size="11.5" fill="var(--text-3)">photos · hours · description</text>
+        <text x="46" y="100" font-size="11.5" fill="var(--text-3)">review themes · neighbours</text>
+
+        <rect x="30" y="122" width="212" height="58" rx="10" fill="var(--card)"
+              stroke="var(--accent)" stroke-width="2"/>
+        <text x="46" y="146" font-size="14.5" fill="var(--text)" font-family="Georgia,serif">
+          DataForSEO</text>
+        <text x="46" y="167" font-size="11.5" fill="var(--text-3)">the service list, nothing else</text>
+
+        <path class="draw" style="--len:110" d="M 242 63 H 272 V 110 H 300" fill="none"
+              stroke="var(--accent)" stroke-width="2"/>
+        <path d="M 242 151 H 272 V 110 H 300" fill="none" stroke="var(--accent)"
+              stroke-width="2"/>
+
+        <rect x="300" y="82" width="170" height="56" rx="10" fill="var(--bg-band)"
+              stroke="var(--border-strong)" stroke-width="1.5"/>
+        <text x="385" y="106" font-size="14" fill="var(--text)" text-anchor="middle"
+              font-family="Georgia,serif">One row per business</text>
+        <text x="385" y="125" font-size="11.5" fill="var(--text-3)" text-anchor="middle">
+          everything measured, nothing written</text>
+
+        <path class="draw" style="--len:60" d="M 470 110 H 530" fill="none"
+              stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+        <text x="500" y="72" font-size="11.5" fill="var(--accent-deep)" text-anchor="middle">
+          score</text>
+        <text x="500" y="152" font-size="11.5" fill="var(--accent-deep)" text-anchor="middle">
+          write</text>
+
+        <rect x="530" y="82" width="200" height="56" rx="10" fill="var(--ink)"/>
+        <text x="630" y="106" font-size="14" fill="var(--on-ink)" text-anchor="middle"
+              font-family="Georgia,serif">The table for Instantly</text>
+        <text x="630" y="125" font-size="11.5" fill="var(--on-ink)" text-anchor="middle"
+              opacity="0.75">12 columns, sentences finished</text>
+
+        <text x="385" y="212" font-size="12.5" fill="var(--text-3)" text-anchor="middle">
+          The sending tool never sees a review count. It sees a finished sentence.</text>
+      </g>
+    </svg>
+  </div>
+
+  <h3 class="mini">The twelve columns, and what is in them</h3>
+
+  <table class="pricing cols">
+    <thead><tr><th>Column</th><th>What it holds, for one real business</th></tr></thead>
+    <tbody>
+      <tr><td><code>email</code></td><td>info@dpskeys.co.uk</td></tr>
+      <tr><td><code>subject</code></td><td>longridge, dps and lancashire locksmiths</td></tr>
+      <tr><td><code>company_casual</code></td><td>dps</td></tr>
+      <tr><td><code>opener</code></td><td>i scored your google business profile against longridge,
+        kew ormskirk and a few other lancashire locksmiths.</td></tr>
+      <tr><td><code>score_line</code></td><td>you came out at 53/100 across these 10 categories:</td></tr>
+      <tr><td><code>gut_satz</code></td><td>you've got 64 reviews where most uk locksmiths have
+        20, a 5 star average and 61 photos where most have 14.</td></tr>
+      <tr><td><code>tips_intro</code></td><td>what's costing you calls:</td></tr>
+      <tr><td><code>tip_1</code> … <code>tip_5</code></td><td>- 64 reviews and no services listed,
+        add five so those searches land <span class="dim">(four more like it)</span></td></tr>
+      <tr><td><code>niche_plural</code></td><td>locksmiths</td></tr>
+    </tbody>
+  </table>
+
+  <p class="note"><b>The sentences are finished before they leave.</b> Instantly receives
+  "you came out at 53/100", not a score of 53 and a rule for phrasing it. Everything that could
+  go wrong has already gone wrong or been caught on this side, where there are four checkers
+  and a test suite — not inside a sending tool where nobody would see it.</p>
+
+  <h3 class="mini">The name has to survive the trip</h3>
+
+  <div class="cards">
+    <div class="card wide">
+      <table class="casual">
+        <tr><td>CitySentry Locksmith Pimlico</td><td>→</td><td><b>citysentry</b></td></tr>
+        <tr><td>J.F Locksmiths Ltd</td><td>→</td><td><b>j.f</b></td></tr>
+        <tr><td>Bexley &amp; Sidcup Locksmiths</td><td>→</td><td><b>bexley</b></td></tr>
+        <tr><td>A-Z Lock &amp; Key Services</td><td>→</td><td><b>a-z</b></td></tr>
+        <tr><td>Key Moment Security</td><td>→</td><td><b>key moment</b></td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <b>What comes off</b>
+      <p>The trade word, the legal suffix, the town — and the district, because Pimlico is not
+      the town, London is. Without that the greeting reads like a database export.</p>
+    </div>
+    <div class="card">
+      <b>What never comes off</b>
+      <p>The first word. "Key Moment Security" is a brand, not a key — strip it there and you
+      greet him as "moment".</p>
     </div>
   </div>
 </section>
@@ -806,11 +930,6 @@
       <p>2,483 mails at 300 a day. The limit is not a setting to raise — it is what keeps the
       mailboxes alive.</p>
     </div>
-    <div class="card">
-      <b>Nothing leaves without you</b>
-      <p>Uploading and starting are separate commands. That is a promise the base layer makes
-      for every add-on, and this one keeps it.</p>
-    </div>
   </div>
 </section>
 
@@ -822,47 +941,29 @@
   </div>
 
   <div class="flow" aria-hidden="true">
-    <svg viewBox="0 0 760 214" role="img">
-      <rect x="40" y="52" width="128" height="64" rx="10"
-            fill="var(--card)" stroke="var(--accent)" stroke-width="2.5"/>
-      <text x="104" y="82" font-family="Georgia,serif" font-size="23" fill="var(--text)"
-            text-anchor="middle">2,717</text>
-      <text x="104" y="102" font-size="12" fill="var(--text-3)" text-anchor="middle"
-            font-family="-apple-system,sans-serif">leads with data</text>
-
-      <path class="draw" style="--len:420" d="M 168 84 H 588"
+    <svg viewBox="0 0 760 172" role="img">
+      <!-- Vier Tore, kein zweiter Trichter: eine zweite Stueckzahl neben der aus dem
+           Scrape-Trichter liest sich wie ein Rechenfehler, obwohl beide stimmen. -->
+      <text x="380" y="26" font-size="12.5" fill="var(--accent-deep)" text-anchor="middle"
+            font-family="-apple-system,sans-serif">every mail passes all four, or it is not sent</text>
+      <path class="draw" style="--len:600" d="M 60 84 H 660"
             fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
-
-      <g fill="var(--bg-band)" stroke="var(--border-strong)" stroke-width="1.5">
-        <rect x="212" y="58" width="76" height="52" rx="8"/>
-        <rect x="304" y="58" width="76" height="52" rx="8"/>
-        <rect x="396" y="58" width="76" height="52" rx="8"/>
-        <rect x="488" y="58" width="76" height="52" rx="8"/>
+      <g fill="var(--card)" stroke="var(--accent)" stroke-width="2">
+        <rect x="60" y="56" width="140" height="56" rx="9"/>
+        <rect x="216" y="56" width="140" height="56" rx="9"/>
+        <rect x="372" y="56" width="140" height="56" rx="9"/>
+        <rect x="528" y="56" width="140" height="56" rx="9"/>
       </g>
-      <g font-size="11.5" fill="var(--text-2)" text-anchor="middle"
+      <g font-size="12.5" fill="var(--text)" text-anchor="middle"
          font-family="-apple-system,sans-serif">
-        <text x="250" y="80">numbers</text><text x="250" y="96">in the data</text>
-        <text x="342" y="80">no claim</text><text x="342" y="96">about a town</text>
-        <text x="434" y="80">not already</text><text x="434" y="96">done</text>
-        <text x="526" y="80">state, act,</text><text x="526" y="96">consequence</text>
+        <text x="130" y="80">Every number</text><text x="130" y="98">is in his data</text>
+        <text x="286" y="80">No claim about</text><text x="286" y="98">a whole town</text>
+        <text x="442" y="80">Nothing he has</text><text x="442" y="98">already done</text>
+        <text x="598" y="80">State, action,</text><text x="598" y="98">consequence</text>
       </g>
-
-      <rect x="588" y="52" width="132" height="64" rx="10" fill="var(--ink)"/>
-      <text x="654" y="82" font-family="Georgia,serif" font-size="23" fill="var(--on-ink)"
-            text-anchor="middle">2,617</text>
-      <text x="654" y="102" font-size="12" fill="var(--on-ink)" text-anchor="middle"
-            opacity="0.75" font-family="-apple-system,sans-serif">ready to send</text>
-
-      <path d="M 388 116 V 156" stroke="var(--border-strong)" stroke-width="1.5"
-            stroke-dasharray="4 4"/>
-      <text x="388" y="176" font-size="13" fill="var(--text-3)" text-anchor="middle"
+      <text x="380" y="152" font-size="13" fill="var(--text-2)" text-anchor="middle"
             font-family="-apple-system,sans-serif">
-        63 dropped, 37 had too little to say
-      </text>
-      <text x="654" y="140" font-size="11" fill="var(--text-3)" text-anchor="middle"
-            font-family="-apple-system,sans-serif">one run, UK locksmiths</text>
-      <text x="388" y="34" font-size="12.5" fill="var(--accent-deep)" text-anchor="middle"
-            font-family="-apple-system,sans-serif">four checkers, all four have to pass</text>
+        96% clear all four. The rest are dropped rather than half-fixed.</text>
     </svg>
   </div>
 
@@ -873,19 +974,14 @@
       look up anywhere.</p>
     </div>
     <div class="card">
-      <b>Unmeasured never counts against him</b>
-      <p>A factor the scrape did not return leaves the sum entirely. That one rule is why the
-      score can be put in front of him at all.</p>
-    </div>
-    <div class="card">
       <b>The same business, the same mail</b>
       <p>Wording is chosen by his Google ID, not at random. One sent three weeks ago can still
       be reproduced exactly.</p>
     </div>
     <div class="card">
-      <b>No model, and that is not nostalgia</b>
-      <p>A model can invent a number that is not in the data. This cannot — every figure has to
-      exist in that business's own sheet.</p>
+      <b>It cannot invent a number</b>
+      <p>Every figure has to exist in that business's own sheet, or a checker throws the mail
+      out. A model has no such limit.</p>
     </div>
   </div>
 
