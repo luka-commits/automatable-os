@@ -348,7 +348,17 @@
     display:block}
   .calc-in output{float:right;font-weight:600;color:var(--accent-deep);
     font-variant-numeric:tabular-nums}
-  .calc-note{font-size:12.5px;color:var(--text-3);line-height:1.5;margin:0}
+  .calc-note{font-size:12.5px;color:var(--text-3);line-height:1.5;margin:14px 0 0}
+  .presets{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap}
+  .presets button{font:inherit;font-size:13px;padding:7px 14px;border-radius:99px;
+    border:1px solid var(--border-strong);background:transparent;color:var(--text-2);
+    cursor:pointer}
+  .presets button.on{background:var(--accent-soft);border-color:var(--accent);
+    color:var(--accent-deep);font-weight:600}
+  .derived{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+  .derived td{padding:5px 0;color:var(--text-3);border-top:1px solid var(--border)}
+  .derived td:last-child{text-align:right;color:var(--text);font-weight:600;
+    font-variant-numeric:tabular-nums}
   .calc-out{background:var(--card);border:1px solid var(--border);border-radius:13px;
     padding:clamp(16px,2.4vw,22px)}
   .big{text-align:center;padding-bottom:14px;margin-bottom:12px;
@@ -473,62 +483,93 @@
 
 
 <script>
-/* Der Rechner. Jede Zahl darin ist ein belegter Listenpreis (Stand 23.08.2026), und die
-   Tarifstufen sind der eigentliche Inhalt: eine Beispielrechnung laesst sie weg und wird
-   damit falsch, sobald jemand eine Stufe ueberschreitet. Genau das war in der ersten
-   Fassung dieser Seite passiert -- 10 Postfaecher mit Instantly Growth gerechnet, obwohl
-   300 Mails am Tag das Siebenfache der Kontaktgrenze sind. */
+/* Der Rechner. Eingabe ist, was man wirklich waehlt -- die Zahl der Mails. Postfaecher,
+   Domains und beide Tarife sind Folgen davon.
+
+   Jede Zahl hier ist ein Listenpreis vom 23.08.2026, ausser dem Apify-Satz: der ist aus
+   dem laufenden Betrieb gemessen (0,0017 $/Place all-in) und liegt deutlich unter der
+   Liste (4 $/1.000 plus 0,002 $ je Detailseite). Gemessenes schlaegt Liste. */
 (function () {
   var E = function (id) { return document.getElementById(id); };
-  if (!E('cMb')) return;
 
-  var PRO_POSTFACH_TAG = 30;      // Instantlys Decke, kein Zielwert
+  /* Das Skript steht im Dokument VOR dem Rechner -- ohne dieses Warten laeuft es,
+     findet nichts und beendet sich still. Genau das ist am 23.08. passiert: die Seite
+     zeigte durchgehend ihre HTML-Startwerte, und weil die plausibel aussahen, fiel es
+     erst beim Nachrechnen auf. Ein Guard, der schweigend aussteigt, versteckt den
+     Fehler statt ihn zu melden. */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
+  }
+
+  function start() {
+    if (!E('cMails')) {
+      console.error('[coldmail] Rechner nicht im Dokument gefunden');
+      return;
+    }
+    ['cMails', 'cReply'].forEach(function (id) {
+      E(id).addEventListener('input', rechne);
+    });
+    document.querySelectorAll('.presets button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        E('cMails').value = b.dataset.mails;
+        E('cReply').value = b.dataset.reply;
+        document.querySelectorAll('.presets button').forEach(function (x) {
+          x.classList.toggle('on', x === b);
+        });
+        rechne();
+      });
+    });
+    rechne();
+  }
+
+  var PRO_POSTFACH_TAG = 30;      // Instantlys Decke
+  var TAGE = 20;                  // Werktage im Monat
+  var PRO_DOMAIN = 3;             // Zapmails Empfehlung: 2-3
   var ANSCHREIBBAR = 0.52;        // Anteil des Scrapes, der uebrig bleibt
-  var APIFY_PRO_PROFIL = 0.0014;
-  var VERIFY_PRO_1000 = 3.90;
-  var DFS_PRO_NISCHE = 1.34;
+  var APIFY = 0.0017;             // gemessen, nicht Liste
+  var VERIFY = 0.0039;
+  var DFS = 1.34;
   var DOMAIN_JAHR = 12;
 
   function geld(n) {
-    return '$' + (n >= 100 ? Math.round(n).toLocaleString('en-US')
-                           : n.toFixed(n < 10 ? 2 : 0));
+    if (n >= 100) return '$' + Math.round(n).toLocaleString('en-US');
+    return '$' + (n < 10 ? n.toFixed(2) : Math.round(n));
   }
 
   function zapmail(boxen) {
     if (boxen <= 10) return 39;
     if (boxen <= 30) return 99;
-    if (boxen <= 100) return 299;
-    return 299 + (boxen - 100) * 3;
+    return 299;
   }
 
-  function instantly(kontakte) {
-    if (kontakte <= 1000) return { preis: 47, name: 'Growth' };
-    if (kontakte <= 25000) return { preis: 358, name: 'Hypergrowth' };
-    return { preis: 555, name: 'Agency' };
+  function instantly(mails) {
+    if (mails <= 5000) return { preis: 47, name: 'Growth' };
+    if (mails <= 125000) return { preis: 97, name: 'Hypergrowth' };
+    return { preis: 358, name: 'Lightspeed' };
   }
 
   function rechne() {
-    var boxen = +E('cMb').value;
-    var tage = +E('cDays').value;
-    var quote = +E('cReply').value / 1000;      // Regler in Zehntelprozent
+    var mails = +E('cMails').value;
+    var quote = +E('cReply').value / 1000;
 
-    var proTag = boxen * PRO_POSTFACH_TAG;
-    var proMonat = proTag * tage;
-    var domains = Math.ceil(boxen / 3);
-    var antworten = Math.round(proMonat * quote);
+    var proTag = Math.ceil(mails / TAGE);
+    var boxen = Math.ceil(proTag / PRO_POSTFACH_TAG);
+    var domains = Math.ceil(boxen / PRO_DOMAIN);
+    var antworten = Math.round(mails * quote);
 
-    var inst = instantly(proMonat);
+    var inst = instantly(mails);
     var zap = zapmail(boxen);
     var dom = domains * DOMAIN_JAHR / 12;
-    var daten = proMonat / ANSCHREIBBAR * APIFY_PRO_PROFIL
-              + proMonat / 1000 * VERIFY_PRO_1000 + DFS_PRO_NISCHE;
+    var daten = mails / ANSCHREIBBAR * APIFY + mails * VERIFY + DFS;
     var summe = zap + inst.preis + dom + daten;
 
-    E('oMb').textContent = boxen;
-    E('oDays').textContent = tage;
+    E('oMails').textContent = mails.toLocaleString('en-US');
     E('oReply').textContent = (quote * 100).toFixed(1) + '%';
+    E('oMb').textContent = boxen;
+    E('oDom2').textContent = domains;
     E('oDaily').textContent = proTag.toLocaleString('en-US');
-    E('oMonthly').textContent = proMonat.toLocaleString('en-US');
     E('oReplies').textContent = antworten.toLocaleString('en-US');
     E('oZap').textContent = geld(zap);
     E('oInst').textContent = geld(inst.preis);
@@ -536,34 +577,26 @@
     E('oDom').textContent = geld(dom);
     E('oData').textContent = geld(daten);
     E('oTotal').textContent = geld(summe);
-    E('oPerMail').textContent = '$' + (summe / proMonat).toFixed(3);
+    E('oPerMail').textContent = '$' + (summe / mails).toFixed(3);
     E('oPerReply').textContent = antworten ? geld(summe / antworten) : '—';
 
-    /* Die Warnung ist der Punkt der ganzen Uebung: die Stufe kostet mehr als jede
-       andere Entscheidung auf dieser Seite. */
     var w = E('calcWarn');
-    if (proMonat > 1000 && proMonat <= 25000) {
-      w.hidden = false;
-      w.innerHTML = '<b>You are on Instantly’s Hypergrowth plan.</b> ' +
-        proMonat.toLocaleString('en-US') + ' contacts a month is past the 1,000 that Growth ' +
-        'holds, and the step is $311. Two mailboxes and 20 days would keep you under it ' +
-        'for $47 — worth checking before you scale.';
-    } else if (proMonat > 25000) {
-      w.hidden = false;
-      w.innerHTML = '<b>Past 25,000 contacts a month.</b> At this volume the mail is no ' +
-        'longer the bottleneck — answering the replies is. ' + antworten +
-        ' conversations a month is more than one person delivers.';
+    w.hidden = false;
+    if (mails <= 5000) {
+      w.innerHTML = '<b>This is the cheap end, and it is where to start.</b> Instantly’s ' +
+        'Growth plan ($47) covers up to 5,000 mails a month, Zapmail’s smallest ($39) up ' +
+        'to 10 mailboxes. Everything here fits in both.';
+    } else if (boxen <= 30) {
+      w.innerHTML = '<b>One step up on each side.</b> Past 5,000 mails Instantly moves to ' +
+        'Hypergrowth ($97), and past 10 mailboxes Zapmail moves to $99. Both then hold ' +
+        'until far beyond this volume — Hypergrowth reaches 125,000 mails.';
     } else {
-      w.hidden = false;
-      w.innerHTML = '<b>Inside Instantly’s Growth plan.</b> Up to 1,000 contacts a month ' +
-        'at $47. That is the cheapest this gets, and it is where to start.';
+      w.innerHTML = '<b>' + antworten.toLocaleString('en-US') + ' conversations a month.</b> ' +
+        'At this volume the sending is no longer the constraint — answering is. Check that ' +
+        'against the hours you actually have before buying the mailboxes.';
     }
   }
 
-  ['cMb', 'cDays', 'cReply'].forEach(function (id) {
-    E(id).addEventListener('input', rechne);
-  });
-  rechne();
 })();
 </script>
 
@@ -614,21 +647,29 @@
 
   <div class="calc">
     <div class="calc-in">
-      <label>Mailboxes
-        <input type="range" id="cMb" min="2" max="40" step="1" value="10">
-        <output id="oMb">10</output>
-      </label>
-      <label>Working days a month
-        <input type="range" id="cDays" min="5" max="22" step="1" value="20">
-        <output id="oDays">20</output>
+      <div class="presets">
+        <button type="button" data-mails="2000" data-reply="20" class="on">Starting out</button>
+        <button type="button" data-mails="16000" data-reply="20">A full setup</button>
+      </div>
+
+      <label>Mails a month
+        <input type="range" id="cMails" min="500" max="30000" step="500" value="2000">
+        <output id="oMails">2,000</output>
       </label>
       <label>Reply rate
         <input type="range" id="cReply" min="5" max="60" step="5" value="20">
         <output id="oReply">2.0%</output>
       </label>
-      <p class="calc-note">A mailbox sends 30 a day, and that ceiling is not negotiable.
-      Reply rates on a mail this specific run higher than the 1% a generic blast gets, but
-      your offer decides that, not the machine.</p>
+
+      <table class="derived">
+        <tr><td>Mailboxes needed</td><td id="oMb">4</td></tr>
+        <tr><td>Domains</td><td id="oDom2">2</td></tr>
+        <tr><td>Mails a day</td><td id="oDaily">100</td></tr>
+      </table>
+
+      <p class="calc-note">Everything below the two sliders follows from them. A mailbox
+      sends 30 a day and that ceiling is not negotiable, so volume is bought in mailboxes —
+      three per domain. Twenty working days a month.</p>
     </div>
 
     <div class="calc-out">
@@ -637,11 +678,9 @@
         <em>replies a month</em>
       </div>
       <table class="calc-table">
-        <tr><td>Mails a day</td><td id="oDaily">300</td></tr>
-        <tr><td>Mails a month</td><td id="oMonthly">6,000</td></tr>
-        <tr class="gap"><td>Zapmail</td><td id="oZap">$39</td></tr>
-        <tr><td>Instantly <span id="oTier" class="dim">Hypergrowth</span></td>
-            <td id="oInst">$358</td></tr>
+        <tr><td>Zapmail</td><td id="oZap">$39</td></tr>
+        <tr><td>Instantly <span id="oTier" class="dim">Growth</span></td>
+            <td id="oInst">$47</td></tr>
         <tr><td>Domains</td><td id="oDom">$4</td></tr>
         <tr><td>Data <span class="dim">scrape, verify</span></td><td id="oData">$56</td></tr>
         <tr class="sum"><td><b>Every month</b></td><td id="oTotal"><b>$457</b></td></tr>
@@ -678,7 +717,7 @@
       <tr><td>Zapmail</td><td class="dim">$39 for 10 mailboxes, $99 for 30</td>
           <td class="amt">$39+</td></tr>
       <tr><td>Instantly</td>
-          <td class="dim">Growth $47 up to 1,000 contacts, then Hypergrowth $358</td>
+          <td class="dim">Growth $47 to 5,000 mails a month, then Hypergrowth $97</td>
           <td class="amt">$47+</td></tr>
       <tr><td>Domains</td><td class="dim">4 of them, about $12 a year each</td>
           <td class="amt">$4</td></tr>
@@ -695,15 +734,16 @@
       you nothing worth having — the monthly infrastructure is the real number.</p>
     </div>
     <div class="card">
-      <b>The step nobody sees coming</b>
-      <p>Instantly's Growth plan holds <b>1,000 contacts a month</b> — that is 50 mails a day,
-      not 300. Above it the next plan is $358. Move the slider past 1,000 and watch the total
-      jump; that boundary decides more than every other choice here.</p>
+      <b>Two steps, then a long plateau</b>
+      <p>Past 5,000 mails a month Instantly goes from $47 to $97, and past 10 mailboxes
+      Zapmail goes from $39 to $99. After those two, nothing changes again until far beyond
+      any volume one freelancer can answer.</p>
     </div>
     <div class="card">
-      <b>Scale by mailboxes, not by tier</b>
-      <p>Instantly counts contacts, not mailboxes — those are unlimited on every plan. Doubling
-      your daily volume costs $39 more at Zapmail, not $311 more at Instantly.</p>
+      <b>Mailboxes themselves are free</b>
+      <p>Instantly charges for volume, not for accounts — those are unlimited on every plan.
+      What you pay for a mailbox is Zapmail's $3 to $4 a month, and that is the whole
+      difference between 100 mails a day and 300.</p>
     </div>
   </div>
 
