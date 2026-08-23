@@ -15,9 +15,10 @@
 'use strict';
 
 const PRO_POSTFACH_TAG = 30;   // Instantlys Decke, nicht verhandelbar
-const TAGE = 20;               // Werktage
+const TAGE = 26;               // Mo-Sa, wie diese Kampagne laeuft. Auf der Seite
+                               // ist es ein Regler; hier der Standardwert.
 const PRO_DOMAIN = 3;          // Zapmails Empfehlung 2-3
-const ANSCHREIBBAR = 0.52;     // gemessen: 2.483 von 4.746
+const ANSCHREIBBAR = 0.50;     // gescrapt -> verschickt, inklusive der vier Pruefer
 const APIFY = 0.0017;          // gemessen im Betrieb, Liste waere 0,004-0,006
 const VERIFY = 0.0039;         // MillionVerifier, 39 $/10.000
 const DFS = 1.34;              // DataForSEO je Nische
@@ -70,31 +71,34 @@ function gleich(ist, soll, was) {
   }
 }
 
-pruefe('Die kleine Empfehlung: 2.000 Mails im Monat', () => {
-  const r = rechne(2000, 0.02);
-  gleich(r.proTag, 100, 'Mails am Tag');           // 2000 / 20
-  gleich(r.boxen, 4, 'Postfaecher');               // 100 / 30 aufgerundet
-  gleich(r.domains, 2, 'Domains');                 // 4 / 3 aufgerundet
-  gleich(r.zap, 39, 'Zapmail');                    // 4 <= 10
-  gleich(r.instantly, 47, 'Instantly');            // 2.000 <= 5.000
-  if (r.tarif !== 'Growth') throw new Error('Tarif: ' + r.tarif);
-  // Daten von Hand: 2000/0,52 = 3.846 Profile x 0,0017 = 6,54
-  //                 + 2000 x 0,0039 = 7,80  + 1,34 = 15,68
-  gleich(r.daten, 15.68, 'Daten');
-  gleich(r.summe, 39 + 47 + 2 + 15.68, 'Summe');   // 103,68
-  gleich(r.antworten, 40, 'Antworten');
+pruefe('Zapmail Starter voll ausgenutzt: 7.800 Mails', () => {
+  const r = rechne(7800, 0.02);
+  gleich(r.proTag, 300, 'Mails am Tag');            // 7.800 / 26
+  gleich(r.boxen, 10, 'Postfaecher');               // 300 / 30 -- genau der Starter-Plan
+  gleich(r.domains, 4, 'Domains');                  // 10 / 3 aufgerundet
+  gleich(r.zap, 39, 'Zapmail');                     // 10 Postfaecher = Starter
+  gleich(r.instantly, 97, 'Instantly');             // 7.800 > 5.000, also Hypergrowth
+  if (r.tarif !== 'Hypergrowth') throw new Error('Tarif: ' + r.tarif);
+  // Daten von Hand: 7800/0,50 = 15.600 Profile x 0,0017 = 26,52
+  //                 + 7800 x 0,0039 = 30,42  + 1,34 = 58,28
+  gleich(r.daten, 58.28, 'Daten');
+  gleich(r.summe, 39 + 97 + 4 + 58.28, 'Summe');    // 198,28
+  gleich(r.antworten, 156, 'Antworten');
 });
 
-pruefe('Lukas Setup: 16.000 Mails im Monat', () => {
-  const r = rechne(16000, 0.02);
-  gleich(r.proTag, 800, 'Mails am Tag');
-  gleich(r.boxen, 27, 'Postfaecher');              // 800/30 = 26,67 -> 27
-  gleich(r.domains, 9, 'Domains');
-  gleich(r.zap, 99, 'Zapmail');                    // 27 > 10, <= 30
-  gleich(r.instantly, 97, 'Instantly');            // 16.000 > 5.000
-  if (r.tarif !== 'Hypergrowth') throw new Error('Tarif: ' + r.tarif);
-  gleich(r.summe, 99 + 97 + 9 + r.daten, 'Summe');
-  if (r.summe > 350) throw new Error('unplausibel teuer: ' + r.summe);
+pruefe('Zapmail Growth voll ausgenutzt: 23.400 Mails', () => {
+  const r = rechne(23400, 0.02);
+  gleich(r.proTag, 900, 'Mails am Tag');            // 23.400 / 26
+  gleich(r.boxen, 30, 'Postfaecher');               // genau die Grenze des Growth-Plans
+  gleich(r.domains, 10, 'Domains');
+  gleich(r.zap, 99, 'Zapmail');                     // 30 ist noch drin, 31 waere 299
+  gleich(r.instantly, 97, 'Instantly');
+  // dreimal so viele Mails, aber nicht dreimal so teuer: die Tarife bleiben stehen
+  if (r.summe > 2.5 * rechne(7800, 0.02).summe) {
+    throw new Error('Skalierung unplausibel: ' + r.summe);
+  }
+  gleich(r.antworten, 468, 'Antworten');
+  if (r.proAntwort > 1) throw new Error(r.proAntwort + ' $ je Antwort');
 });
 
 pruefe('Die Tarifgrenzen sitzen genau', () => {
@@ -130,10 +134,12 @@ pruefe('Mehr Mails senken den Preis je Mail', () => {
 });
 
 pruefe('Kosten je Antwort bleiben im Rahmen', () => {
-  const r = rechne(16000, 0.02);
-  if (r.proAntwort > 2) throw new Error(r.proAntwort + ' $ je Antwort');
-  const k = rechne(2000, 0.02);
-  if (k.proAntwort > 5) throw new Error(k.proAntwort + ' $ je Antwort (klein)');
+  for (const [mails, grenze] of [[7800, 2], [23400, 1], [2000, 5]]) {
+    const r = rechne(mails, 0.02);
+    if (r.proAntwort > grenze) {
+      throw new Error(`${mails} Mails: ${r.proAntwort.toFixed(2)} $ je Antwort`);
+    }
+  }
 });
 
 // ───────────────────────── Die Seite muss dieselben Zahlen benutzen
@@ -149,6 +155,7 @@ function pruefeSeite() {
     ['preis: 358, name: \'Lightspeed\'', 'Lightspeed 358'],
     ['APIFY = 0.0017', 'Apify-Satz'],
     ['VERIFY = 0.0039', 'MillionVerifier'],
+    ['ANSCHREIBBAR = 0.50', 'Quote gescrapt zu verschickt'],
   ];
   const fehlt = muss.filter(([s]) => !t.includes(s)).map(([, w]) => w);
   if (fehlt.length) throw new Error('Seite weicht ab: ' + fehlt.join(', '));

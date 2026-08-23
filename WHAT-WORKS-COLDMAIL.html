@@ -355,6 +355,9 @@
     cursor:pointer}
   .presets button.on{background:var(--accent-soft);border-color:var(--accent);
     color:var(--accent-deep);font-weight:600}
+  .presets button span{display:block;font-size:11.5px;font-weight:400;
+    color:var(--text-3);margin-top:2px}
+  .presets button.on span{color:var(--accent-deep);opacity:.75}
   .derived{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
   .derived td{padding:5px 0;color:var(--text-3);border-top:1px solid var(--border)}
   .derived td:last-child{text-align:right;color:var(--text);font-weight:600;
@@ -508,12 +511,13 @@
       console.error('[coldmail] Rechner nicht im Dokument gefunden');
       return;
     }
-    ['cMails', 'cReply'].forEach(function (id) {
+    ['cMails', 'cDays', 'cReply'].forEach(function (id) {
       E(id).addEventListener('input', rechne);
     });
     document.querySelectorAll('.presets button').forEach(function (b) {
       b.addEventListener('click', function () {
         E('cMails').value = b.dataset.mails;
+        E('cDays').value = b.dataset.days;
         E('cReply').value = b.dataset.reply;
         document.querySelectorAll('.presets button').forEach(function (x) {
           x.classList.toggle('on', x === b);
@@ -525,9 +529,9 @@
   }
 
   var PRO_POSTFACH_TAG = 30;      // Instantlys Decke
-  var TAGE = 20;                  // Werktage im Monat
+
   var PRO_DOMAIN = 3;             // Zapmails Empfehlung: 2-3
-  var ANSCHREIBBAR = 0.52;        // Anteil des Scrapes, der uebrig bleibt
+  var ANSCHREIBBAR = 0.50;        // gescrapt -> wirklich verschickt, inkl. Pruefer
   var APIFY = 0.0017;             // gemessen, nicht Liste
   var VERIFY = 0.0039;
   var DFS = 1.34;
@@ -553,8 +557,9 @@
   function rechne() {
     var mails = +E('cMails').value;
     var quote = +E('cReply').value / 1000;
+    var tage = +E('cDays').value;
 
-    var proTag = Math.ceil(mails / TAGE);
+    var proTag = Math.ceil(mails / tage);
     var boxen = Math.ceil(proTag / PRO_POSTFACH_TAG);
     var domains = Math.ceil(boxen / PRO_DOMAIN);
     var antworten = Math.round(mails * quote);
@@ -567,6 +572,7 @@
 
     E('oMails').textContent = mails.toLocaleString('en-US');
     E('oReply').textContent = (quote * 100).toFixed(1) + '%';
+    E('oDays').textContent = tage;
     E('oMb').textContent = boxen;
     E('oDom2').textContent = domains;
     E('oDaily').textContent = proTag.toLocaleString('en-US');
@@ -582,18 +588,21 @@
 
     var w = E('calcWarn');
     w.hidden = false;
-    if (mails <= 5000) {
-      w.innerHTML = '<b>This is the cheap end, and it is where to start.</b> Instantly’s ' +
-        'Growth plan ($47) covers up to 5,000 mails a month, Zapmail’s smallest ($39) up ' +
-        'to 10 mailboxes. Everything here fits in both.';
+    var uebrig = boxen <= 10 ? (10 - boxen) : (boxen <= 30 ? (30 - boxen) : 0);
+    if (boxen <= 10) {
+      w.innerHTML = '<b>Zapmail’s Starter plan covers this.</b> $39 buys 10 mailboxes, ' +
+        'which is ' + (10 * 30 * tage).toLocaleString('en-US') + ' mails a month at full stretch — you are using ' + boxen +
+        (uebrig ? ', so ' + uebrig + ' more are already paid for.' : '.');
     } else if (boxen <= 30) {
-      w.innerHTML = '<b>One step up on each side.</b> Past 5,000 mails Instantly moves to ' +
-        'Hypergrowth ($97), and past 10 mailboxes Zapmail moves to $99. Both then hold ' +
-        'until far beyond this volume — Hypergrowth reaches 125,000 mails.';
+      w.innerHTML = '<b>Zapmail’s Growth plan, $99.</b> 30 mailboxes, ' +
+        (30 * 30 * tage).toLocaleString('en-US') + ' mails a month at full stretch — ' +
+        'you are using ' + boxen +
+        (uebrig ? ', so ' + uebrig + ' more cost nothing extra.' : '.') +
+        ' This is the plan most people stay on.';
     } else {
       w.innerHTML = '<b>' + antworten.toLocaleString('en-US') + ' conversations a month.</b> ' +
-        'At this volume the sending is no longer the constraint — answering is. Check that ' +
-        'against the hours you actually have before buying the mailboxes.';
+        'Past 30 mailboxes the sending is no longer the constraint — answering is. Check ' +
+        'that against the hours you actually have before buying more.';
     }
   }
 
@@ -648,13 +657,19 @@
   <div class="calc">
     <div class="calc-in">
       <div class="presets">
-        <button type="button" data-mails="2000" data-reply="20" class="on">Starting out</button>
-        <button type="button" data-mails="16000" data-reply="20">A full setup</button>
+        <button type="button" data-mails="7800" data-days="26" data-reply="20" class="on">
+          Zapmail Starter <span>$39 · 10 mailboxes</span></button>
+        <button type="button" data-mails="23400" data-days="26" data-reply="20">
+          Zapmail Growth <span>$99 · 30 mailboxes</span></button>
       </div>
 
       <label>Mails a month
-        <input type="range" id="cMails" min="500" max="30000" step="500" value="2000">
-        <output id="oMails">2,000</output>
+        <input type="range" id="cMails" min="500" max="26000" step="100" value="7800">
+        <output id="oMails">7,800</output>
+      </label>
+      <label>Sending days a month
+        <input type="range" id="cDays" min="5" max="31" step="1" value="26">
+        <output id="oDays">26</output>
       </label>
       <label>Reply rate
         <input type="range" id="cReply" min="5" max="60" step="5" value="20">
@@ -667,9 +682,11 @@
         <tr><td>Mails a day</td><td id="oDaily">100</td></tr>
       </table>
 
-      <p class="calc-note">Everything below the two sliders follows from them. A mailbox
-      sends 30 a day and that ceiling is not negotiable, so volume is bought in mailboxes —
-      three per domain. Twenty working days a month.</p>
+      <p class="calc-note"><b>Sending days are a choice, not a rule.</b> Six days a week is
+      what this runs on — local trades read mail on a Saturday, and skipping it throws away a
+      sixth of your capacity for nothing. Move the slider to see what another rhythm does. A
+      mailbox sends 30 a day regardless, and that ceiling is not negotiable, so volume is
+      bought in mailboxes: three per domain.</p>
     </div>
 
     <div class="calc-out">
@@ -699,8 +716,8 @@
       <tr><th colspan="3">Once, for the data</th></tr>
     </thead>
     <tbody>
-      <tr><td>Apify</td><td class="dim">1,900 profiles scraped to net 1,000 reachable</td>
-          <td class="amt">$2.70</td></tr>
+      <tr><td>Apify</td><td class="dim">2,000 profiles scraped to send 1,000</td>
+          <td class="amt">$3.40</td></tr>
       <tr><td>DataForSEO</td><td class="dim">the service lists, one flat price per niche</td>
           <td class="amt">$1.34</td></tr>
       <tr><td>Firecrawl</td><td class="dim">reading sites for the ~3 in 10 with no email</td>
@@ -867,63 +884,80 @@
 <section>
   <div class="sec-head">
     <h2>How the market gets scraped</h2>
-    <p class="sub-head">You name a trade and a country. Everything below happens once,
-    takes a few hours, and costs about five dollars. These are the real numbers from the UK
-    locksmith run.</p>
+    <p class="sub-head">You name a trade and a country. <b>Roughly half of what gets
+    scraped ends up receiving a mail</b> — here is where the other half goes, at the rates
+    measured on the UK locksmith run.</p>
   </div>
 
   <div class="funnel" aria-hidden="true">
-    <svg viewBox="0 0 760 330" role="img">
-      <!-- Vier Stufen, jede schmaler. Die Breite ist die Zahl: 4.746 sind 660px,
-           alles andere anteilig. Wer nichts von Scraping weiss, sieht in einem Blick,
-           dass die Haelfte rausfaellt, und daneben steht warum. -->
+    <svg viewBox="0 0 760 386" role="img">
+      <!-- Auf 1.000 normiert, weil das die Frage ist, die jemand stellt: was wird aus
+           MEINEN tausend? Absolute Zahlen aus einem fremden Lauf beantworten sie nicht.
+           Die Balkenbreite ist die Zahl. -->
       <g font-family="-apple-system,sans-serif">
         <rect x="50" y="26" width="660" height="46" rx="7" fill="var(--accent-soft)"
               stroke="var(--accent)" stroke-width="1.5"/>
-        <text x="66" y="55" font-size="16" fill="var(--text)" font-family="Georgia,serif">
-          Every locksmith Google knows in the UK</text>
+        <text x="66" y="55" font-size="15.5" fill="var(--text)" font-family="Georgia,serif">
+          Scraped from Google Maps</text>
         <text x="694" y="55" font-size="19" fill="var(--accent-deep)" text-anchor="end"
-              font-family="Georgia,serif">4,746</text>
+              font-family="Georgia,serif">1,000</text>
 
         <text x="66" y="94" font-size="12.5" fill="var(--text-3)">
-          &#8595;&nbsp; chains out — Timpson alone was 1,877 separate pins</text>
+          &#8595;&nbsp; chains and duplicate branches — one company, however many pins</text>
         <text x="694" y="94" font-size="12.5" fill="var(--accent-deep)" text-anchor="end">
           &#8722;24%</text>
 
-        <rect x="50" y="106" width="500" height="46" rx="7" fill="var(--card)"
+        <rect x="50" y="106" width="502" height="46" rx="7" fill="var(--card)"
               stroke="var(--accent)" stroke-width="1.5"/>
-        <text x="66" y="135" font-size="16" fill="var(--text)" font-family="Georgia,serif">
+        <text x="66" y="135" font-size="15.5" fill="var(--text)" font-family="Georgia,serif">
           Independent businesses</text>
-        <text x="534" y="135" font-size="19" fill="var(--accent-deep)" text-anchor="end"
-              font-family="Georgia,serif">3,593</text>
+        <text x="536" y="135" font-size="19" fill="var(--accent-deep)" text-anchor="end"
+              font-family="Georgia,serif">760</text>
 
         <text x="66" y="174" font-size="12.5" fill="var(--text-3)">
-          &#8595;&nbsp; no email anywhere, not on the profile and not on the site</text>
+          &#8595;&nbsp; no email — not on the profile, not on their site</text>
         <text x="694" y="174" font-size="12.5" fill="var(--accent-deep)" text-anchor="end">
           &#8722;24%</text>
 
         <rect x="50" y="186" width="382" height="46" rx="7" fill="var(--card)"
               stroke="var(--accent)" stroke-width="1.5"/>
-        <text x="66" y="215" font-size="16" fill="var(--text)" font-family="Georgia,serif">
+        <text x="66" y="215" font-size="15.5" fill="var(--text)" font-family="Georgia,serif">
           Reachable</text>
         <text x="416" y="215" font-size="19" fill="var(--accent-deep)" text-anchor="end"
-              font-family="Georgia,serif">2,744</text>
+              font-family="Georgia,serif">578</text>
 
         <text x="66" y="254" font-size="12.5" fill="var(--text-3)">
-          &#8595;&nbsp; turned out to be a different trade after all</text>
+          &#8595;&nbsp; turned out to be a different trade</text>
         <text x="694" y="254" font-size="12.5" fill="var(--accent-deep)" text-anchor="end">
           &#8722;10%</text>
 
-        <rect x="50" y="266" width="346" height="46" rx="7" fill="var(--ink)"/>
-        <text x="66" y="295" font-size="16" fill="var(--on-ink)" font-family="Georgia,serif">
-          Get a mail</text>
-        <text x="380" y="295" font-size="19" fill="var(--on-ink)" text-anchor="end"
-              font-family="Georgia,serif">2,483</text>
+        <rect x="50" y="266" width="344" height="46" rx="7" fill="var(--card)"
+              stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="66" y="295" font-size="15.5" fill="var(--text)" font-family="Georgia,serif">
+          Actually in your niche</text>
+        <text x="378" y="295" font-size="19" fill="var(--accent-deep)" text-anchor="end"
+              font-family="Georgia,serif">520</text>
+
+        <text x="66" y="334" font-size="12.5" fill="var(--text-3)">
+          &#8595;&nbsp; failed one of the four checkers, or had too little to say</text>
+        <text x="694" y="334" font-size="12.5" fill="var(--accent-deep)" text-anchor="end">
+          &#8722;4%</text>
+
+        <rect x="50" y="346" width="330" height="46" rx="7" fill="var(--ink)"/>
+        <text x="66" y="375" font-size="15.5" fill="var(--on-ink)" font-family="Georgia,serif">
+          Actually sent</text>
+        <text x="364" y="375" font-size="19" fill="var(--on-ink)" text-anchor="end"
+              font-family="Georgia,serif">499</text>
       </g>
-      <text x="710" y="295" font-size="13" fill="var(--accent-deep)" text-anchor="end"
-            font-family="-apple-system,sans-serif">52% of what was scraped</text>
+      <text x="710" y="375" font-size="14" fill="var(--accent-deep)" text-anchor="end"
+            font-family="Georgia,serif">half of what you scraped</text>
     </svg>
   </div>
+
+  <p class="note"><b>Scrape a thousand, send five hundred.</b> That ratio holds well enough
+  to plan with: doubling what you want to send means doubling what you scrape. It is also
+  why the scrape is cheap enough to over-do — at $0.0017 a profile, the half you throw away
+  costs less than a coffee.</p>
 
   <div class="cards">
     <div class="card">
