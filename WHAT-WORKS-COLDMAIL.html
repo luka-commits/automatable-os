@@ -317,6 +317,25 @@
     .legend{position:static;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
       gap:14px} .legend h4{grid-column:1/-1;margin-bottom:0} }
 
+  /* Der Trichter. Die Balkenbreite IST die Zahl -- wer nichts von Scraping weiss,
+     sieht daran in einem Blick, dass die Haelfte rausfaellt. */
+  .funnel{margin-top:clamp(24px,3.5vw,36px)}
+  .funnel svg{display:block;width:100%;height:auto;overflow:visible}
+  /* Karten statt Textzeilen: vier kurze Antworten nebeneinander lesen sich als vier,
+     dieselben Saetze untereinander lesen sich als Dokumentation. */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));
+    gap:clamp(12px,1.6vw,18px);margin-top:clamp(22px,3vw,32px)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:11px;
+    padding:16px 18px}
+  .card b{display:block;font-size:14.5px;color:var(--text);margin-bottom:6px;font-weight:600}
+  .card p{margin:0;font-size:13.5px;line-height:1.5;color:var(--text-2)}
+  /* Die Dashboard-Zeilen sehen aus wie das Dashboard, nicht wie Fliesstext. */
+  .tabline{font-family:-apple-system,sans-serif;background:var(--bg-band);
+    border-radius:7px;padding:9px 11px;color:var(--text)!important;font-size:13px!important}
+  .card.never b{color:var(--text-3)}
+  .card.never{background:transparent;border-style:dashed}
+  @media (max-width:560px){ .funnel{overflow-x:auto} .funnel svg{min-width:520px} }
+
   .pricing{width:100%;border-collapse:collapse;margin-top:clamp(20px,3vw,30px);
     background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
   .pricing th{text-align:left;padding:11px 16px;background:var(--bg-band);
@@ -591,95 +610,80 @@
 <section>
   <div class="sec-head">
     <h2>How the market gets scraped</h2>
-    <p class="sub-head">You name a niche and a country. What comes back is not a list of
-    businesses — it is every business in that market with its full profile, deduplicated down
-    to companies, and filtered down to the ones actually in your trade.</p>
+    <p class="sub-head">You name a trade and a country. Everything below happens once,
+    takes a few hours, and costs about five dollars. These are the real numbers from the UK
+    locksmith run.</p>
   </div>
 
-  <div class="flow" aria-hidden="true">
-    <svg viewBox="0 0 760 282" role="img">
-      <path class="draw" style="--len:600" d="M 80 60 H 680"
-            fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
-      <g fill="var(--card)" stroke="var(--accent)" stroke-width="2.5">
-        <circle cx="80" cy="60" r="15"/><circle cx="230" cy="60" r="15"/>
-        <circle cx="380" cy="60" r="15"/><circle cx="530" cy="60" r="15"/>
-        <circle cx="680" cy="60" r="15"/>
+  <div class="funnel" aria-hidden="true">
+    <svg viewBox="0 0 760 330" role="img">
+      <!-- Vier Stufen, jede schmaler. Die Breite ist die Zahl: 4.746 sind 660px,
+           alles andere anteilig. Wer nichts von Scraping weiss, sieht in einem Blick,
+           dass die Haelfte rausfaellt, und daneben steht warum. -->
+      <g font-family="-apple-system,sans-serif">
+        <rect x="50" y="26" width="660" height="46" rx="7" fill="var(--accent-soft)"
+              stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="66" y="55" font-size="16" fill="var(--text)" font-family="Georgia,serif">
+          Every locksmith Google knows in the UK</text>
+        <text x="694" y="55" font-size="19" fill="var(--accent-deep)" text-anchor="end"
+              font-family="Georgia,serif">4,746</text>
+
+        <text x="66" y="94" font-size="12.5" fill="var(--text-3)">
+          &#8595;&nbsp; chains out — Timpson alone was 1,877 separate pins</text>
+
+        <rect x="50" y="106" width="500" height="46" rx="7" fill="var(--card)"
+              stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="66" y="135" font-size="16" fill="var(--text)" font-family="Georgia,serif">
+          Independent businesses</text>
+        <text x="534" y="135" font-size="19" fill="var(--accent-deep)" text-anchor="end"
+              font-family="Georgia,serif">3,593</text>
+
+        <text x="66" y="174" font-size="12.5" fill="var(--text-3)">
+          &#8595;&nbsp; no email anywhere, not on the profile and not on the site</text>
+
+        <rect x="50" y="186" width="382" height="46" rx="7" fill="var(--card)"
+              stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="66" y="215" font-size="16" fill="var(--text)" font-family="Georgia,serif">
+          Reachable</text>
+        <text x="416" y="215" font-size="19" fill="var(--accent-deep)" text-anchor="end"
+              font-family="Georgia,serif">2,744</text>
+
+        <text x="66" y="254" font-size="12.5" fill="var(--text-3)">
+          &#8595;&nbsp; turned out to be a different trade after all</text>
+
+        <rect x="50" y="266" width="346" height="46" rx="7" fill="var(--ink)"/>
+        <text x="66" y="295" font-size="16" fill="var(--on-ink)" font-family="Georgia,serif">
+          Get a mail</text>
+        <text x="380" y="295" font-size="19" fill="var(--on-ink)" text-anchor="end"
+              font-family="Georgia,serif">2,483</text>
       </g>
-      <g fill="var(--accent-deep)" font-family="Georgia,serif" font-size="16"
-         text-anchor="middle">
-        <text x="80" y="66">1</text><text x="230" y="66">2</text><text x="380" y="66">3</text>
-        <text x="530" y="66">4</text><text x="680" y="66">5</text>
-      </g>
-      <g font-size="15" fill="var(--text)" text-anchor="middle" font-family="Georgia,serif">
-        <text x="80" y="26">Fetch</text>
-        <text x="230" y="26">Sort</text>
-        <text x="380" y="26">Collapse</text>
-        <text x="530" y="26">Find emails</text>
-        <text x="680" y="26">Add services</text>
-      </g>
-      <g font-size="12.5" fill="var(--text-2)" text-anchor="middle"
-         font-family="-apple-system,sans-serif">
-        <text x="80" y="96">one county</text><text x="80" y="113">at a time</text>
-        <text x="230" y="96">is this really</text><text x="230" y="113">your trade?</text>
-        <text x="380" y="96">1,877 pins,</text><text x="380" y="113">one company</text>
-        <text x="530" y="96">for the 3 in 10</text><text x="530" y="113">without one</text>
-        <text x="680" y="96">the field Maps</text><text x="680" y="113">does not carry</text>
-      </g>
-      <path d="M 380 82 V 146" stroke="var(--border-strong)" stroke-width="1.5"
-            stroke-dasharray="4 4"/>
-      <rect x="150" y="146" width="460" height="94" rx="11"
-            fill="var(--bg-band)" stroke="var(--border-strong)" stroke-width="1.5"/>
-      <text x="380" y="176" font-size="14.5" fill="var(--text)" text-anchor="middle"
-            font-family="Georgia,serif">Google Maps returns one row per LOCATION</text>
-      <text x="380" y="202" font-size="13" fill="var(--text-2)" text-anchor="middle"
-            font-family="-apple-system,sans-serif">
-        Timpson appeared 1,877 times in the UK locksmith scrape — every branch its own row,
-      </text>
-      <text x="380" y="221" font-size="13" fill="var(--text-2)" text-anchor="middle"
-            font-family="-apple-system,sans-serif">
-        all with the same website. Mailing them all is not bad personalisation, it is spam.
-      </text>
-      <text x="380" y="264" font-size="12.5" fill="var(--accent-deep)" text-anchor="middle"
-            font-family="-apple-system,sans-serif">
-        which is why step 3 exists, and why it burns your domain if it does not
-      </text>
+      <text x="710" y="295" font-size="12.5" fill="var(--text-3)" text-anchor="end"
+            font-family="-apple-system,sans-serif">just over half of what was scraped</text>
     </svg>
   </div>
 
-  <div class="rows">
-    <div class="row">
-      <b>1 · Region by region</b><span class="src">Apify, per county</span>
-      <p>A country is a list of regions — the UK ships with its 46 counties, Germany with its
-      16 states. Each one is a separate scrape, so a run can stop and resume, and so a market
-      that is too big to fetch at once still finishes. <b>Google Maps caps what it returns per
-      search</b>, which is exactly why one query for "locksmiths UK" gets you a few hundred
-      and this gets you thousands.</p>
+  <div class="cards">
+    <div class="card">
+      <b>Why 46 separate scrapes</b>
+      <p>One search on Google Maps returns a few dozen results, however many exist. So the
+      country is walked one county at a time — that is the difference between a few hundred
+      businesses and four thousand.</p>
     </div>
-    <div class="row">
-      <b>2 · The niche filter</b><span class="src">three outcomes</span>
-      <p>You pass the trade and its synonyms — locksmith, key cutting, auto locksmith. Each
-      result lands in one of three buckets: <b>keep</b> when the primary category or the name
-      carries a niche term, <b>verify</b> when the category is vague or empty, <b>drop</b> when
-      it is clearly another trade. The middle bucket is the point: a hardware store that mostly
-      cuts keys has the wrong category, and throwing it out on that basis loses a real lead.</p>
+    <div class="card">
+      <b>Why the chains go</b>
+      <p>Google lists one row per <em>shop</em>. Timpson had 1,877 of them, all the same
+      company and the same website. Mailing them all is not weak personalisation, it is spam.</p>
     </div>
-    <div class="row">
-      <b>3 · Down to companies</b><span class="src">not locations</span>
-      <p>Same website means same company, however many pins it has. Chains come out here as
-      well — a 1,800-branch operation is not a freelancer's customer, and it would eat the
-      entire send volume on its own.</p>
+    <div class="card">
+      <b>Why some get a second look</b>
+      <p>A hardware store that mostly cuts keys has the wrong category on Google. Dropping it
+      for that reason loses a real customer, so anything ambiguous is checked rather than
+      binned.</p>
     </div>
-    <div class="row">
-      <b>4 · The addresses</b><span class="src">Firecrawl, the gaps</span>
-      <p>Maps carries an email for roughly seven in ten. For the rest, if there is a website,
-      the homepage and then <code>/contact</code> get read, and an address on the business's own
-      domain is preferred over a gmail in the footer. <b>Only for the ones that are missing</b>,
-      because every fetch costs.</p>
-    </div>
-    <div class="row">
-      <b>5 · The service lists</b><span class="src">DataForSEO</span>
-      <p>The one field Google Maps does not hand over, and the one that produces the sharpest
-      line in the mail: what the profile says it does, against what the market median lists.</p>
+    <div class="card">
+      <b>Where the emails come from</b>
+      <p>Seven in ten are on the profile itself. For the rest, their website's homepage and
+      contact page get read — and only for the ones missing one, because each read costs.</p>
     </div>
   </div>
 </section>
@@ -742,73 +746,70 @@
 
 <section>
   <div class="sec-head">
-    <h2>How a mail gets written</h2>
-    <p class="sub-head">Nothing here is a template with holes in it. Every line is built from a
-    measured value, and the wording is picked by the business's own ID so a second run produces
-    the same mail.</p>
+    <h2>Then it goes out</h2>
+    <p class="sub-head">The last step, and the only one that touches the outside world. It is
+    two commands rather than one, on purpose.</p>
   </div>
 
-  <div class="rows">
-    <div class="row">
-      <b>The greeting</b><span class="src">the hard part</span>
-      <p>"CitySentry Locksmith Pimlico" has to become "citysentry". Trade words come out, the
-      town comes out, <b>and so does the district</b> — Pimlico is not the town, the town is
-      London, and without that the greeting reads like a database export. But never the first
-      word: "Key Moment Security" is a brand, not a key.</p>
-    </div>
-    <div class="row">
-      <b>The opening line</b><span class="src">two neighbours</span>
-      <p>Named businesses from the same scrape, close by, chains and the lead itself filtered
-      out. This is checkable in one search, which is the whole reason it is there.</p>
-    </div>
-    <div class="row">
-      <b>The score</b><span class="src">twelve factors</span>
-      <p>Against the market, not against a rulebook. And the factors it could not measure leave
-      the sum entirely rather than counting as failures.</p>
-    </div>
-    <div class="row">
-      <b>The points</b><span class="src">20 blocks, 5 used</span>
-      <p>Each carries a state, an action and a consequence — "you list 8 services where most run
-      24, add more so the rest show". <b>Never two about the same thing</b>, at most 80
-      characters, and the wording chosen by ID rather than at random.</p>
-    </div>
+  <div class="flow" aria-hidden="true">
+    <svg viewBox="0 0 760 196" role="img">
+      <g font-family="-apple-system,sans-serif">
+        <rect x="40" y="40" width="180" height="70" rx="10" fill="var(--card)"
+              stroke="var(--accent)" stroke-width="2"/>
+        <text x="130" y="70" font-size="15.5" fill="var(--text)" text-anchor="middle"
+              font-family="Georgia,serif">A file, 2,483 rows</text>
+        <text x="130" y="92" font-size="12" fill="var(--text-3)" text-anchor="middle">
+          only the ones that passed</text>
+
+        <path class="draw" style="--len:80" d="M 220 75 H 300" fill="none"
+              stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+
+        <rect x="300" y="40" width="180" height="70" rx="10" fill="var(--card)"
+              stroke="var(--accent)" stroke-width="2"/>
+        <text x="390" y="70" font-size="15.5" fill="var(--text)" text-anchor="middle"
+              font-family="Georgia,serif">Your campaign</text>
+        <text x="390" y="92" font-size="12" fill="var(--text-3)" text-anchor="middle">
+          10 mailboxes, 300 a day</text>
+
+        <path d="M 480 75 H 560" fill="none" stroke="var(--border-strong)" stroke-width="2"
+              stroke-dasharray="5 5" stroke-linecap="round"/>
+        <text x="520" y="62" font-size="11.5" fill="var(--accent-deep)" text-anchor="middle">
+          your yes</text>
+
+        <rect x="560" y="40" width="160" height="70" rx="10" fill="var(--ink)"/>
+        <text x="640" y="70" font-size="15.5" fill="var(--on-ink)" text-anchor="middle"
+              font-family="Georgia,serif">Sending</text>
+        <text x="640" y="92" font-size="12" fill="var(--on-ink)" text-anchor="middle"
+              opacity="0.75">8 days for the batch</text>
+
+        <path d="M 640 110 V 146" fill="none" stroke="var(--border-strong)"
+              stroke-width="1.5" stroke-dasharray="4 4"/>
+        <text x="640" y="166" font-size="13" fill="var(--text-2)" text-anchor="middle">
+          replies land on your dashboard</text>
+      </g>
+    </svg>
   </div>
 
-  <p class="note"><b>Then four checkers, and a lead clears all of them or is not written to.</b>
-  One catches a number that is not in that business's data. One catches a claim about a town we
-  only know a slice of. One catches advice they have already taken. One catches a line missing
-  its state, action or consequence.</p>
-</section>
-
-<section>
-  <div class="sec-head">
-    <h2>How it gets into Instantly</h2>
-    <p class="sub-head">The last step, and the only one that talks to the outside. It is a
-    separate command on purpose.</p>
-  </div>
-
-  <div class="rows">
-    <div class="row">
-      <b>The file</b><span class="src">only what is ready</span>
-      <p>A CSV with the email and the finished variables — subject, greeting, opening, score,
-      the points. <b>Leads that failed a checker are not in it</b>, so there is nothing to sort
-      out by hand at the end.</p>
+  <div class="cards">
+    <div class="card">
+      <b>Tracking stays off</b>
+      <p>A tracking pixel is one of the fastest routes into a spam folder, and knowing who
+      opened a mail buys a freelancer nothing he can act on.</p>
     </div>
-    <div class="row">
-      <b>The campaign</b><span class="src">from a config</span>
-      <p>Senders picked from your warmed mailboxes, the daily limit set to mailboxes × 30,
-      tracking off, stop-on-reply on. Tracking pixels are the fastest way into spam and buy a
-      freelancer nothing.</p>
+    <div class="card">
+      <b>It stops on a reply</b>
+      <p>Nobody gets the follow-up after they have already answered. Obvious, and the default
+      in most tools is the opposite.</p>
     </div>
-    <div class="row">
-      <b>The send</b><span class="src">your yes</span>
-      <p>Uploading and activating are two commands, not one. <b>Nothing leaves without you</b>,
-      and that is a promise the base layer makes for every add-on.</p>
+    <div class="card">
+      <b>Eight days, not one</b>
+      <p>2,483 mails at 300 a day. The limit is not a setting to raise — it is what keeps the
+      mailboxes alive.</p>
     </div>
-    <div class="row">
-      <b>The replies</b><span class="src">back into the day</span>
-      <p>They land in the dashboard as the one thing that needs you. Answering them is ordinary
-      work the day loop already carries.</p>
+    <div class="card">
+      <b>Nothing leaves without you</b>
+      <p>Uploading and starting are separate commands. That is a promise the base layer makes
+      for every add-on, and this one keeps it.</p>
     </div>
   </div>
 </section>
@@ -865,28 +866,28 @@
     </svg>
   </div>
 
-  <div class="rows">
-    <div class="row">
-      <b>The whole market</b><span class="src">not a sample</span>
-      <p>A national median is the one number the owner cannot look up. He knows he has 64
-      reviews. That the median is 20 is ours to tell him.</p>
+  <div class="cards">
+    <div class="card">
+      <b>The whole market, not a sample</b>
+      <p>He knows he has 64 reviews. That the median for his trade is 20 is the part he cannot
+      look up anywhere.</p>
     </div>
-    <div class="row">
-      <b>Twelve factors</b><span class="src">unmeasured drop out</span>
-      <p>A factor we could not measure leaves the numerator <b>and</b> the denominator. Never
-      counted as a flaw. That single rule is why the score can be shown to the recipient.</p>
+    <div class="card">
+      <b>Unmeasured never counts against him</b>
+      <p>A factor the scrape did not return leaves the sum entirely. That one rule is why the
+      score can be put in front of him at all.</p>
     </div>
-    <div class="row">
-      <b>Twenty building blocks</b><span class="src">by ID, not random</span>
-      <p>The same business gets the same mail on a second run, so one sent three weeks ago can
-      still be reconstructed exactly.</p>
+    <div class="card">
+      <b>The same business, the same mail</b>
+      <p>Wording is chosen by his Google ID, not at random. One sent three weeks ago can still
+      be reproduced exactly.</p>
+    </div>
+    <div class="card">
+      <b>No model, and that is not nostalgia</b>
+      <p>A model can invent a number that is not in the data. This cannot — every figure has to
+      exist in that business's own sheet.</p>
     </div>
   </div>
-
-  <p class="note"><b>Why not just have a model write them.</b> That is what this did until
-  August 2026, and the bottleneck was never quality or cost — somebody had to sit there and
-  prompt it, ten at a time, roughly 250 rounds for one niche. The machine does the same work in
-  seconds, and unlike a model it cannot invent a number that is not in the data.</p>
 
   <p class="note"><b>The numbers on this page come from one real run</b>, over every locksmith in
   the UK. They are the shape of the thing, not a promise about your niche: a smaller market gives
@@ -901,19 +902,13 @@
     different question depending on where you are.</p>
   </div>
 
-  <div class="rows">
-    <div class="row">
-      <b>Week 1</b><span class="src">may I send yet?</span>
-      <p><i>Mailboxes warming up — day 7 of 14.</i></p>
-    </div>
-    <div class="row">
-      <b>Week 2</b><span class="src">is the list ready?</span>
-      <p><i>412 ready to send out of 500 scraped, 3 still need an address.</i></p>
-    </div>
-    <div class="row">
-      <b>From then on</b><span class="src">what needs me today?</span>
-      <p><i>3 replies waiting.</i> That is the whole tab most mornings, and it should be.</p>
-    </div>
+  <div class="cards">
+    <div class="card"><b>Week 1 — may I send yet?</b>
+      <p class="tabline">Mailboxes warming up — day 7 of 14.</p></div>
+    <div class="card"><b>Week 2 — is the list ready?</b>
+      <p class="tabline">412 ready to send, 3 still need an address.</p></div>
+    <div class="card"><b>After that — what needs me?</b>
+      <p class="tabline">3 replies waiting.</p></div>
   </div>
 
   <p class="note">No score distributions, no coverage rates, no factor counts. Those are the
@@ -927,27 +922,15 @@
     <p class="sub-head">Each limit is there because the alternative costs more than it gives.</p>
   </div>
 
-  <div class="rows">
-    <div class="row never">
-      <b>It does not send by itself</b><span class="src"></span>
-      <p>Uploading the campaign is a separate command and needs your yes. An add-on does not get
-      to break a promise the base made on its behalf.</p>
-    </div>
-    <div class="row never">
-      <b>Local businesses with a Google profile</b><span class="src"></span>
-      <p>Trades, clinics, salons — anyone whose customers find them on a map. If your buyers are
-      SaaS founders, this add-on has nothing to measure.</p>
-    </div>
-    <div class="row never">
-      <b>It will not invent a number</b><span class="src"></span>
-      <p>Every figure has to exist in that business's data sheet or the mail is thrown out. A
-      lead with too little data gets fewer points, or none.</p>
-    </div>
-    <div class="row never">
-      <b>It cannot make a bad offer work</b><span class="src"></span>
-      <p>It gets a personal, well-built mail into the right inbox at a volume you could not
-      reach by hand. What you sell is still yours.</p>
-    </div>
+  <div class="cards">
+    <div class="card never"><b>It does not send by itself</b>
+      <p>Uploading the campaign is a separate command and needs your yes. An add-on does not get to break a promise the base made on its behalf.</p></div>
+    <div class="card never"><b>Local businesses with a Google profile</b>
+      <p>Trades, clinics, salons — anyone whose customers find them on a map. If your buyers are SaaS founders, this add-on has nothing to measure.</p></div>
+    <div class="card never"><b>It will not invent a number</b>
+      <p>Every figure has to exist in that business's data sheet or the mail is thrown out. A lead with too little data gets fewer points, or none.</p></div>
+    <div class="card never"><b>It cannot make a bad offer work</b>
+      <p>It gets a personal, well-built mail into the right inbox at a volume you could not reach by hand. What you sell is still yours.</p></div>
   </div>
 </section>
 
