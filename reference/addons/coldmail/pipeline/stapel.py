@@ -45,6 +45,14 @@ VARIABLEN = ["widerspruch", "tip_1", "tip_2", "tip_3", "tip_4", "tip_5"]
 
 
 def _leads(niche: str, region: str = "") -> list:
+    """Die Kohorte, aus dem eingestellten Speicher (Supabase oder Datei)."""
+    import speicher
+    return speicher.lade(niche, ["place_id", "name", "town", "region", "details", "raw",
+                                 "raw_dataforseo", "web_signals", "email"],
+                         ohne_disqualifiziert=True, region=region)
+
+
+def _leads_alt(niche: str, region: str = "") -> list:
     import urllib.parse, urllib.request
     from dedupe_leads import _supabase
     url, key = _supabase()

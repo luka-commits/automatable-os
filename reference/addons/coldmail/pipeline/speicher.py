@@ -188,6 +188,9 @@ def _lt_lade(niche, felder, extra_filter):
             elif f.startswith("place_id=eq."):
                 wo.append("place_id = ?")
                 args.append(urllib.parse.unquote(f.split("eq.", 1)[1]))
+            elif f.startswith("region=eq."):
+                wo.append("region = ?")
+                args.append(urllib.parse.unquote(f.split("eq.", 1)[1]))
             else:
                 raise ValueError(f"Filter kennt speicher.py nicht: {f!r}")
         sql = f"SELECT * FROM {TABELLE}"
@@ -250,11 +253,13 @@ def _lt_aendere(place_id, felder):
 
 # ─────────────────────────────────────────────────────────── die eine API
 def lade(niche: str = "", felder=None, ohne_disqualifiziert: bool = False,
-         extra_filter=()) -> list:
+         region: str = "", extra_filter=()) -> list:
     """Die Kohorte. Alle Zeilen auf einmal -- die Pipeline rechnet ohnehin lokal."""
     f = list(extra_filter)
     if ohne_disqualifiziert:
         f.append("pipeline_status=neq.disqualified")
+    if region:
+        f.append(f"region=eq.{urllib.parse.quote(region, safe='')}")
     if _welches() == "sqlite":
         return _lt_lade(niche, felder, f)
     return _sb_lade(niche, felder, f)

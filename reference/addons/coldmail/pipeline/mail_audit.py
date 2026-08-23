@@ -35,21 +35,11 @@ DATEN_SCHWELLE = 50
 
 
 def laden(niche: str) -> list:
-    from dedupe_leads import _supabase
-    url, key = _supabase()
-    hdr = {"apikey": key, "Authorization": f"Bearer {key}"}
-    out, off = [], 0
-    while True:
-        q = (f"{url}/rest/v1/industry_operators?select=place_id,name,town,region,details,raw,"
-             f"raw_dataforseo,web_signals,email&niche=eq.{niche}"
-             f"&pipeline_status=neq.disqualified&order=place_id&limit=1000&offset={off}")
-        seite = json.load(urllib.request.urlopen(
-            urllib.request.Request(q, headers=hdr), timeout=240))
-        out += seite
-        off += 1000
-        if len(seite) < 1000:
-            break
-    return out
+    """Die Kohorte, aus dem eingestellten Speicher (Supabase oder Datei)."""
+    import speicher
+    return speicher.lade(niche, ["place_id", "name", "town", "region", "details", "raw",
+                                 "raw_dataforseo", "web_signals", "email"],
+                         ohne_disqualifiziert=True)
 
 
 def pruefe(niche: str) -> list:
